@@ -1,0 +1,320 @@
+---
+import PublicLayout from "../../layouts/PublicLayout.astro";
+import ProductCard from "../../components/product/ProductCard.astro";
+import { supabase } from "../../lib/supabase";
+import type { Product } from "../../lib/supabase";
+
+// Fetch all products
+const { data: products } = await supabase
+    .from("products")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+// Fetch categories for filter
+const { data: categories } = await supabase
+    .from("categories")
+    .select("*")
+    .order("name");
+
+// Mock data for demo
+const mockProducts: Product[] = [
+    {
+        id: "1",
+        name: "Camiseta Tour 2024 - Bad Bunny",
+        slug: "camiseta-tour-2024-bad-bunny",
+        description: "Camiseta oficial del World Tour 2024",
+        price: 3500,
+        stock: 15,
+        sizes: ["S", "M", "L", "XL"],
+        category_id: null,
+        images: [
+            "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400",
+        ],
+        featured: true,
+        artist: "Bad Bunny",
+        created_at: "",
+        updated_at: "",
+    },
+    {
+        id: "2",
+        name: "Sudadera Midnight - Taylor Swift",
+        slug: "sudadera-midnight-taylor-swift",
+        description: "Sudadera Midnights Edition",
+        price: 5900,
+        stock: 8,
+        sizes: ["S", "M", "L"],
+        category_id: null,
+        images: [
+            "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400",
+        ],
+        featured: true,
+        artist: "Taylor Swift",
+        created_at: "",
+        updated_at: "",
+    },
+    {
+        id: "3",
+        name: "Gorra Logo - Drake",
+        slug: "gorra-logo-drake",
+        description: "Gorra bordada con logo OVO",
+        price: 2900,
+        stock: 25,
+        sizes: ["Única"],
+        category_id: null,
+        images: [
+            "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=400",
+        ],
+        featured: true,
+        artist: "Drake",
+        created_at: "",
+        updated_at: "",
+    },
+    {
+        id: "4",
+        name: "Hoodie Astroworld - Travis Scott",
+        slug: "hoodie-astroworld-travis-scott",
+        description: "Hoodie edición limitada Astroworld",
+        price: 7500,
+        stock: 3,
+        sizes: ["M", "L", "XL"],
+        category_id: null,
+        images: [
+            "https://images.unsplash.com/photo-1578768079052-aa76e52ff62e?w=400",
+        ],
+        featured: true,
+        artist: "Travis Scott",
+        created_at: "",
+        updated_at: "",
+    },
+    {
+        id: "5",
+        name: "Camiseta Renaissance - Beyoncé",
+        slug: "camiseta-renaissance-beyonce",
+        description: "Camiseta oficial gira Renaissance",
+        price: 4500,
+        stock: 12,
+        sizes: ["S", "M", "L", "XL", "XXL"],
+        category_id: null,
+        images: [
+            "https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=400",
+        ],
+        featured: false,
+        artist: "Beyoncé",
+        created_at: "",
+        updated_at: "",
+    },
+    {
+        id: "6",
+        name: "Tote Bag Lover - Taylor Swift",
+        slug: "tote-bag-lover-taylor-swift",
+        description: "Bolsa de tela edición Lover",
+        price: 1900,
+        stock: 30,
+        sizes: ["Única"],
+        category_id: null,
+        images: [
+            "https://images.unsplash.com/photo-1544816155-12df9643f363?w=400",
+        ],
+        featured: false,
+        artist: "Taylor Swift",
+        created_at: "",
+        updated_at: "",
+    },
+];
+
+const allProducts = products?.length ? products : mockProducts;
+---
+
+<PublicLayout
+    title="Productos"
+    description="Explora toda nuestra colección de merch de artistas"
+>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1
+                class="text-3xl lg:text-4xl font-serif font-bold text-carbon-900"
+            >
+                Todos los Productos
+            </h1>
+            <p class="mt-2 text-carbon-500">
+                {allProducts.length} productos disponibles
+            </p>
+        </div>
+
+        <div class="lg:flex lg:gap-8">
+            <!-- Filters Sidebar -->
+            <aside class="lg:w-64 flex-shrink-0 mb-8 lg:mb-0">
+                <div class="bg-white rounded-xl p-6 shadow-sm sticky top-24">
+                    <h3 class="font-semibold text-carbon-800 mb-4">Filtros</h3>
+
+                    <!-- Categories filter -->
+                    <div class="mb-6">
+                        <h4 class="text-sm font-medium text-carbon-600 mb-3">
+                            Categoría
+                        </h4>
+                        <div class="space-y-2">
+                            <label
+                                class="flex items-center gap-2 cursor-pointer"
+                            >
+                                <input
+                                    type="checkbox"
+                                    class="rounded border-carbon-300 text-navy-800 focus:ring-navy-500"
+                                />
+                                <span class="text-sm text-carbon-700"
+                                    >Camisetas</span
+                                >
+                            </label>
+                            <label
+                                class="flex items-center gap-2 cursor-pointer"
+                            >
+                                <input
+                                    type="checkbox"
+                                    class="rounded border-carbon-300 text-navy-800 focus:ring-navy-500"
+                                />
+                                <span class="text-sm text-carbon-700"
+                                    >Sudaderas</span
+                                >
+                            </label>
+                            <label
+                                class="flex items-center gap-2 cursor-pointer"
+                            >
+                                <input
+                                    type="checkbox"
+                                    class="rounded border-carbon-300 text-navy-800 focus:ring-navy-500"
+                                />
+                                <span class="text-sm text-carbon-700"
+                                    >Accesorios</span
+                                >
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Price filter -->
+                    <div class="mb-6">
+                        <h4 class="text-sm font-medium text-carbon-600 mb-3">
+                            Precio
+                        </h4>
+                        <div class="space-y-2">
+                            <label
+                                class="flex items-center gap-2 cursor-pointer"
+                            >
+                                <input
+                                    type="checkbox"
+                                    class="rounded border-carbon-300 text-navy-800 focus:ring-navy-500"
+                                />
+                                <span class="text-sm text-carbon-700"
+                                    >Menos de 30€</span
+                                >
+                            </label>
+                            <label
+                                class="flex items-center gap-2 cursor-pointer"
+                            >
+                                <input
+                                    type="checkbox"
+                                    class="rounded border-carbon-300 text-navy-800 focus:ring-navy-500"
+                                />
+                                <span class="text-sm text-carbon-700"
+                                    >30€ - 50€</span
+                                >
+                            </label>
+                            <label
+                                class="flex items-center gap-2 cursor-pointer"
+                            >
+                                <input
+                                    type="checkbox"
+                                    class="rounded border-carbon-300 text-navy-800 focus:ring-navy-500"
+                                />
+                                <span class="text-sm text-carbon-700"
+                                    >Más de 50€</span
+                                >
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Size filter -->
+                    <div>
+                        <h4 class="text-sm font-medium text-carbon-600 mb-3">
+                            Talla
+                        </h4>
+                        <div class="flex flex-wrap gap-2">
+                            {
+                                ["XS", "S", "M", "L", "XL", "XXL"].map(
+                                    (size) => (
+                                        <label class="cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                class="sr-only peer"
+                                            />
+                                            <span
+                                                class="block px-3 py-1 text-sm border border-carbon-200 rounded 
+                               peer-checked:bg-navy-800 peer-checked:text-white 
+                               peer-checked:border-navy-800 hover:border-navy-400 transition-colors"
+                                            >
+                                                {size}
+                                            </span>
+                                        </label>
+                                    ),
+                                )
+                            }
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Products Grid -->
+            <div class="flex-1">
+                <!-- Sort controls -->
+                <div class="flex items-center justify-between mb-6">
+                    <p class="text-sm text-carbon-500">
+                        Mostrando {allProducts.length} productos
+                    </p>
+                    <select
+                        class="text-sm border border-carbon-200 rounded-lg px-3 py-2
+                         focus:outline-none focus:ring-2 focus:ring-navy-500"
+                    >
+                        <option>Más recientes</option>
+                        <option>Precio: menor a mayor</option>
+                        <option>Precio: mayor a menor</option>
+                        <option>Más populares</option>
+                    </select>
+                </div>
+
+                <!-- Grid -->
+                <div
+                    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                >
+                    {
+                        allProducts.map((product) => (
+                            <ProductCard product={product} />
+                        ))
+                    }
+                </div>
+
+                {/* Empty state */}
+                {
+                    allProducts.length === 0 && (
+                        <div class="text-center py-16">
+                            <svg
+                                class="w-16 h-16 mx-auto text-carbon-300 mb-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="1.5"
+                                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                                />
+                            </svg>
+                            <p class="text-carbon-500 font-medium">
+                                No hay productos disponibles
+                            </p>
+                        </div>
+                    )
+                }
+            </div>
+        </div>
+    </div>
+</PublicLayout>

@@ -1,0 +1,132 @@
+---
+import type { Product } from "../../lib/supabase";
+import { formatPrice } from "../../lib/supabase";
+
+interface Props {
+    product: Product;
+}
+
+const { product } = Astro.props;
+---
+
+<a
+    href={`/productos/${product.slug}`}
+    class="group block bg-white rounded-xl overflow-hidden shadow-sm
+         hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+>
+    <!-- Image -->
+    <div class="aspect-[3/4] bg-carbon-100 relative overflow-hidden">
+        {
+            product.images?.[0] ? (
+                <img
+                    src={product.images[0]}
+                    alt={product.name}
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    loading="lazy"
+                />
+            ) : (
+                <div class="w-full h-full flex items-center justify-center text-carbon-300">
+                    <svg
+                        class="w-16 h-16"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="1.5"
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                    </svg>
+                </div>
+            )
+        }
+
+        {/* Featured badge */}
+        {
+            product.featured && (
+                <span
+                    class="absolute top-3 left-3 bg-accent-gold text-white text-xs font-bold 
+                   px-2 py-1 rounded-full uppercase tracking-wide"
+                >
+                    Destacado
+                </span>
+            )
+        }
+
+        {/* Out of stock overlay */}
+        {
+            product.stock <= 0 && (
+                <div class="absolute inset-0 bg-carbon-900/60 flex items-center justify-center">
+                    <span class="bg-white text-carbon-800 px-4 py-2 rounded-lg font-semibold">
+                        Agotado
+                    </span>
+                </div>
+            )
+        }
+
+        {/* Low stock indicator */}
+        {
+            product.stock > 0 && product.stock <= 5 && (
+                <span
+                    class="absolute top-3 right-3 bg-accent-leather text-white text-xs font-bold 
+                   px-2 py-1 rounded-full"
+                >
+                    ¡Últimas {product.stock}!
+                </span>
+            )
+        }
+    </div>
+
+    <!-- Content -->
+    <div class="p-4">
+        {/* Artist */}
+        {
+            product.artist && (
+                <p class="text-xs text-accent-gold font-semibold uppercase tracking-wider mb-1">
+                    {product.artist}
+                </p>
+            )
+        }
+
+        {/* Name */}
+        <h3
+            class="font-medium text-carbon-800 group-hover:text-navy-800 transition-colors line-clamp-2"
+        >
+            {product.name}
+        </h3>
+
+        {/* Price */}
+        <p class="mt-2 text-lg font-serif font-semibold text-navy-900">
+            {formatPrice(product.price)}
+        </p>
+
+        {/* Sizes preview */}
+        {
+            product.sizes?.length > 0 && (
+                <div class="mt-2 flex gap-1 flex-wrap">
+                    {product.sizes.slice(0, 5).map((size) => (
+                        <span class="text-xs text-carbon-400 border border-carbon-200 px-1.5 py-0.5 rounded">
+                            {size}
+                        </span>
+                    ))}
+                    {product.sizes.length > 5 && (
+                        <span class="text-xs text-carbon-400">
+                            +{product.sizes.length - 5}
+                        </span>
+                    )}
+                </div>
+            )
+        }
+    </div>
+</a>
+
+<style>
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+</style>

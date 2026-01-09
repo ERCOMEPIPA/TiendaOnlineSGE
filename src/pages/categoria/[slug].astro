@@ -1,0 +1,163 @@
+---
+import PublicLayout from "../../layouts/PublicLayout.astro";
+import ProductCard from "../../components/product/ProductCard.astro";
+import { supabase } from "../../lib/supabase";
+import type { Product, Category } from "../../lib/supabase";
+
+export async function getStaticPaths() {
+    const { data: categories } = await supabase
+        .from("categories")
+        .select("slug");
+
+    // Mock categories for demo
+    const slugs = categories?.length
+        ? categories.map((c) => ({ params: { slug: c.slug } }))
+        : [
+              { params: { slug: "camisetas" } },
+              { params: { slug: "sudaderas" } },
+              { params: { slug: "accesorios" } },
+          ];
+
+    return slugs;
+}
+
+const { slug } = Astro.params;
+
+// Fetch category
+const { data: category } = await supabase
+    .from("categories")
+    .select("*")
+    .eq("slug", slug)
+    .single();
+
+// Mock category
+const mockCategory: Category = {
+    id: "1",
+    name:
+        slug === "camisetas"
+            ? "Camisetas"
+            : slug === "sudaderas"
+              ? "Sudaderas"
+              : "Accesorios",
+    slug: slug as string,
+    created_at: "",
+};
+
+const currentCategory = category || mockCategory;
+
+// Fetch products in category
+const { data: products } = await supabase
+    .from("products")
+    .select("*")
+    .eq("category_id", currentCategory.id)
+    .order("created_at", { ascending: false });
+
+// Mock products for demo
+const mockProducts: Product[] = [
+    {
+        id: "1",
+        name: "Camiseta Tour 2024 - Bad Bunny",
+        slug: "camiseta-tour-2024-bad-bunny",
+        description: "Camiseta oficial del World Tour 2024",
+        price: 3500,
+        stock: 15,
+        sizes: ["S", "M", "L", "XL"],
+        category_id: null,
+        images: [
+            "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400",
+        ],
+        featured: true,
+        artist: "Bad Bunny",
+        created_at: "",
+        updated_at: "",
+    },
+    {
+        id: "5",
+        name: "Camiseta Renaissance - Beyoncé",
+        slug: "camiseta-renaissance-beyonce",
+        description: "Camiseta oficial gira Renaissance",
+        price: 4500,
+        stock: 12,
+        sizes: ["S", "M", "L", "XL", "XXL"],
+        category_id: null,
+        images: [
+            "https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=400",
+        ],
+        featured: false,
+        artist: "Beyoncé",
+        created_at: "",
+        updated_at: "",
+    },
+];
+
+const categoryProducts = products?.length ? products : mockProducts;
+---
+
+<PublicLayout
+    title={currentCategory.name}
+    description={`Explora nuestra colección de ${currentCategory.name}`}
+>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Breadcrumb -->
+        <nav class="mb-8">
+            <ol class="flex items-center gap-2 text-sm text-carbon-500">
+                <li><a href="/" class="hover:text-navy-800">Inicio</a></li>
+                <li>/</li>
+                <li class="text-carbon-800 font-medium">
+                    {currentCategory.name}
+                </li>
+            </ol>
+        </nav>
+
+        <!-- Header -->
+        <div class="mb-10">
+            <h1
+                class="text-3xl lg:text-4xl font-serif font-bold text-carbon-900"
+            >
+                {currentCategory.name}
+            </h1>
+            <p class="mt-2 text-carbon-500">
+                {categoryProducts.length} productos en esta categoría
+            </p>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {
+                categoryProducts.map((product) => (
+                    <ProductCard product={product} />
+                ))
+            }
+        </div>
+
+        {/* Empty state */}
+        {
+            categoryProducts.length === 0 && (
+                <div class="text-center py-16">
+                    <svg
+                        class="w-16 h-16 mx-auto text-carbon-300 mb-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="1.5"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                        />
+                    </svg>
+                    <p class="text-carbon-500 font-medium">
+                        No hay productos en esta categoría
+                    </p>
+                    <a
+                        href="/productos"
+                        class="inline-block mt-4 text-navy-800 font-medium hover:text-accent-gold"
+                    >
+                        Ver todos los productos →
+                    </a>
+                </div>
+            )
+        }
+    </div>
+</PublicLayout>

@@ -1,0 +1,275 @@
+---
+import PublicLayout from "../layouts/PublicLayout.astro";
+import ProductCard from "../components/product/ProductCard.astro";
+import Button from "../components/ui/Button.astro";
+import { supabase } from "../lib/supabase";
+import type { Product, Category } from "../lib/supabase";
+
+// Fetch featured products
+const { data: featuredProducts } = await supabase
+	.from("products")
+	.select("*")
+	.eq("featured", true)
+	.limit(4);
+
+// Fetch all categories
+const { data: categories } = await supabase
+	.from("categories")
+	.select("*")
+	.order("name");
+
+// Mock data for demo (remove when Supabase is connected)
+const mockProducts: Product[] = [
+	{
+		id: "1",
+		name: "Camiseta Tour 2024 - Bad Bunny",
+		slug: "camiseta-tour-2024-bad-bunny",
+		description: "Camiseta oficial del World Tour 2024",
+		price: 3500,
+		stock: 15,
+		sizes: ["S", "M", "L", "XL"],
+		category_id: null,
+		images: [
+			"https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400",
+		],
+		featured: true,
+		artist: "Bad Bunny",
+		created_at: "",
+		updated_at: "",
+	},
+	{
+		id: "2",
+		name: "Sudadera Midnight - Taylor Swift",
+		slug: "sudadera-midnight-taylor-swift",
+		description: "Sudadera Midnights Edition",
+		price: 5900,
+		stock: 8,
+		sizes: ["S", "M", "L"],
+		category_id: null,
+		images: [
+			"https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400",
+		],
+		featured: true,
+		artist: "Taylor Swift",
+		created_at: "",
+		updated_at: "",
+	},
+	{
+		id: "3",
+		name: "Gorra Logo - Drake",
+		slug: "gorra-logo-drake",
+		description: "Gorra bordada con logo OVO",
+		price: 2900,
+		stock: 25,
+		sizes: ["Única"],
+		category_id: null,
+		images: [
+			"https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=400",
+		],
+		featured: true,
+		artist: "Drake",
+		created_at: "",
+		updated_at: "",
+	},
+	{
+		id: "4",
+		name: "Hoodie Astroworld - Travis Scott",
+		slug: "hoodie-astroworld-travis-scott",
+		description: "Hoodie edición limitada Astroworld",
+		price: 7500,
+		stock: 3,
+		sizes: ["M", "L", "XL"],
+		category_id: null,
+		images: [
+			"https://images.unsplash.com/photo-1578768079052-aa76e52ff62e?w=400",
+		],
+		featured: true,
+		artist: "Travis Scott",
+		created_at: "",
+		updated_at: "",
+	},
+];
+
+const products = featuredProducts?.length ? featuredProducts : mockProducts;
+
+const mockCategories: Category[] = [
+	{ id: "1", name: "Camisetas", slug: "camisetas", created_at: "" },
+	{ id: "2", name: "Sudaderas", slug: "sudaderas", created_at: "" },
+	{ id: "3", name: "Accesorios", slug: "accesorios", created_at: "" },
+];
+
+const cats = categories?.length ? categories : mockCategories;
+---
+
+<PublicLayout
+	title="Inicio"
+	description="FashionStore - Tu tienda de merch oficial de tus artistas favoritos"
+>
+	<!-- Hero Section -->
+	<section class="relative bg-navy-900 text-white overflow-hidden">
+		<div class="absolute inset-0 opacity-20">
+			<div
+				class="absolute inset-0 bg-gradient-to-br from-accent-gold/30 to-transparent"
+			>
+			</div>
+		</div>
+
+		<div
+			class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32"
+		>
+			<div class="max-w-2xl">
+				<h1
+					class="text-4xl lg:text-6xl font-serif font-bold leading-tight animate-slide-up"
+				>
+					Merch exclusivo de tus
+					<span class="text-accent-gold">artistas favoritos</span>
+				</h1>
+				<p
+					class="mt-6 text-lg text-navy-200 animate-slide-up"
+					style="animation-delay: 0.1s;"
+				>
+					Colecciones oficiales, ediciones limitadas y productos
+					únicos. Viste tu pasión por la música con estilo.
+				</p>
+				<div
+					class="mt-8 flex flex-wrap gap-4 animate-slide-up"
+					style="animation-delay: 0.2s;"
+				>
+					<Button href="/productos" variant="secondary" size="lg">
+						Ver colección
+					</Button>
+					<Button
+						href="#categorias"
+						variant="outline"
+						size="lg"
+						class="border-white text-white hover:bg-white hover:text-navy-900"
+					>
+						Explorar
+					</Button>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<!-- Featured Products -->
+	<section class="py-16 lg:py-24">
+		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+			<div class="flex items-end justify-between mb-10">
+				<div>
+					<h2
+						class="text-3xl lg:text-4xl font-serif font-bold text-carbon-900"
+					>
+						Productos Destacados
+					</h2>
+					<p class="mt-2 text-carbon-500">
+						Lo más buscado de esta temporada
+					</p>
+				</div>
+				<a
+					href="/productos"
+					class="hidden sm:flex items-center gap-2 text-navy-800 font-medium hover:text-accent-gold transition-colors"
+				>
+					Ver todo
+					<svg
+						class="w-4 h-4"
+						fill="none"
+						stroke="currentColor"
+						viewBox="0 0 24 24"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M9 5l7 7-7 7"></path>
+					</svg>
+				</a>
+			</div>
+
+			<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+				{products.map((product) => <ProductCard product={product} />)}
+			</div>
+
+			<div class="mt-10 text-center sm:hidden">
+				<Button href="/productos" variant="outline"
+					>Ver todos los productos</Button
+				>
+			</div>
+		</div>
+	</section>
+
+	<!-- Categories -->
+	<section id="categorias" class="py-16 lg:py-24 bg-white">
+		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+			<div class="text-center mb-12">
+				<h2
+					class="text-3xl lg:text-4xl font-serif font-bold text-carbon-900"
+				>
+					Compra por Categoría
+				</h2>
+				<p class="mt-2 text-carbon-500">
+					Encuentra exactamente lo que buscas
+				</p>
+			</div>
+
+			<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+				{
+					cats.map((category, index) => (
+						<a
+							href={`/categoria/${category.slug}`}
+							class="group relative h-64 rounded-xl overflow-hidden bg-navy-100"
+						>
+							<div class="absolute inset-0 bg-gradient-to-t from-navy-900/80 via-navy-900/40 to-transparent z-10" />
+							<div class="absolute inset-0 bg-navy-800 group-hover:scale-105 transition-transform duration-500" />
+							<div class="absolute bottom-0 left-0 right-0 p-6 z-20">
+								<h3 class="text-2xl font-serif font-semibold text-white group-hover:text-accent-gold transition-colors">
+									{category.name}
+								</h3>
+								<span class="inline-flex items-center gap-1 mt-2 text-sm text-white/80">
+									Explorar
+									<svg
+										class="w-4 h-4 group-hover:translate-x-1 transition-transform"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M9 5l7 7-7 7"
+										/>
+									</svg>
+								</span>
+							</div>
+						</a>
+					))
+				}
+			</div>
+		</div>
+	</section>
+
+	<!-- Newsletter / CTA -->
+	<section
+		class="py-16 lg:py-24 bg-gradient-to-br from-navy-800 to-navy-950 text-white"
+	>
+		<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+			<h2 class="text-3xl lg:text-4xl font-serif font-bold">
+				Sé el primero en enterarte
+			</h2>
+			<p class="mt-4 text-navy-200">
+				Suscríbete para recibir novedades, lanzamientos exclusivos y
+				ofertas especiales.
+			</p>
+			<form class="mt-8 flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+				<input
+					type="email"
+					placeholder="tu@email.com"
+					class="flex-1 px-4 py-3 rounded-lg bg-white/10 border border-white/20
+                 text-white placeholder:text-white/50 focus:outline-none focus:ring-2
+                 focus:ring-accent-gold"
+				/>
+				<Button type="submit" variant="secondary"> Suscribirme </Button>
+			</form>
+		</div>
+	</section>
+</PublicLayout>

@@ -1,0 +1,237 @@
+---
+import PublicLayout from "../../layouts/PublicLayout.astro";
+import ProductGallery from "../../components/product/ProductGallery.astro";
+import ProductCard from "../../components/product/ProductCard.astro";
+import AddToCartButton from "../../components/islands/AddToCartButton";
+import { supabase, formatPrice } from "../../lib/supabase";
+import type { Product } from "../../lib/supabase";
+
+export async function getStaticPaths() {
+    const { data: products } = await supabase.from("products").select("slug");
+
+    // If no products in DB, use mock data for demo
+    const slugs = products?.length
+        ? products.map((p) => ({ params: { slug: p.slug } }))
+        : [
+              { params: { slug: "camiseta-tour-2024-bad-bunny" } },
+              { params: { slug: "sudadera-midnight-taylor-swift" } },
+              { params: { slug: "gorra-logo-drake" } },
+              { params: { slug: "hoodie-astroworld-travis-scott" } },
+          ];
+
+    return slugs;
+}
+
+const { slug } = Astro.params;
+
+// Fetch product by slug
+const { data: product } = await supabase
+    .from("products")
+    .select("*")
+    .eq("slug", slug)
+    .single();
+
+// Mock product for demo
+const mockProduct: Product = {
+    id: "1",
+    name: "Camiseta Tour 2024 - Bad Bunny",
+    slug: "camiseta-tour-2024-bad-bunny",
+    description: `Camiseta oficial del World's Hottest Tour 2024. Fabricada en algodón 100% orgánico de alta calidad. 
+  
+  Diseño exclusivo con gráficos del tour impreso en serigrafía de alta definición. 
+  
+  - Material: Algodón 100% orgánico
+  - Corte: Regular fit
+  - Lavado: Máquina a 30°C
+  - Producción: Comercio justo`,
+    price: 3500,
+    stock: 15,
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    category_id: null,
+    images: [
+        "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800",
+        "https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=800",
+        "https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=800",
+    ],
+    featured: true,
+    artist: "Bad Bunny",
+    created_at: "",
+    updated_at: "",
+};
+
+const currentProduct = product || mockProduct;
+
+// Fetch related products
+const { data: relatedProducts } = await supabase
+    .from("products")
+    .select("*")
+    .neq("id", currentProduct.id)
+    .eq("artist", currentProduct.artist)
+    .limit(4);
+
+// Mock related products
+const mockRelated: Product[] = [
+    {
+        id: "5",
+        name: "Hoodie Tour 2024 - Bad Bunny",
+        slug: "hoodie-tour-2024-bad-bunny",
+        description: "Sudadera oficial",
+        price: 6500,
+        stock: 10,
+        sizes: ["M", "L", "XL"],
+        category_id: null,
+        images: [
+            "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400",
+        ],
+        featured: false,
+        artist: "Bad Bunny",
+        created_at: "",
+        updated_at: "",
+    },
+];
+
+const related = relatedProducts?.length ? relatedProducts : mockRelated;
+---
+
+<PublicLayout
+    title={currentProduct.name}
+    description={currentProduct.description || ""}
+>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Breadcrumb -->
+        <nav class="mb-8">
+            <ol class="flex items-center gap-2 text-sm text-carbon-500">
+                <li><a href="/" class="hover:text-navy-800">Inicio</a></li>
+                <li>/</li>
+                <li>
+                    <a href="/productos" class="hover:text-navy-800"
+                        >Productos</a>
+                </li>
+                <li>/</li>
+                <li class="text-carbon-800 font-medium truncate max-w-xs">
+                    {currentProduct.name}
+                </li>
+            </ol>
+        </nav>
+
+        <!-- Product Detail -->
+        <div class="lg:grid lg:grid-cols-2 lg:gap-12">
+            <!-- Gallery -->
+            <div class="mb-8 lg:mb-0">
+                <ProductGallery
+                    images={currentProduct.images}
+                    productName={currentProduct.name}
+                />
+            </div>
+
+            <!-- Product Info -->
+            <div class="lg:sticky lg:top-24 lg:self-start">
+                {/* Artist badge */}
+                {
+                    currentProduct.artist && (
+                        <span
+                            class="inline-block bg-accent-gold/10 text-accent-gold px-3 py-1 
+                       rounded-full text-sm font-semibold mb-4"
+                        >
+                            {currentProduct.artist}
+                        </span>
+                    )
+                }
+
+                <h1
+                    class="text-3xl lg:text-4xl font-serif font-bold text-carbon-900 mb-4"
+                >
+                    {currentProduct.name}
+                </h1>
+
+                <p class="text-3xl font-serif font-semibold text-navy-900 mb-6">
+                    {formatPrice(currentProduct.price)}
+                </p>
+
+                {/* Description */}
+                {
+                    currentProduct.description && (
+                        <div class="prose prose-carbon mb-8">
+                            <p class="text-carbon-600 whitespace-pre-line">
+                                {currentProduct.description}
+                            </p>
+                        </div>
+                    )
+                }
+
+                <!-- Add to Cart Button (React Island) -->
+                <AddToCartButton
+                    client:load
+                    product={currentProduct}
+                    sizes={currentProduct.sizes}
+                />
+
+                {/* Additional info */}
+                <div class="mt-8 border-t border-carbon-100 pt-6 space-y-4">
+                    <div class="flex items-start gap-3">
+                        <svg
+                            class="w-5 h-5 text-carbon-400 mt-0.5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
+                            ></path>
+                        </svg>
+                        <div>
+                            <p class="font-medium text-carbon-800">
+                                Envío gratis
+                            </p>
+                            <p class="text-sm text-carbon-500">
+                                En pedidos superiores a 50€
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <svg
+                            class="w-5 h-5 text-carbon-400 mt-0.5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                            ></path>
+                        </svg>
+                        <div>
+                            <p class="font-medium text-carbon-800">
+                                Devoluciones
+                            </p>
+                            <p class="text-sm text-carbon-500">
+                                30 días para cambios y devoluciones
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Related Products -->
+        {
+            related.length > 0 && (
+                <section class="mt-16 pt-12 border-t border-carbon-100">
+                    <h2 class="text-2xl font-serif font-bold text-carbon-900 mb-8">
+                        Más de {currentProduct.artist}
+                    </h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {related.slice(0, 4).map((prod) => (
+                            <ProductCard product={prod} />
+                        ))}
+                    </div>
+                </section>
+            )
+        }
+    </div>
+</PublicLayout>

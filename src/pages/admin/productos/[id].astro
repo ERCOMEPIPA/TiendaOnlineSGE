@@ -1,0 +1,358 @@
+---
+export const prerender = false;
+
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import Button from "../../../components/ui/Button.astro";
+import { supabase } from "../../../lib/supabase";
+import { slugify } from "../../../lib/utils";
+import type { Product } from "../../../lib/supabase";
+
+const { id } = Astro.params;
+
+// Fetch product
+const { data: product } = await supabase
+    .from("products")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+// Mock for demo
+const mockProduct: Product = {
+    id: id || "1",
+    name: "Camiseta Tour 2024 - Bad Bunny",
+    slug: "camiseta-tour-2024-bad-bunny",
+    description: "Camiseta oficial del World Tour 2024",
+    price: 3500,
+    stock: 15,
+    sizes: ["S", "M", "L", "XL"],
+    category_id: null,
+    images: [
+        "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400",
+    ],
+    featured: true,
+    artist: "Bad Bunny",
+    created_at: "",
+    updated_at: "",
+};
+
+const currentProduct = product || mockProduct;
+
+// Handle form submission
+let error = "";
+let success = false;
+
+if (Astro.request.method === "POST") {
+    const formData = await Astro.request.formData();
+
+    const name = formData.get("name") as string;
+    const description = formData.get("description") as string;
+    const price = parseInt(formData.get("price") as string) * 100;
+    const stock = parseInt(formData.get("stock") as string);
+    const artist = formData.get("artist") as string;
+    const sizes = (formData.get("sizes") as string)
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+    const featured = formData.get("featured") === "on";
+    const categoryId = (formData.get("category_id") as string) || null;
+    const imageUrls = (formData.get("images") as string)
+        .split("\n")
+        .map((s) => s.trim())
+        .filter(Boolean);
+
+    const { error: updateError } = await supabase
+        .from("products")
+        .update({
+            name,
+            slug: slugify(name),
+            description,
+            price,
+            stock,
+            artist: artist || null,
+            sizes,
+            featured,
+            category_id: categoryId,
+            images: imageUrls,
+            updated_at: new Date().toISOString(),
+        })
+        .eq("id", id);
+
+    if (updateError) {
+        error = "Error al actualizar el producto.";
+    } else {
+        success = true;
+    }
+}
+
+// Fetch categories
+const { data: categories } = await supabase
+    .from("categories")
+    .select("*")
+    .order("name");
+
+const mockCategories = [
+    { id: "1", name: "Camisetas", slug: "camisetas" },
+    { id: "2", name: "Sudaderas", slug: "sudaderas" },
+    { id: "3", name: "Accesorios", slug: "accesorios" },
+];
+
+const allCategories = categories?.length ? categories : mockCategories;
+---
+
+<AdminLayout title="Editar Producto">
+    <div class="max-w-3xl">
+        {/* Breadcrumb */}
+        <nav class="mb-6">
+            <ol class="flex items-center gap-2 text-sm text-carbon-500">
+                <li>
+                    <a href="/admin/productos" class="hover:text-navy-800"
+                        >Productos</a>
+                </li>
+                <li>/</li>
+                <li class="text-carbon-800 font-medium">Editar</li>
+            </ol>
+        </nav>
+
+        {
+            error && (
+                <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                    {error}
+                </div>
+            )
+        }
+
+        {
+            success && (
+                <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
+                    Producto actualizado correctamente.
+                </div>
+            )
+        }
+
+        <form method="POST" class="bg-white rounded-xl shadow-sm p-6">
+            <div class="space-y-6">
+                {/* Basic Info */}
+                <div>
+                    <h3 class="text-lg font-semibold text-carbon-900 mb-4">
+                        Información básica
+                    </h3>
+
+                    <div class="grid gap-4">
+                        <div>
+                            <label
+                                for="name"
+                                class="block text-sm font-medium text-carbon-700 mb-2"
+                            >
+                                Nombre del producto *
+                            </label>
+                            <input
+                                type="text"
+                                id="name"
+                                name="name"
+                                required
+                                value={currentProduct.name}
+                                class="w-full px-4 py-3 border border-carbon-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-500"
+                            />
+                        </div>
+
+                        <div>
+                            <label
+                                for="artist"
+                                class="block text-sm font-medium text-carbon-700 mb-2"
+                            >
+                                Artista
+                            </label>
+                            <input
+                                type="text"
+                                id="artist"
+                                name="artist"
+                                value={currentProduct.artist || ""}
+                                class="w-full px-4 py-3 border border-carbon-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-500"
+                            />
+                        </div>
+
+                        <div>
+                            <label
+                                for="description"
+                                class="block text-sm font-medium text-carbon-700 mb-2"
+                            >
+                                Descripción
+                            </label>
+                            <textarea
+                                id="description"
+                                name="description"
+                                rows="4"
+                                class="w-full px-4 py-3 border border-carbon-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-500"
+                                >{currentProduct.description}</textarea
+                            >
+                        </div>
+                    </div>
+                </div>
+
+                {/* Pricing & Stock */}
+                <div class="border-t border-carbon-100 pt-6">
+                    <h3 class="text-lg font-semibold text-carbon-900 mb-4">
+                        Precio e inventario
+                    </h3>
+
+                    <div class="grid sm:grid-cols-2 gap-4">
+                        <div>
+                            <label
+                                for="price"
+                                class="block text-sm font-medium text-carbon-700 mb-2"
+                            >
+                                Precio (€) *
+                            </label>
+                            <input
+                                type="number"
+                                id="price"
+                                name="price"
+                                step="0.01"
+                                min="0"
+                                required
+                                value={(currentProduct.price / 100).toFixed(2)}
+                                class="w-full px-4 py-3 border border-carbon-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-500"
+                            />
+                        </div>
+
+                        <div>
+                            <label
+                                for="stock"
+                                class="block text-sm font-medium text-carbon-700 mb-2"
+                            >
+                                Stock *
+                            </label>
+                            <input
+                                type="number"
+                                id="stock"
+                                name="stock"
+                                min="0"
+                                required
+                                value={currentProduct.stock}
+                                class="w-full px-4 py-3 border border-carbon-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-500"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Organization */}
+                <div class="border-t border-carbon-100 pt-6">
+                    <h3 class="text-lg font-semibold text-carbon-900 mb-4">
+                        Organización
+                    </h3>
+
+                    <div class="grid sm:grid-cols-2 gap-4">
+                        <div>
+                            <label
+                                for="category_id"
+                                class="block text-sm font-medium text-carbon-700 mb-2"
+                            >
+                                Categoría
+                            </label>
+                            <select
+                                id="category_id"
+                                name="category_id"
+                                class="w-full px-4 py-3 border border-carbon-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-500"
+                            >
+                                <option value="">Sin categoría</option>
+                                {
+                                    allCategories.map((cat) => (
+                                        <option
+                                            value={cat.id}
+                                            selected={
+                                                cat.id ===
+                                                currentProduct.category_id
+                                            }
+                                        >
+                                            {cat.name}
+                                        </option>
+                                    ))
+                                }
+                            </select>
+                        </div>
+
+                        <div>
+                            <label
+                                for="sizes"
+                                class="block text-sm font-medium text-carbon-700 mb-2"
+                            >
+                                Tallas (separadas por coma)
+                            </label>
+                            <input
+                                type="text"
+                                id="sizes"
+                                name="sizes"
+                                value={currentProduct.sizes?.join(", ")}
+                                class="w-full px-4 py-3 border border-carbon-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-500"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <label class="flex items-center gap-3 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                name="featured"
+                                checked={currentProduct.featured}
+                                class="w-5 h-5 rounded border-carbon-300 text-navy-800 focus:ring-navy-500"
+                            />
+                            <span class="text-sm text-carbon-700"
+                                >Marcar como producto destacado</span
+                            >
+                        </label>
+                    </div>
+                </div>
+
+                {/* Images */}
+                <div class="border-t border-carbon-100 pt-6">
+                    <h3 class="text-lg font-semibold text-carbon-900 mb-4">
+                        Imágenes
+                    </h3>
+
+                    <div>
+                        <label
+                            for="images"
+                            class="block text-sm font-medium text-carbon-700 mb-2"
+                        >
+                            URLs de imágenes (una por línea)
+                        </label>
+                        <textarea
+                            id="images"
+                            name="images"
+                            rows="4"
+                            class="w-full px-4 py-3 border border-carbon-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-500 font-mono text-sm"
+                            >{currentProduct.images?.join("\n")}</textarea
+                        >
+                    </div>
+
+                    {/* Image previews */}
+                    {
+                        currentProduct.images?.length > 0 && (
+                            <div class="mt-4 flex gap-2 overflow-x-auto">
+                                {currentProduct.images.map((img) => (
+                                    <img
+                                        src={img}
+                                        alt=""
+                                        class="w-20 h-20 object-cover rounded-lg border border-carbon-200"
+                                    />
+                                ))}
+                            </div>
+                        )
+                    }
+                </div>
+
+                {/* Actions */}
+                <div
+                    class="border-t border-carbon-100 pt-6 flex items-center justify-end gap-3"
+                >
+                    <Button href="/admin/productos" variant="ghost">
+                        Cancelar
+                    </Button>
+                    <Button type="submit" variant="primary">
+                        Guardar cambios
+                    </Button>
+                </div>
+            </div>
+        </form>
+    </div>
+</AdminLayout>
