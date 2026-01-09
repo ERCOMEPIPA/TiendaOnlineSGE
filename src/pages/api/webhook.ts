@@ -11,7 +11,16 @@ const endpointSecret = import.meta.env.STRIPE_WEBHOOK_SECRET;
 export const POST: APIRoute = async ({ request }) => {
     const signature = request.headers.get('stripe-signature');
 
-    if (!signature || !endpointSecret) {
+    // If no webhook secret configured, just acknowledge (for development without webhooks)
+    if (!endpointSecret) {
+        console.log('No webhook secret configured, skipping verification');
+        return new Response(JSON.stringify({ received: true, note: 'No webhook secret configured' }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    if (!signature) {
         return new Response('Webhook signature missing', { status: 400 });
     }
 
@@ -20,9 +29,10 @@ export const POST: APIRoute = async ({ request }) => {
     try {
         const body = await request.text();
         event = stripe.webhooks.constructEvent(body, signature, endpointSecret);
-    } catch (err: any) {
-        console.error('Webhook signature verification failed:', err.message);
-        return new Response(`Webhook Error: ${err.message}`, { status: 400 });
+    } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        console.error('Webhook signature verification failed:', errorMessage);
+        return new Response(`Webhook Error: ${errorMessage}`, { status: 400 });
     }
 
     // Handle the event
@@ -51,9 +61,10 @@ export const POST: APIRoute = async ({ request }) => {
             status: 200,
             headers: { 'Content-Type': 'application/json' },
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         console.error('Error handling webhook:', error);
-        return new Response(JSON.stringify({ error: error.message }), {
+        return new Response(JSON.stringify({ error: errorMessage }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' },
         });
@@ -61,7 +72,19 @@ export const POST: APIRoute = async ({ request }) => {
 };
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
-    console.log('Checkout completed:', session.id);
+    console.log('Checkout completed via webhook:', session.id);
+
+    // Check if order already exists (created by success page)
+    const { data: existingOrder } = await supabase
+        .from('orders')
+        .select('id')
+        .eq('stripe_session_id', session.id)
+        .single();
+
+    if (existingOrder) {
+        console.log('Order already exists, skipping webhook processing:', existingOrder.id);
+        return;
+    }
 
     // Parse items from metadata
     const items = JSON.parse(session.metadata?.items || '[]');
@@ -74,10 +97,10 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
     // Get customer details
     const customerEmail = session.customer_details?.email || session.metadata?.user_email || 'unknown@email.com';
-    const customerName = session.customer_details?.name || 'Unknown';
+    const customerName = session.customer_details?.name || 'Cliente';
 
     // Create order in database
-    const { data: order, error: orderError } = await supabase
+    const { data: order, error: orderDbError } = await supabase
         .from('orders')
         .insert({
             user_id: userId,
@@ -90,35 +113,35 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         .select()
         .single();
 
-    if (orderError || !order) {
-        console.error('Error creating order:', orderError);
+    if (orderDbError || !order) {
+        console.error('Error creating order:', orderDbError);
         return;
     }
 
-    // Create order items
-    const orderItems = items.map((item: any) => ({
-        order_id: order.id,
-        product_id: item.product_id,
-        quantity: item.quantity,
-        size: item.size,
-        price: 0, // Will be updated below
-    }));
-
-    // Get product prices and names
-    const productIds = items.map((item: any) => item.product_id);
+    // Get product info
+    const productIds = items.map((item: { product_id: string }) => item.product_id);
     const { data: products } = await supabase
         .from('products')
         .select('id, name, price')
         .in('id', productIds);
 
-    if (products) {
-        orderItems.forEach((orderItem) => {
-            const product = products.find((p) => p.id === orderItem.product_id);
-            if (product) {
-                orderItem.price = product.price;
-            }
-        });
+    if (!products) {
+        console.error('Error fetching products');
+        return;
     }
+
+    // Create order items
+    const orderItems = items.map((item: { product_id: string; quantity: number; size: string }) => {
+        const product = products.find((p) => p.id === item.product_id);
+        return {
+            order_id: order.id,
+            product_id: item.product_id,
+            product_name: product?.name || 'Producto',
+            product_price: product?.price || 0,
+            quantity: item.quantity,
+            size: item.size,
+        };
+    });
 
     // Insert order items
     const { error: itemsError } = await supabase
@@ -130,7 +153,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         return;
     }
 
-    console.log('Order created successfully:', order.id);
+    console.log('Order created successfully via webhook:', order.id);
 
     // Update product stock
     for (const item of items) {
@@ -149,24 +172,19 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     }
 
     // Send order confirmation email
-    if (products) {
-        const emailItems = orderItems.map((orderItem) => {
-            const product = products.find((p) => p.id === orderItem.product_id);
-            return {
-                product_name: product?.name || 'Producto',
-                quantity: orderItem.quantity,
-                size: orderItem.size,
-                price: orderItem.price,
-            };
-        });
+    const emailItems = orderItems.map((oi: { product_name: string; quantity: number; size: string; product_price: number }) => ({
+        product_name: oi.product_name,
+        quantity: oi.quantity,
+        size: oi.size,
+        price: oi.product_price,
+    }));
 
-        await sendOrderConfirmationEmail({
-            customerEmail,
-            customerName,
-            orderId: order.id,
-            items: emailItems,
-            total: order.total,
-            orderDate: order.created_at,
-        });
-    }
+    await sendOrderConfirmationEmail({
+        customerEmail,
+        customerName,
+        orderId: order.id,
+        items: emailItems,
+        total: order.total,
+        orderDate: order.created_at,
+    });
 }

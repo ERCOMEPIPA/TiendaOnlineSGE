@@ -5,14 +5,24 @@ import PublicLayout from "../layouts/PublicLayout.astro";
 import { supabase } from "../lib/supabase";
 import { sendWelcomeEmail } from "../lib/email";
 
-// Check if already logged in
+// Handle redirect first, before any response is sent
 const accessToken = Astro.cookies.get("user-access-token")?.value;
+let shouldClearCookies = false;
+
 if (accessToken) {
-    const { data: { user } } = await supabase.auth.getUser(accessToken);
-    if (user) {
+    const { data, error } = await supabase.auth.getUser(accessToken);
+    if (data?.user && !error) {
         const redirectTo = Astro.url.searchParams.get("redirect") || "/";
         return Astro.redirect(redirectTo);
+    } else {
+        shouldClearCookies = true;
     }
+}
+
+// Clear invalid cookies before any rendering
+if (shouldClearCookies) {
+    Astro.cookies.delete("user-access-token", { path: "/" });
+    Astro.cookies.delete("user-refresh-token", { path: "/" });
 }
 
 // Handle registration form submission
@@ -44,7 +54,8 @@ if (Astro.request.method === "POST") {
 
         if (authError) {
             if (authError.message.includes("already registered")) {
-                error = "Este email ya está registrado. Intenta iniciar sesión.";
+                error =
+                    "Este email ya está registrado. Intenta iniciar sesión.";
             } else {
                 error = authError.message;
             }
@@ -55,26 +66,36 @@ if (Astro.request.method === "POST") {
             // Check if email confirmation is required
             if (data.session) {
                 // Auto-login if no confirmation required
-                Astro.cookies.set("user-access-token", data.session.access_token, {
-                    path: "/",
-                    httpOnly: true,
-                    secure: import.meta.env.PROD,
-                    sameSite: "lax",
-                    maxAge: 60 * 60 * 24,
-                });
+                Astro.cookies.set(
+                    "user-access-token",
+                    data.session.access_token,
+                    {
+                        path: "/",
+                        httpOnly: true,
+                        secure: import.meta.env.PROD,
+                        sameSite: "lax",
+                        maxAge: 60 * 60 * 24,
+                    },
+                );
 
-                Astro.cookies.set("user-refresh-token", data.session.refresh_token, {
-                    path: "/",
-                    httpOnly: true,
-                    secure: import.meta.env.PROD,
-                    sameSite: "lax",
-                    maxAge: 60 * 60 * 24 * 30,
-                });
+                Astro.cookies.set(
+                    "user-refresh-token",
+                    data.session.refresh_token,
+                    {
+                        path: "/",
+                        httpOnly: true,
+                        secure: import.meta.env.PROD,
+                        sameSite: "lax",
+                        maxAge: 60 * 60 * 24 * 30,
+                    },
+                );
 
-                const redirectTo = Astro.url.searchParams.get("redirect") || "/";
+                const redirectTo =
+                    Astro.url.searchParams.get("redirect") || "/";
                 return Astro.redirect(redirectTo);
             } else {
-                success = "Cuenta creada exitosamente. Por favor, verifica tu email antes de iniciar sesión.";
+                success =
+                    "Cuenta creada exitosamente. Por favor, verifica tu email antes de iniciar sesión.";
             }
         }
     }
@@ -85,28 +106,37 @@ if (Astro.request.method === "POST") {
     <div class="min-h-[80vh] flex items-center justify-center px-4 py-12">
         <div class="max-w-md w-full">
             <div class="bg-white rounded-xl shadow-lg p-8">
-                <h1 class="text-3xl font-serif font-bold text-carbon-900 mb-2 text-center">
+                <h1
+                    class="text-3xl font-serif font-bold text-carbon-900 mb-2 text-center"
+                >
                     Crear Cuenta
                 </h1>
                 <p class="text-carbon-500 text-center mb-8">
                     Regístrate para realizar tus compras
                 </p>
 
-                {error && (
-                    <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                        <p class="text-red-700 text-sm">{error}</p>
-                    </div>
-                )}
+                {
+                    error && (
+                        <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                            <p class="text-red-700 text-sm">{error}</p>
+                        </div>
+                    )
+                }
 
-                {success && (
-                    <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                        <p class="text-green-700 text-sm">{success}</p>
-                    </div>
-                )}
+                {
+                    success && (
+                        <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                            <p class="text-green-700 text-sm">{success}</p>
+                        </div>
+                    )
+                }
 
                 <form method="POST" class="space-y-6">
                     <div>
-                        <label for="name" class="block text-sm font-medium text-carbon-700 mb-2">
+                        <label
+                            for="name"
+                            class="block text-sm font-medium text-carbon-700 mb-2"
+                        >
                             Nombre completo
                         </label>
                         <input
@@ -120,7 +150,10 @@ if (Astro.request.method === "POST") {
                     </div>
 
                     <div>
-                        <label for="email" class="block text-sm font-medium text-carbon-700 mb-2">
+                        <label
+                            for="email"
+                            class="block text-sm font-medium text-carbon-700 mb-2"
+                        >
                             Email
                         </label>
                         <input
@@ -134,7 +167,10 @@ if (Astro.request.method === "POST") {
                     </div>
 
                     <div>
-                        <label for="password" class="block text-sm font-medium text-carbon-700 mb-2">
+                        <label
+                            for="password"
+                            class="block text-sm font-medium text-carbon-700 mb-2"
+                        >
                             Contraseña
                         </label>
                         <input
@@ -149,7 +185,10 @@ if (Astro.request.method === "POST") {
                     </div>
 
                     <div>
-                        <label for="confirm-password" class="block text-sm font-medium text-carbon-700 mb-2">
+                        <label
+                            for="confirm-password"
+                            class="block text-sm font-medium text-carbon-700 mb-2"
+                        >
                             Confirmar contraseña
                         </label>
                         <input

@@ -2,9 +2,18 @@ import { defineMiddleware } from 'astro:middleware';
 import { supabase } from './lib/supabase';
 
 export const onRequest = defineMiddleware(async (context, next) => {
-    // Only protect /admin routes (except login)
-    if (context.url.pathname.startsWith('/admin') &&
-        !context.url.pathname.startsWith('/admin/login')) {
+    const pathname = context.url.pathname;
+
+    // Skip middleware for public routes
+    const publicRoutes = ['/login', '/registro', '/api/', '/_image'];
+    const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
+
+    if (isPublicRoute) {
+        return next();
+    }
+
+    // Only protect /admin routes (except admin login)
+    if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login')) {
 
         // Get session from cookies
         const accessToken = context.cookies.get('sb-access-token')?.value;
@@ -15,38 +24,45 @@ export const onRequest = defineMiddleware(async (context, next) => {
             return context.redirect('/admin/login');
         }
 
-        // Verify the session
-        const { data: { user }, error } = await supabase.auth.getUser(accessToken);
+        try {
+            // Verify the session
+            const { data: { user }, error } = await supabase.auth.getUser(accessToken);
 
-        if (error || !user) {
-            // Invalid session, try to refresh
-            const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession({
-                refresh_token: refreshToken
-            });
+            if (error || !user) {
+                // Invalid session, try to refresh
+                const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession({
+                    refresh_token: refreshToken
+                });
 
-            if (refreshError || !refreshData.session) {
-                // Refresh failed, clear cookies and redirect
-                context.cookies.delete('sb-access-token', { path: '/' });
-                context.cookies.delete('sb-refresh-token', { path: '/' });
-                return context.redirect('/admin/login');
+                if (refreshError || !refreshData.session) {
+                    // Refresh failed, clear cookies and redirect
+                    context.cookies.delete('sb-access-token', { path: '/' });
+                    context.cookies.delete('sb-refresh-token', { path: '/' });
+                    return context.redirect('/admin/login');
+                }
+
+                // Update cookies with new tokens
+                context.cookies.set('sb-access-token', refreshData.session.access_token, {
+                    path: '/',
+                    httpOnly: true,
+                    secure: import.meta.env.PROD,
+                    sameSite: 'lax',
+                    maxAge: 60 * 60 // 1 hour
+                });
+
+                context.cookies.set('sb-refresh-token', refreshData.session.refresh_token, {
+                    path: '/',
+                    httpOnly: true,
+                    secure: import.meta.env.PROD,
+                    sameSite: 'lax',
+                    maxAge: 60 * 60 * 24 * 7 // 1 week
+                });
             }
-
-            // Update cookies with new tokens
-            context.cookies.set('sb-access-token', refreshData.session.access_token, {
-                path: '/',
-                httpOnly: true,
-                secure: import.meta.env.PROD,
-                sameSite: 'lax',
-                maxAge: 60 * 60 // 1 hour
-            });
-
-            context.cookies.set('sb-refresh-token', refreshData.session.refresh_token, {
-                path: '/',
-                httpOnly: true,
-                secure: import.meta.env.PROD,
-                sameSite: 'lax',
-                maxAge: 60 * 60 * 24 * 7 // 1 week
-            });
+        } catch (e) {
+            // Error in auth check, redirect to login
+            context.cookies.delete('sb-access-token', { path: '/' });
+            context.cookies.delete('sb-refresh-token', { path: '/' });
+            return context.redirect('/admin/login');
         }
     }
 

@@ -3,8 +3,157 @@ export const prerender = false;
 
 import PublicLayout from "../../layouts/PublicLayout.astro";
 import Button from "../../components/ui/Button.astro";
+import { stripe } from "../../lib/stripe";
+import { supabase } from "../../lib/supabase";
+import { sendOrderConfirmationEmail } from "../../lib/email";
 
 const sessionId = Astro.url.searchParams.get("session_id");
+
+let orderError = "";
+let orderId = "";
+
+if (sessionId) {
+    try {
+        // Retrieve the Stripe session
+        const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+        if (session.payment_status === "paid") {
+            // Check if order already exists (to avoid duplicates on page refresh)
+            const { data: existingOrder } = await supabase
+                .from("orders")
+                .select("id")
+                .eq("stripe_session_id", sessionId)
+                .single();
+
+            if (!existingOrder) {
+                // Parse items from metadata
+                const items = JSON.parse(session.metadata?.items || "[]");
+                const userId = session.metadata?.user_id;
+
+                // Get customer details
+                const customerEmail =
+                    session.customer_details?.email ||
+                    session.metadata?.user_email ||
+                    "unknown@email.com";
+                const customerName =
+                    session.customer_details?.name || "Cliente";
+                const shippingAddress =
+                    session.customer_details?.address?.line1 || "N/A";
+                const shippingCity =
+                    session.customer_details?.address?.city || "N/A";
+                const shippingPostalCode =
+                    session.customer_details?.address?.postal_code || "N/A";
+
+                // Create order in database
+                const { data: order, error: orderDbError } = await supabase
+                    .from("orders")
+                    .insert({
+                        user_id: userId,
+                        customer_email: customerEmail,
+                        customer_name: customerName,
+                        shipping_address: shippingAddress,
+                        shipping_city: shippingCity,
+                        shipping_postal_code: shippingPostalCode,
+                        total: session.amount_total || 0,
+                        status: "pending",
+                        stripe_session_id: sessionId,
+                    })
+                    .select()
+                    .single();
+
+                if (orderDbError || !order) {
+                    console.error("Error creating order:", orderDbError);
+                    orderError = "Error al guardar el pedido";
+                } else {
+                    orderId = order.id;
+
+                    // Get products info
+                    const productIds = items.map(
+                        (item: any) => item.product_id,
+                    );
+                    const { data: products } = await supabase
+                        .from("products")
+                        .select("id, name, price")
+                        .in("id", productIds);
+
+                    if (products) {
+                        // Create order items
+                        const orderItems = items.map((item: any) => {
+                            const product = products.find(
+                                (p) => p.id === item.product_id,
+                            );
+                            return {
+                                order_id: order.id,
+                                product_id: item.product_id,
+                                product_name: product?.name || "Producto",
+                                product_price: product?.price || 0,
+                                quantity: item.quantity,
+                                size: item.size,
+                            };
+                        });
+
+                        await supabase.from("order_items").insert(orderItems);
+
+                        // Update product stock
+                        for (const item of items) {
+                            const { data: product } = await supabase
+                                .from("products")
+                                .select("stock")
+                                .eq("id", item.product_id)
+                                .single();
+
+                            if (product) {
+                                await supabase
+                                    .from("products")
+                                    .update({
+                                        stock: Math.max(
+                                            0,
+                                            product.stock - item.quantity,
+                                        ),
+                                    })
+                                    .eq("id", item.product_id);
+                            }
+                        }
+
+                        // Send order confirmation email
+                        const emailItems = orderItems.map((oi: any) => ({
+                            product_name: oi.product_name,
+                            quantity: oi.quantity,
+                            size: oi.size,
+                            price: oi.product_price,
+                        }));
+
+                        const emailResult = await sendOrderConfirmationEmail({
+                            customerEmail,
+                            customerName,
+                            orderId: order.id,
+                            items: emailItems,
+                            total: order.total,
+                            orderDate: order.created_at,
+                        });
+
+                        if (emailResult.success) {
+                            console.log(
+                                "Order confirmation email sent successfully",
+                            );
+                        } else {
+                            console.error(
+                                "Error sending email:",
+                                emailResult.error,
+                            );
+                        }
+                    }
+                }
+            } else {
+                // Order already exists, just show success
+                orderId = existingOrder.id;
+            }
+        }
+    } catch (error) {
+        console.error("Error processing order:", error);
+        orderError = "Error al procesar el pedido";
+    }
+}
 ---
 
 <PublicLayout
@@ -33,33 +182,62 @@ const sessionId = Astro.url.searchParams.get("session_id");
                 </div>
             </div>
 
-            <h1
-                class="text-3xl font-serif font-bold text-carbon-900 mb-4"
-            >
-                ¡Gracias por tu compra!
+            <h1 class="text-3xl font-serif font-bold text-carbon-900 mb-4">
+                ¡Pedido en marcha! 🚀
             </h1>
 
             <p class="text-carbon-600 mb-2">
-                Tu pedido ha sido procesado correctamente.
+                Tu pedido ha sido procesado correctamente y está en camino.
             </p>
 
             {
-                sessionId && (
-                    <p class="text-sm text-carbon-500 mb-8">
-                        Número de referencia: <code class="bg-carbon-100 px-2 py-1 rounded">{sessionId}</code>
+                orderId && (
+                    <p class="text-sm text-carbon-500 mb-4">
+                        Número de pedido:{" "}
+                        <code class="bg-carbon-100 px-2 py-1 rounded font-bold">
+                            {orderId.slice(0, 8).toUpperCase()}
+                        </code>
                     </p>
                 )
             }
 
-            <p class="text-carbon-600 mb-8">
-                Recibirás un email de confirmación con los detalles de tu
-                pedido en breve.
-            </p>
+            <div
+                class="bg-green-50 border border-green-200 rounded-lg p-4 mb-8"
+            >
+                <p
+                    class="text-green-800 flex items-center justify-center gap-2"
+                >
+                    <svg
+                        class="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                        ></path>
+                    </svg>
+                    <span
+                        >Te hemos enviado un <strong
+                            >email de confirmación</strong
+                        > con el resumen de tu pedido.</span
+                    >
+                </p>
+            </div>
+
+            {
+                orderError && (
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
+                        <p class="text-red-800">{orderError}</p>
+                    </div>
+                )
+            }
 
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button href="/" variant="primary">
-                    Volver al inicio
-                </Button>
+                <Button href="/" variant="primary"> Volver al inicio </Button>
                 <Button href="/productos" variant="secondary">
                     Seguir comprando
                 </Button>
