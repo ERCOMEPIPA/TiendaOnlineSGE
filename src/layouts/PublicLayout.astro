@@ -2,6 +2,8 @@
 import BaseLayout from "./BaseLayout.astro";
 import CartIcon from "../components/islands/CartIcon";
 import CartSlideOver from "../components/islands/CartSlideOver";
+import UserMenu from "../components/ui/UserMenu.astro";
+import { getUserSession } from "../lib/auth";
 
 interface Props {
     title: string;
@@ -9,6 +11,9 @@ interface Props {
 }
 
 const { title, description } = Astro.props;
+
+// Get user session for the header
+const userSession = await getUserSession(Astro.cookies);
 
 const navLinks = [
     { href: "/", label: "Inicio" },
@@ -80,6 +85,9 @@ const currentPath = Astro.url.pathname;
                     <!-- Cart -->
                     <CartIcon client:load />
 
+                    <!-- User Menu -->
+                    <UserMenu user={userSession?.user} />
+
                     <!-- Mobile menu button -->
                     <button
                         id="mobile-menu-btn"
@@ -142,7 +150,7 @@ const currentPath = Astro.url.pathname;
                         Fashion<span class="text-accent-gold">Store</span>
                     </span>
                     <p class="mt-4 text-navy-300 text-sm">
-                        Tu tienda de merch oficial de tus artistas favoritos.
+                        Tu tienda de merch personalizado de tus artistas favoritos.
                         Calidad premium, diseños exclusivos.
                     </p>
                 </div>

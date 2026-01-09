@@ -3,6 +3,14 @@ export const prerender = false; // SSR page
 
 import PublicLayout from "../layouts/PublicLayout.astro";
 import Button from "../components/ui/Button.astro";
+import { getUserSession } from "../lib/auth";
+
+// Check if user is logged in
+const userSession = await getUserSession(Astro.cookies);
+if (!userSession) {
+    // Redirect to login with return URL
+    return Astro.redirect(`/login?redirect=${encodeURIComponent('/carrito')}`);
+}
 ---
 
 <PublicLayout title="Carrito" description="Tu carrito de compras">
@@ -152,7 +160,7 @@ import Button from "../components/ui/Button.astro";
               </div>
             </div>
 
-            <button class="w-full mt-6 py-3 px-6 bg-navy-800 text-white font-semibold rounded-lg hover:bg-navy-900 transition-colors">
+            <button id="checkout-btn" class="w-full mt-6 py-3 px-6 bg-navy-800 text-white font-semibold rounded-lg hover:bg-navy-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
               Proceder al pago
             </button>
             
@@ -196,6 +204,46 @@ import Button from "../components/ui/Button.astro";
             clearCart();
             renderCart();
         });
+
+        // Checkout button handler
+        const checkoutBtn = document.getElementById("checkout-btn");
+        if (checkoutBtn) {
+            checkoutBtn.addEventListener("click", async () => {
+                checkoutBtn.textContent = "Procesando...";
+                checkoutBtn.setAttribute("disabled", "true");
+
+                try {
+                    const response = await fetch("/api/create-checkout-session", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            items: items,
+                        }),
+                    });
+
+                    const data = await response.json();
+
+                    if (data.error) {
+                        alert("Error: " + data.error);
+                        checkoutBtn.textContent = "Proceder al pago";
+                        checkoutBtn.removeAttribute("disabled");
+                        return;
+                    }
+
+                    // Redirect to Stripe Checkout
+                    if (data.url) {
+                        window.location.href = data.url;
+                    }
+                } catch (error) {
+                    console.error("Error:", error);
+                    alert("Error al procesar el pago. Por favor, intenta de nuevo.");
+                    checkoutBtn.textContent = "Proceder al pago";
+                    checkoutBtn.removeAttribute("disabled");
+                }
+            });
+        }
     }
 
     // Initial render

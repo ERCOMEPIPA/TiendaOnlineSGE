@@ -1,0 +1,75 @@
+---
+export const prerender = false;
+
+import PublicLayout from "../../layouts/PublicLayout.astro";
+import Button from "../../components/ui/Button.astro";
+
+const sessionId = Astro.url.searchParams.get("session_id");
+---
+
+<PublicLayout
+    title="Compra Exitosa"
+    description="Tu pedido ha sido procesado correctamente"
+>
+    <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div class="bg-white rounded-xl shadow-sm p-8 text-center">
+            <!-- Success Icon -->
+            <div class="mb-6">
+                <div
+                    class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto"
+                >
+                    <svg
+                        class="w-12 h-12 text-green-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <h1
+                class="text-3xl font-serif font-bold text-carbon-900 mb-4"
+            >
+                ¡Gracias por tu compra!
+            </h1>
+
+            <p class="text-carbon-600 mb-2">
+                Tu pedido ha sido procesado correctamente.
+            </p>
+
+            {
+                sessionId && (
+                    <p class="text-sm text-carbon-500 mb-8">
+                        Número de referencia: <code class="bg-carbon-100 px-2 py-1 rounded">{sessionId}</code>
+                    </p>
+                )
+            }
+
+            <p class="text-carbon-600 mb-8">
+                Recibirás un email de confirmación con los detalles de tu
+                pedido en breve.
+            </p>
+
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button href="/" variant="primary">
+                    Volver al inicio
+                </Button>
+                <Button href="/productos" variant="secondary">
+                    Seguir comprando
+                </Button>
+            </div>
+        </div>
+    </div>
+</PublicLayout>
+
+<script>
+    // Clear cart after successful purchase
+    import { clearCart } from "../../stores/cart";
+    clearCart();
+</script>
