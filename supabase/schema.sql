@@ -32,6 +32,34 @@ CREATE TABLE IF NOT EXISTS products (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Orders table
+CREATE TABLE IF NOT EXISTS orders (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  customer_email TEXT NOT NULL,
+  customer_name TEXT NOT NULL,
+  customer_phone TEXT,
+  shipping_address TEXT NOT NULL,
+  shipping_city TEXT NOT NULL,
+  shipping_postal_code TEXT NOT NULL,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'shipped', 'delivered', 'cancelled')),
+  total INTEGER NOT NULL, -- Total in cents
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Order items table
+CREATE TABLE IF NOT EXISTS order_items (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_id UUID REFERENCES orders(id) ON DELETE CASCADE,
+  product_id UUID REFERENCES products(id) ON DELETE SET NULL,
+  product_name TEXT NOT NULL,
+  product_price INTEGER NOT NULL,
+  quantity INTEGER NOT NULL,
+  size TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- =====================================================
 -- 2. INDEXES
 -- =====================================================

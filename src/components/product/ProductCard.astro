@@ -57,7 +57,7 @@ const { product } = Astro.props;
 
         {/* Out of stock overlay */}
         {
-            product.stock <= 0 && (
+            product.stock < 1 && (
                 <div class="absolute inset-0 bg-carbon-900/60 flex items-center justify-center">
                     <span class="bg-white text-carbon-800 px-4 py-2 rounded-lg font-semibold">
                         Agotado
@@ -68,7 +68,7 @@ const { product } = Astro.props;
 
         {/* Low stock indicator */}
         {
-            product.stock > 0 && product.stock <= 5 && (
+            product.stock > 0 && product.stock < 6 && (
                 <span
                     class="absolute top-3 right-3 bg-accent-leather text-white text-xs font-bold 
                    px-2 py-1 rounded-full"

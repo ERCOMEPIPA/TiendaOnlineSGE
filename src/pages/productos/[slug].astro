@@ -1,26 +1,12 @@
 ---
+export const prerender = false;
+
 import PublicLayout from "../../layouts/PublicLayout.astro";
 import ProductGallery from "../../components/product/ProductGallery.astro";
 import ProductCard from "../../components/product/ProductCard.astro";
 import AddToCartButton from "../../components/islands/AddToCartButton";
 import { supabase, formatPrice } from "../../lib/supabase";
 import type { Product } from "../../lib/supabase";
-
-export async function getStaticPaths() {
-    const { data: products } = await supabase.from("products").select("slug");
-
-    // If no products in DB, use mock data for demo
-    const slugs = products?.length
-        ? products.map((p) => ({ params: { slug: p.slug } }))
-        : [
-              { params: { slug: "camiseta-tour-2024-bad-bunny" } },
-              { params: { slug: "sudadera-midnight-taylor-swift" } },
-              { params: { slug: "gorra-logo-drake" } },
-              { params: { slug: "hoodie-astroworld-travis-scott" } },
-          ];
-
-    return slugs;
-}
 
 const { slug } = Astro.params;
 
@@ -61,7 +47,7 @@ const mockProduct: Product = {
 
 const currentProduct = product || mockProduct;
 
-// Fetch related products
+// Fetch related products (only real products from DB, exclude current)
 const { data: relatedProducts } = await supabase
     .from("products")
     .select("*")
@@ -69,28 +55,8 @@ const { data: relatedProducts } = await supabase
     .eq("artist", currentProduct.artist)
     .limit(4);
 
-// Mock related products
-const mockRelated: Product[] = [
-    {
-        id: "5",
-        name: "Hoodie Tour 2024 - Bad Bunny",
-        slug: "hoodie-tour-2024-bad-bunny",
-        description: "Sudadera oficial",
-        price: 6500,
-        stock: 10,
-        sizes: ["M", "L", "XL"],
-        category_id: null,
-        images: [
-            "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400",
-        ],
-        featured: false,
-        artist: "Bad Bunny",
-        created_at: "",
-        updated_at: "",
-    },
-];
-
-const related = relatedProducts?.length ? relatedProducts : mockRelated;
+// Only use real products, no mock data
+const related = relatedProducts || [];
 ---
 
 <PublicLayout
@@ -105,7 +71,8 @@ const related = relatedProducts?.length ? relatedProducts : mockRelated;
                 <li>/</li>
                 <li>
                     <a href="/productos" class="hover:text-navy-800"
-                        >Productos</a>
+                        >Productos</a
+                    >
                 </li>
                 <li>/</li>
                 <li class="text-carbon-800 font-medium truncate max-w-xs">

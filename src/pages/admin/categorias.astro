@@ -1,0 +1,183 @@
+---
+export const prerender = false;
+
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import Button from "../../components/ui/Button.astro";
+import { supabase } from "../../lib/supabase";
+import { slugify } from "../../lib/utils";
+
+// Handle form actions
+let message = "";
+let messageType: "success" | "error" = "success";
+
+if (Astro.request.method === "POST") {
+    const formData = await Astro.request.formData();
+    const action = formData.get("action") as string;
+
+    if (action === "create") {
+        const name = formData.get("name") as string;
+        if (name) {
+            const { error } = await supabase.from("categories").insert({
+                name,
+                slug: slugify(name),
+            });
+            if (error) {
+                message = "Error al crear la categoría";
+                messageType = "error";
+            } else {
+                message = "Categoría creada correctamente";
+            }
+        }
+    } else if (action === "delete") {
+        const id = formData.get("id") as string;
+        const { error } = await supabase
+            .from("categories")
+            .delete()
+            .eq("id", id);
+        if (error) {
+            message = "Error al eliminar la categoría";
+            messageType = "error";
+        } else {
+            message = "Categoría eliminada";
+        }
+    } else if (action === "update") {
+        const id = formData.get("id") as string;
+        const name = formData.get("name") as string;
+        const { error } = await supabase
+            .from("categories")
+            .update({ name, slug: slugify(name) })
+            .eq("id", id);
+        if (error) {
+            message = "Error al actualizar la categoría";
+            messageType = "error";
+        } else {
+            message = "Categoría actualizada";
+        }
+    }
+}
+
+// Fetch categories
+const { data: categories } = await supabase
+    .from("categories")
+    .select("*, products:products(count)")
+    .order("name");
+---
+
+<AdminLayout title="Categorías">
+    <div class="max-w-4xl">
+        {/* Message */}
+        {
+            message && (
+                <div
+                    class={`mb-6 p-4 rounded-lg ${
+                        messageType === "success"
+                            ? "bg-green-50 text-green-700 border border-green-200"
+                            : "bg-red-50 text-red-700 border border-red-200"
+                    }`}
+                >
+                    {message}
+                </div>
+            )
+        }
+
+        {/* Create Form */}
+        <div class="bg-white rounded-xl p-6 shadow-sm mb-6">
+            <h2 class="text-lg font-semibold text-carbon-900 mb-4">
+                Nueva categoría
+            </h2>
+            <form method="POST" class="flex gap-4">
+                <input type="hidden" name="action" value="create" />
+                <input
+                    type="text"
+                    name="name"
+                    required
+                    placeholder="Nombre de la categoría"
+                    class="flex-1 px-4 py-3 border border-carbon-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-500"
+                />
+                <Button type="submit" variant="primary">Crear categoría</Button>
+            </form>
+        </div>
+
+        {/* Categories List */}
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-carbon-100">
+                <h2 class="text-lg font-semibold text-carbon-900">
+                    Categorías existentes
+                </h2>
+            </div>
+
+            {
+                categories && categories.length > 0 ? (
+                    <div class="divide-y divide-carbon-100">
+                        {categories.map((cat) => (
+                            <div class="flex items-center gap-4 p-4 hover:bg-cream-50">
+                                <div class="flex-1">
+                                    <p class="font-medium text-carbon-800">
+                                        {cat.name}
+                                    </p>
+                                    <p class="text-sm text-carbon-500">
+                                        Slug: {cat.slug}
+                                    </p>
+                                </div>
+                                <span class="text-sm text-carbon-500 bg-carbon-100 px-2 py-1 rounded">
+                                    {cat.products?.[0]?.count || 0} productos
+                                </span>
+                                <form method="POST" class="flex gap-2">
+                                    <input
+                                        type="hidden"
+                                        name="action"
+                                        value="delete"
+                                    />
+                                    <input
+                                        type="hidden"
+                                        name="id"
+                                        value={cat.id}
+                                    />
+                                    <button
+                                        type="submit"
+                                        class="text-red-500 hover:text-red-700 p-2"
+                                        onclick="return confirm('¿Eliminar esta categoría?')"
+                                    >
+                                        <svg
+                                            class="w-5 h-5"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                            />
+                                        </svg>
+                                    </button>
+                                </form>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div class="p-8 text-center text-carbon-500">
+                        <svg
+                            class="w-12 h-12 mx-auto text-carbon-300 mb-3"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                            />
+                        </svg>
+                        <p>No hay categorías creadas</p>
+                        <p class="text-sm mt-1">
+                            Crea tu primera categoría arriba
+                        </p>
+                    </div>
+                )
+            }
+        </div>
+    </div>
+</AdminLayout>
