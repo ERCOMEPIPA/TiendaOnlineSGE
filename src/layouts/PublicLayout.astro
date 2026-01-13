@@ -2,6 +2,7 @@
 import BaseLayout from "./BaseLayout.astro";
 import CartIcon from "../components/islands/CartIcon";
 import CartSlideOver from "../components/islands/CartSlideOver";
+import SearchButton from "../components/islands/SearchButton";
 import UserMenu from "../components/ui/UserMenu.astro";
 import { getUserSession } from "../lib/auth";
 
@@ -64,23 +65,7 @@ const currentPath = Astro.url.pathname;
                 <!-- Actions -->
                 <div class="flex items-center gap-4">
                     <!-- Search -->
-                    <button
-                        class="p-2 text-carbon-600 hover:text-navy-800 transition-colors"
-                    >
-                        <svg
-                            class="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                            ></path>
-                        </svg>
-                    </button>
+                    <SearchButton client:load />
 
                     <!-- Cart -->
                     <CartIcon client:load />
@@ -150,8 +135,8 @@ const currentPath = Astro.url.pathname;
                         Fashion<span class="text-accent-gold">Store</span>
                     </span>
                     <p class="mt-4 text-navy-300 text-sm">
-                        Tu tienda de merch personalizado de tus artistas favoritos.
-                        Calidad premium, diseños exclusivos.
+                        Tu tienda de merch personalizado de tus artistas
+                        favoritos. Calidad premium, diseños exclusivos.
                     </p>
                 </div>
 
@@ -163,25 +148,29 @@ const currentPath = Astro.url.pathname;
                             <a
                                 href="/productos"
                                 class="hover:text-white transition-colors"
-                                >Todos los productos</a>
+                                >Todos los productos</a
+                            >
                         </li>
                         <li>
                             <a
                                 href="/categoria/camisetas"
                                 class="hover:text-white transition-colors"
-                                >Camisetas</a>
+                                >Camisetas</a
+                            >
                         </li>
                         <li>
                             <a
                                 href="/categoria/sudaderas"
                                 class="hover:text-white transition-colors"
-                                >Sudaderas</a>
+                                >Sudaderas</a
+                            >
                         </li>
                         <li>
                             <a
                                 href="/categoria/accesorios"
                                 class="hover:text-white transition-colors"
-                                >Accesorios</a>
+                                >Accesorios</a
+                            >
                         </li>
                     </ul>
                 </div>
@@ -193,25 +182,29 @@ const currentPath = Astro.url.pathname;
                             <a
                                 href="#"
                                 class="hover:text-white transition-colors"
-                                >Contacto</a>
+                                >Contacto</a
+                            >
                         </li>
                         <li>
                             <a
                                 href="#"
                                 class="hover:text-white transition-colors"
-                                >Envíos</a>
+                                >Envíos</a
+                            >
                         </li>
                         <li>
                             <a
                                 href="#"
                                 class="hover:text-white transition-colors"
-                                >Devoluciones</a>
+                                >Devoluciones</a
+                            >
                         </li>
                         <li>
                             <a
                                 href="#"
                                 class="hover:text-white transition-colors"
-                                >FAQ</a>
+                                >FAQ</a
+                            >
                         </li>
                     </ul>
                 </div>
@@ -223,19 +216,22 @@ const currentPath = Astro.url.pathname;
                             <a
                                 href="#"
                                 class="hover:text-white transition-colors"
-                                >Privacidad</a>
+                                >Privacidad</a
+                            >
                         </li>
                         <li>
                             <a
                                 href="#"
                                 class="hover:text-white transition-colors"
-                                >Términos</a>
+                                >Términos</a
+                            >
                         </li>
                         <li>
                             <a
                                 href="#"
                                 class="hover:text-white transition-colors"
-                                >Cookies</a>
+                                >Cookies</a
+                            >
                         </li>
                     </ul>
                 </div>
