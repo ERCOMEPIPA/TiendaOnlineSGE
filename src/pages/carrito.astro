@@ -45,6 +45,7 @@ if (!userSession) {
   // Coupon state
   let appliedCoupon: any = null;
   let currentDiscount = 0;
+  let cartTotalValue = 0; // Store cart total for coupon validation
 
   function renderCart() {
     const container = document.getElementById("cart-page-content");
@@ -52,6 +53,7 @@ if (!userSession) {
 
     const items = $cartItemsArray.get();
     const total = $cartTotal.get();
+    cartTotalValue = total; // Update global variable for coupon validation
 
     if (items.length === 0) {
       container.innerHTML = `
@@ -327,7 +329,7 @@ if (!userSession) {
           const response = await fetch("/api/validate-coupon", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ code, cartTotal: total }),
+            body: JSON.stringify({ code, cartTotal: cartTotalValue }),
           });
 
           const data = await response.json();
@@ -396,5 +398,120 @@ if (!userSession) {
   // Re-render when cart changes
   $cartItemsArray.subscribe(() => {
     renderCart();
+  });
+
+  // Global event delegation for coupon handlers (outside renderCart to avoid duplicates)
+  document.addEventListener("click", async (e) => {
+    const target = e.target as HTMLElement;
+
+    // Apply coupon button
+    if (
+      target.id === "apply-coupon-btn" ||
+      target.closest("#apply-coupon-btn")
+    ) {
+      const couponInput = document.getElementById(
+        "coupon-input",
+      ) as HTMLInputElement;
+      const couponMessage = document.getElementById("coupon-message");
+
+      if (!couponInput) return;
+
+      const code = couponInput.value.trim().toUpperCase();
+      console.log("Applying coupon:", code, "Cart total:", cartTotalValue);
+
+      if (!code) {
+        if (couponMessage) {
+          couponMessage.textContent = "Introduce un código";
+          couponMessage.className = "text-sm mt-2 text-red-600";
+          couponMessage.classList.remove("hidden");
+        }
+        return;
+      }
+
+      const btn = document.getElementById("apply-coupon-btn");
+      if (btn) btn.textContent = "...";
+
+      try {
+        const response = await fetch("/api/validate-coupon", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code, cartTotal: cartTotalValue }),
+        });
+
+        const data = await response.json();
+        console.log("Coupon response:", data);
+
+        if (data.valid) {
+          appliedCoupon = data.coupon;
+          currentDiscount = data.discountAmount;
+
+          const couponContainer = document.getElementById("coupon-container");
+          const couponApplied = document.getElementById("coupon-applied");
+          const couponCodeDisplay = document.getElementById(
+            "coupon-code-display",
+          );
+          const couponDescDisplay = document.getElementById(
+            "coupon-desc-display",
+          );
+          const discountRow = document.getElementById("discount-row");
+          const discountAmountEl = document.getElementById("discount-amount");
+          const finalTotalEl = document.getElementById("final-total");
+
+          if (couponContainer) couponContainer.classList.add("hidden");
+          if (couponApplied) couponApplied.classList.remove("hidden");
+          if (couponCodeDisplay)
+            couponCodeDisplay.textContent = data.coupon.code;
+          if (couponDescDisplay) couponDescDisplay.textContent = data.message;
+          if (discountRow) discountRow.classList.remove("hidden");
+          if (discountAmountEl)
+            discountAmountEl.textContent = "-" + formatPrice(currentDiscount);
+
+          const shipping = cartTotalValue >= 5000 ? 0 : 495;
+          const newTotal = cartTotalValue - currentDiscount + shipping;
+          if (finalTotalEl) finalTotalEl.textContent = formatPrice(newTotal);
+        } else {
+          if (couponMessage) {
+            couponMessage.textContent = data.error || "Cupón no válido";
+            couponMessage.className = "text-sm mt-2 text-red-600";
+            couponMessage.classList.remove("hidden");
+          }
+        }
+      } catch (error) {
+        console.error("Coupon error:", error);
+        if (couponMessage) {
+          couponMessage.textContent = "Error al validar el cupón";
+          couponMessage.className = "text-sm mt-2 text-red-600";
+          couponMessage.classList.remove("hidden");
+        }
+      } finally {
+        if (btn) btn.textContent = "Aplicar";
+      }
+    }
+
+    // Remove coupon button
+    if (
+      target.id === "remove-coupon-btn" ||
+      target.closest("#remove-coupon-btn")
+    ) {
+      appliedCoupon = null;
+      currentDiscount = 0;
+
+      const couponContainer = document.getElementById("coupon-container");
+      const couponApplied = document.getElementById("coupon-applied");
+      const couponInput = document.getElementById(
+        "coupon-input",
+      ) as HTMLInputElement;
+      const discountRow = document.getElementById("discount-row");
+      const finalTotalEl = document.getElementById("final-total");
+
+      if (couponContainer) couponContainer.classList.remove("hidden");
+      if (couponApplied) couponApplied.classList.add("hidden");
+      if (couponInput) couponInput.value = "";
+      if (discountRow) discountRow.classList.add("hidden");
+
+      const shipping = cartTotalValue >= 5000 ? 0 : 495;
+      if (finalTotalEl)
+        finalTotalEl.textContent = formatPrice(cartTotalValue + shipping);
+    }
   });
 </script>

@@ -3,7 +3,29 @@ import { supabase } from '../../lib/supabase';
 
 export const POST: APIRoute = async ({ request }) => {
     try {
-        const { code, cartTotal } = await request.json();
+        // Safely parse the request body
+        let code = '';
+        let cartTotal = 0;
+
+        try {
+            const body = await request.text();
+            console.log('=== RAW REQUEST BODY ===', body);
+
+            if (body) {
+                const parsed = JSON.parse(body);
+                code = parsed.code || '';
+                cartTotal = parsed.cartTotal || 0;
+            }
+        } catch (parseError) {
+            console.error('Error parsing body:', parseError);
+            return new Response(JSON.stringify({
+                valid: false,
+                error: 'Error al procesar la solicitud'
+            }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
 
         if (!code) {
             return new Response(JSON.stringify({
@@ -16,6 +38,10 @@ export const POST: APIRoute = async ({ request }) => {
         }
 
         // Find the coupon
+        console.log('=== VALIDATING COUPON ===');
+        console.log('Code:', code.toUpperCase());
+        console.log('Cart Total:', cartTotal);
+
         const { data: coupon, error } = await supabase
             .from('coupons')
             .select('*')
@@ -23,7 +49,11 @@ export const POST: APIRoute = async ({ request }) => {
             .eq('is_active', true)
             .single();
 
+        console.log('Query result - coupon:', coupon);
+        console.log('Query result - error:', error);
+
         if (error || !coupon) {
+            console.log('Coupon not found or error:', error?.message);
             return new Response(JSON.stringify({
                 valid: false,
                 error: 'Cupón no válido o expirado'
@@ -105,11 +135,15 @@ export const POST: APIRoute = async ({ request }) => {
             headers: { 'Content-Type': 'application/json' }
         });
 
-    } catch (error) {
-        console.error('Coupon validation error:', error);
+    } catch (error: any) {
+        console.error('=== COUPON VALIDATION ERROR ===');
+        console.error('Error type:', typeof error);
+        console.error('Error message:', error?.message);
+        console.error('Error stack:', error?.stack);
+        console.error('Full error:', JSON.stringify(error, null, 2));
         return new Response(JSON.stringify({
             valid: false,
-            error: 'Error al validar el cupón'
+            error: 'Error al validar el cupón: ' + (error?.message || 'Error desconocido')
         }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' }
