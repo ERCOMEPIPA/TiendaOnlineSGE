@@ -175,7 +175,7 @@ RESEND_API_KEY=               # ¿Configurado?
 | Registro y login | ⏳ Pendiente verificar |
 | Funcionalidad de filtros | ⏳ Pendiente verificar |
 | Panel de administración | ⏳ Pendiente verificar |
-| Emails de confirmación | ⏳ Pendiente verificar |
+| Emails de confirmación | ✅ Funcionando |
 | Responsive design | ⏳ Pendiente verificar |
 
 ---

@@ -20,7 +20,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
     const { customerEmail, customerName, orderId, items, total, orderDate } = data;
 
     // Format items for email
-    const itemsList = items.map(item => 
+    const itemsList = items.map(item =>
         `- ${item.product_name} (Talla: ${item.size}) x${item.quantity} - ${formatPrice(item.price * item.quantity)}`
     ).join('\n');
 
@@ -56,13 +56,13 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
             
             <div class="order-details">
                 <p><strong>Número de pedido:</strong> ${orderId}</p>
-                <p><strong>Fecha:</strong> ${new Date(orderDate).toLocaleDateString('es-ES', { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                })}</p>
+                <p><strong>Fecha:</strong> ${new Date(orderDate).toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    })}</p>
             </div>
             
             <h3>Artículos pedidos:</h3>
@@ -114,6 +114,11 @@ FashionStore
     `;
 
     try {
+        console.log('=== SENDING ORDER CONFIRMATION EMAIL ===');
+        console.log('To:', customerEmail);
+        console.log('Order ID:', orderId);
+        console.log('API Key configured:', import.meta.env.RESEND_API_KEY ? 'Yes (starts with ' + import.meta.env.RESEND_API_KEY.substring(0, 10) + '...)' : 'NO - MISSING!');
+
         const { data: emailData, error } = await resend.emails.send({
             from: 'FashionStore <onboarding@resend.dev>', // Cambiar a tu dominio verificado
             to: [customerEmail],
@@ -123,14 +128,17 @@ FashionStore
         });
 
         if (error) {
-            console.error('Error sending order confirmation email:', error);
+            console.error('=== EMAIL SEND ERROR ===');
+            console.error('Error details:', JSON.stringify(error, null, 2));
             return { success: false, error };
         }
 
-        console.log('Order confirmation email sent successfully:', emailData);
+        console.log('=== EMAIL SENT SUCCESSFULLY ===');
+        console.log('Response:', JSON.stringify(emailData, null, 2));
         return { success: true, data: emailData };
     } catch (error) {
-        console.error('Error sending order confirmation email:', error);
+        console.error('=== EMAIL EXCEPTION ===');
+        console.error('Exception:', error);
         return { success: false, error };
     }
 }
