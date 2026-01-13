@@ -12,21 +12,39 @@ if (!userSession?.user) {
     return Astro.redirect("/login?redirect=/mis-pedidos");
 }
 
-// Fetch user's orders
-const { data: orders, error } = await supabase
-    .from("orders")
-    .select(`
-        *,
-        order_items (
-            id,
-            product_name,
-            product_price,
-            quantity,
-            size
-        )
-    `)
-    .eq("user_id", userSession.user.id)
-    .order("created_at", { ascending: false });
+// Fetch user's orders by email
+const userEmail = userSession.user.email;
+
+let orders: any[] = [];
+let errorMessage = "";
+
+try {
+    // First, get orders by customer email
+    const { data: ordersData, error: ordersError } = await supabase
+        .from("orders")
+        .select("*")
+        .eq("customer_email", userEmail)
+        .order("created_at", { ascending: false });
+
+    if (ordersError) {
+        console.error("Error fetching orders:", ordersError);
+        errorMessage = ordersError.message;
+    } else if (ordersData && ordersData.length > 0) {
+        // Now get order items for each order
+        for (const order of ordersData) {
+            const { data: items } = await supabase
+                .from("order_items")
+                .select("*")
+                .eq("order_id", order.id);
+            
+            order.order_items = items || [];
+        }
+        orders = ordersData;
+    }
+} catch (e: any) {
+    console.error("Exception fetching orders:", e);
+    errorMessage = e.message || "Error desconocido";
+}
 
 const formatPrice = (cents: number) => {
     return new Intl.NumberFormat("es-ES", {
@@ -67,9 +85,9 @@ const getStatusBadge = (status: string) => {
             </p>
         </div>
 
-        {error && (
+        {errorMessage && (
             <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                <p class="text-red-800">Error al cargar los pedidos</p>
+                <p class="text-red-800">Error al cargar los pedidos: {errorMessage}</p>
             </div>
         )}
 
