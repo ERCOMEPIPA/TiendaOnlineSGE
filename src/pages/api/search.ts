@@ -1,8 +1,13 @@
 import type { APIRoute } from 'astro';
 import { supabase } from '../../lib/supabase';
 
+export const prerender = false;
+
 export const GET: APIRoute = async ({ url }) => {
     const query = url.searchParams.get('q')?.trim() || '';
+
+    console.log('=== SEARCH REQUEST ===');
+    console.log('Query:', query);
 
     if (query.length < 2) {
         return new Response(JSON.stringify({ products: [] }), {
@@ -13,11 +18,17 @@ export const GET: APIRoute = async ({ url }) => {
 
     try {
         // Search by name or artist (case insensitive)
+        // Using ilike for pattern matching
+        const searchPattern = `%${query}%`;
+
         const { data: products, error } = await supabase
             .from('products')
             .select('id, name, slug, price, images, artist')
-            .or(`name.ilike.%${query}%,artist.ilike.%${query}%`)
+            .or(`name.ilike.${searchPattern},artist.ilike.${searchPattern}`)
             .limit(10);
+
+        console.log('Search results:', products);
+        console.log('Search error:', error);
 
         if (error) {
             console.error('Search error:', error);

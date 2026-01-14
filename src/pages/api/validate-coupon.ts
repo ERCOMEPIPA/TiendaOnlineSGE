@@ -1,31 +1,18 @@
 import type { APIRoute } from 'astro';
 import { supabase } from '../../lib/supabase';
 
+export const prerender = false;
+
 export const POST: APIRoute = async ({ request }) => {
     try {
-        // Safely parse the request body
-        let code = '';
-        let cartTotal = 0;
+        // Parse request body
+        const body = await request.json();
+        const code = body.code?.trim().toUpperCase() || '';
+        const cartTotal = body.cartTotal || 0;
 
-        try {
-            const body = await request.text();
-            console.log('=== RAW REQUEST BODY ===', body);
-
-            if (body) {
-                const parsed = JSON.parse(body);
-                code = parsed.code || '';
-                cartTotal = parsed.cartTotal || 0;
-            }
-        } catch (parseError) {
-            console.error('Error parsing body:', parseError);
-            return new Response(JSON.stringify({
-                valid: false,
-                error: 'Error al procesar la solicitud'
-            }), {
-                status: 400,
-                headers: { 'Content-Type': 'application/json' }
-            });
-        }
+        console.log('=== COUPON VALIDATION REQUEST ===');
+        console.log('Code:', code);
+        console.log('Cart Total:', cartTotal);
 
         if (!code) {
             return new Response(JSON.stringify({
@@ -38,14 +25,10 @@ export const POST: APIRoute = async ({ request }) => {
         }
 
         // Find the coupon
-        console.log('=== VALIDATING COUPON ===');
-        console.log('Code:', code.toUpperCase());
-        console.log('Cart Total:', cartTotal);
-
         const { data: coupon, error } = await supabase
             .from('coupons')
             .select('*')
-            .eq('code', code.toUpperCase())
+            .eq('code', code)
             .eq('is_active', true)
             .single();
 

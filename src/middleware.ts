@@ -12,7 +12,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
         return next();
     }
 
-    // Only protect /admin routes (except admin login)
+    // Handle admin routes
     if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login')) {
 
         // Get session from cookies
@@ -63,6 +63,51 @@ export const onRequest = defineMiddleware(async (context, next) => {
             context.cookies.delete('sb-access-token', { path: '/' });
             context.cookies.delete('sb-refresh-token', { path: '/' });
             return context.redirect('/admin/login');
+        }
+    } else {
+        // Handle regular user routes - refresh tokens if needed
+        const accessToken = context.cookies.get('user-access-token')?.value;
+        const refreshToken = context.cookies.get('user-refresh-token')?.value;
+
+        if (accessToken && refreshToken) {
+            try {
+                // Verify the session
+                const { data: { user }, error } = await supabase.auth.getUser(accessToken);
+
+                if (error || !user) {
+                    // Invalid session, try to refresh
+                    const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession({
+                        refresh_token: refreshToken
+                    });
+
+                    if (refreshError || !refreshData.session) {
+                        // Refresh failed, clear cookies
+                        context.cookies.delete('user-access-token', { path: '/' });
+                        context.cookies.delete('user-refresh-token', { path: '/' });
+                    } else {
+                        // Update cookies with new tokens
+                        context.cookies.set('user-access-token', refreshData.session.access_token, {
+                            path: '/',
+                            httpOnly: true,
+                            secure: import.meta.env.PROD,
+                            sameSite: 'lax',
+                            maxAge: 60 * 60 * 24 // 1 day
+                        });
+
+                        context.cookies.set('user-refresh-token', refreshData.session.refresh_token, {
+                            path: '/',
+                            httpOnly: true,
+                            secure: import.meta.env.PROD,
+                            sameSite: 'lax',
+                            maxAge: 60 * 60 * 24 * 30 // 30 days
+                        });
+                    }
+                }
+            } catch (e) {
+                // Error in auth check, clear cookies
+                context.cookies.delete('user-access-token', { path: '/' });
+                context.cookies.delete('user-refresh-token', { path: '/' });
+            }
         }
     }
 
