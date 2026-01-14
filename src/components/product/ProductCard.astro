@@ -1,6 +1,7 @@
 ---
 import type { Product } from "../../lib/supabase";
 import { formatPrice } from "../../lib/supabase";
+import WishlistButton from "../islands/WishlistButton";
 
 interface Props {
     product: Product;
@@ -43,6 +44,11 @@ const { product } = Astro.props;
             )
         }
 
+        {/* Wishlist button */}
+        <div class="absolute top-3 right-3 z-10">
+            <WishlistButton client:load product={product} size="sm" />
+        </div>
+
         {/* Featured badge */}
         {
             product.featured && (
@@ -70,7 +76,7 @@ const { product } = Astro.props;
         {
             product.stock > 0 && product.stock < 6 && (
                 <span
-                    class="absolute top-3 right-3 bg-accent-leather text-white text-xs font-bold 
+                    class="absolute bottom-3 right-3 bg-accent-leather text-white text-xs font-bold 
                    px-2 py-1 rounded-full"
                 >
                     ¡Últimas {product.stock}!

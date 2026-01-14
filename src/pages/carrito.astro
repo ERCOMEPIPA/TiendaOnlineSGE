@@ -4,6 +4,7 @@ export const prerender = false; // SSR page
 import PublicLayout from "../layouts/PublicLayout.astro";
 import Button from "../components/ui/Button.astro";
 import { getUserSession } from "../lib/auth";
+import CheckoutTimer from "../components/islands/CheckoutTimer";
 
 // Check if user is logged in
 const userSession = await getUserSession(Astro.cookies);
@@ -14,6 +15,9 @@ if (!userSession) {
 ---
 
 <PublicLayout title="Carrito" description="Tu carrito de compras">
+  <!-- Checkout Timer - Shows when reservation is active -->
+  <CheckoutTimer client:load />
+
   <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <h1 class="text-3xl lg:text-4xl font-serif font-bold text-carbon-900 mb-8">
       Tu Carrito
@@ -23,6 +27,44 @@ if (!userSession) {
     <div id="cart-page-content">
       <div class="bg-white rounded-xl shadow-sm p-8 text-center">
         <p class="text-carbon-500">Cargando carrito...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reservation Expired Modal -->
+  <div id="reservation-expired-modal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+        <div
+          class="mx-auto w-16 h-16 rounded-full bg-yellow-100 flex items-center justify-center mb-4"
+        >
+          <svg
+            class="w-8 h-8 text-yellow-500"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+        <h3 class="text-xl font-bold text-gray-900 text-center mb-2">
+          ¡Tiempo de reserva agotado!
+        </h3>
+        <p class="text-gray-500 text-center mb-6">
+          Tu reserva de 15 minutos ha expirado. Por favor, vuelve a iniciar el
+          proceso de compra.
+        </p>
+        <button
+          id="restart-checkout-btn"
+          class="w-full px-4 py-3 bg-navy-800 text-white rounded-xl font-medium hover:bg-navy-900 transition-colors"
+        >
+          Volver al carrito
+        </button>
       </div>
     </div>
   </div>
@@ -38,6 +80,12 @@ if (!userSession) {
     loadCart,
   } from "../stores/cart";
   import { formatPrice } from "../lib/supabase";
+  import {
+    startReservation,
+    getReservation,
+    clearReservation,
+    getRemainingTime,
+  } from "../lib/cartReservation";
 
   // Load cart on page load
   loadCart();
@@ -46,6 +94,28 @@ if (!userSession) {
   let appliedCoupon: any = null;
   let currentDiscount = 0;
   let cartTotalValue = 0; // Store cart total for coupon validation
+
+  // Handle reservation expiry modal
+  const expiredModal = document.getElementById("reservation-expired-modal");
+  const restartBtn = document.getElementById("restart-checkout-btn");
+
+  restartBtn?.addEventListener("click", () => {
+    expiredModal?.classList.add("hidden");
+    clearReservation();
+    window.location.reload();
+  });
+
+  // Check for expired reservation on load
+  const existingReservation = getReservation();
+  if (existingReservation && getRemainingTime() <= 0) {
+    clearReservation();
+    expiredModal?.classList.remove("hidden");
+  }
+
+  // Listen for custom expiry event from CheckoutTimer
+  window.addEventListener("reservationExpired", () => {
+    expiredModal?.classList.remove("hidden");
+  });
 
   function renderCart() {
     const container = document.getElementById("cart-page-content");
@@ -262,6 +332,12 @@ if (!userSession) {
         checkoutBtn.textContent = "Procesando...";
         checkoutBtn.setAttribute("disabled", "true");
 
+        // Start cart reservation timer
+        startReservation(items);
+
+        // Dispatch event to show timer
+        window.dispatchEvent(new CustomEvent("reservationStarted"));
+
         try {
           const response = await fetch("/api/create-checkout-session", {
             method: "POST",
@@ -281,6 +357,7 @@ if (!userSession) {
             alert("Error: " + data.error);
             checkoutBtn.textContent = "Proceder al pago";
             checkoutBtn.removeAttribute("disabled");
+            clearReservation(); // Clear reservation on error
             return;
           }
 
@@ -293,6 +370,7 @@ if (!userSession) {
           alert("Error al procesar el pago. Por favor, intenta de nuevo.");
           checkoutBtn.textContent = "Proceder al pago";
           checkoutBtn.removeAttribute("disabled");
+          clearReservation(); // Clear reservation on error
         }
       });
     }

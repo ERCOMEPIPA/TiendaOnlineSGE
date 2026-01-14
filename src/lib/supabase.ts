@@ -37,9 +37,3 @@ export function formatPrice(priceInCents: number): string {
         currency: 'EUR',
     }).format(priceInCents / 100);
 }
-
-// Helper to get public URL for storage images
-export function getImageUrl(path: string): string {
-    const { data } = supabase.storage.from('products-images').getPublicUrl(path);
-    return data.publicUrl;
-}

@@ -1,7 +1,7 @@
 export const prerender = false;
 
 import type { APIRoute } from 'astro';
-import { supabase } from '../../lib/supabase';
+import { cloudinary } from '../../lib/cloudinary';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
     try {
@@ -16,12 +16,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             );
         }
 
-        // Set session for authenticated upload
-        await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken,
-        });
-
         // Get file from form data
         const formData = await request.formData();
         const file = formData.get('file') as File;
@@ -33,37 +27,51 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             );
         }
 
-        // Generate unique filename
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+        // Convert file to buffer
+        const arrayBuffer = await file.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
 
-        // Upload to Supabase Storage
-        const { error: uploadError } = await supabase.storage
-            .from('products-images')
-            .upload(fileName, file);
+        // Upload to Cloudinary
+        const uploadResult = await new Promise<any>((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream(
+                {
+                    folder: 'fashionstore/products',
+                    resource_type: 'image',
+                    transformation: [
+                        { quality: 'auto', fetch_format: 'auto' }
+                    ],
+                },
+                (error, result) => {
+                    if (error) reject(error);
+                    else resolve(result);
+                }
+            );
 
-        if (uploadError) {
-            console.error('Upload error:', uploadError);
+            uploadStream.end(buffer);
+        });
+
+        if (!uploadResult || !uploadResult.secure_url) {
             return new Response(
-                JSON.stringify({ error: uploadError.message }),
+                JSON.stringify({ error: 'Error al subir la imagen a Cloudinary' }),
                 { status: 500, headers: { 'Content-Type': 'application/json' } }
             );
         }
 
-        // Get public URL
-        const { data } = supabase.storage
-            .from('products-images')
-            .getPublicUrl(fileName);
-
         return new Response(
-            JSON.stringify({ url: data.publicUrl }),
+            JSON.stringify({
+                url: uploadResult.secure_url,
+                publicId: uploadResult.public_id
+            }),
             { status: 200, headers: { 'Content-Type': 'application/json' } }
         );
 
     } catch (error) {
         console.error('API error:', error);
         return new Response(
-            JSON.stringify({ error: 'Error interno del servidor' }),
+            JSON.stringify({
+                error: 'Error interno del servidor',
+                details: error instanceof Error ? error.message : 'Unknown error'
+            }),
             { status: 500, headers: { 'Content-Type': 'application/json' } }
         );
     }

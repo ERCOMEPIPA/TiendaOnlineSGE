@@ -19,7 +19,6 @@ let orders: any[] = [];
 let errorMessage = "";
 
 try {
-    // First, get orders by customer email
     const { data: ordersData, error: ordersError } = await supabase
         .from("orders")
         .select("*")
@@ -30,7 +29,6 @@ try {
         console.error("Error fetching orders:", ordersError);
         errorMessage = ordersError.message;
     } else if (ordersData && ordersData.length > 0) {
-        // Now get order items for each order
         for (const order of ordersData) {
             const { data: items } = await supabase
                 .from("order_items")
@@ -53,35 +51,33 @@ const formatPrice = (cents: number) => {
     }).format(cents / 100);
 };
 
-const formatDate = (date: string) => {
+const formatShortDate = (date: string) => {
     return new Date(date).toLocaleDateString("es-ES", {
-        year: "numeric",
-        month: "long",
         day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
+        month: "short",
+        year: "numeric",
     });
 };
 
-const getStatusBadge = (status: string) => {
-    const styles: Record<string, { bg: string; text: string; label: string }> = {
-        pending: { bg: "bg-yellow-100", text: "text-yellow-800", label: "Pendiente" },
-        confirmed: { bg: "bg-blue-100", text: "text-blue-800", label: "Confirmado" },
-        shipped: { bg: "bg-purple-100", text: "text-purple-800", label: "Enviado" },
-        delivered: { bg: "bg-green-100", text: "text-green-800", label: "Entregado" },
-        cancelled: { bg: "bg-red-100", text: "text-red-800", label: "Cancelado" },
-    };
-    return styles[status] || styles.pending;
+// Status configuration
+const statusConfig: Record<string, { index: number; label: string; color: string; bgColor: string; icon: string; description: string }> = {
+    pending: { index: 0, label: "Pendiente", color: "text-yellow-800", bgColor: "bg-yellow-100", icon: "clock", description: "Tu pedido ha sido recibido" },
+    confirmed: { index: 1, label: "Confirmado", color: "text-blue-800", bgColor: "bg-blue-100", icon: "check", description: "Pago verificado, preparando pedido" },
+    shipped: { index: 2, label: "Enviado", color: "text-purple-800", bgColor: "bg-purple-100", icon: "truck", description: "Tu pedido está en camino" },
+    delivered: { index: 3, label: "Entregado", color: "text-green-800", bgColor: "bg-green-100", icon: "home", description: "¡Pedido entregado con éxito!" },
+    cancelled: { index: -1, label: "Cancelado", color: "text-red-800", bgColor: "bg-red-100", icon: "x", description: "Pedido cancelado" },
 };
+
+const getStatusConfig = (status: string) => statusConfig[status] || statusConfig.pending;
 ---
 
 <PublicLayout title="Mis Pedidos" description="Historial de tus compras">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <!-- Header -->
         <div class="mb-8">
-            <h1 class="text-3xl font-serif font-bold text-gray-900">Mis Pedidos</h1>
+            <h1 class="text-3xl font-serif font-bold text-gray-900">📦 Mis Pedidos</h1>
             <p class="mt-2 text-gray-600">
-                Historial de todas tus compras en FashionStore
+                Historial y seguimiento de todas tus compras
             </p>
         </div>
 
@@ -108,36 +104,114 @@ const getStatusBadge = (status: string) => {
         )}
 
         {orders && orders.length > 0 && (
-            <div class="space-y-6">
+            <div class="space-y-8">
                 {orders.map((order: any) => {
-                    const status = getStatusBadge(order.status);
+                    const config = getStatusConfig(order.status);
+                    const isCancelled = order.status === "cancelled";
+                    
                     return (
                         <div class="bg-white rounded-xl shadow-sm overflow-hidden">
                             <!-- Order Header -->
-                            <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex flex-wrap items-center justify-between gap-4">
-                                <div>
-                                    <p class="text-sm text-gray-500">Pedido</p>
-                                    <p class="font-mono font-semibold text-gray-900">
-                                        #{order.id.slice(0, 8).toUpperCase()}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p class="text-sm text-gray-500">Fecha</p>
-                                    <p class="font-medium text-gray-900">{formatDate(order.created_at)}</p>
-                                </div>
-                                <div>
-                                    <p class="text-sm text-gray-500">Total</p>
-                                    <p class="font-semibold text-gray-900">{formatPrice(order.total)}</p>
-                                </div>
-                                <div>
-                                    <span class={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${status.bg} ${status.text}`}>
-                                        {status.label}
+                            <div class="px-6 py-4 bg-gray-50 border-b border-gray-100">
+                                <div class="flex flex-wrap items-center justify-between gap-4">
+                                    <div class="flex items-center gap-6">
+                                        <div>
+                                            <p class="text-sm text-gray-500">Pedido</p>
+                                            <p class="font-mono font-semibold text-gray-900">
+                                                #{order.id.slice(0, 8).toUpperCase()}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Fecha</p>
+                                            <p class="font-medium text-gray-900">{formatShortDate(order.created_at)}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Total</p>
+                                            <p class="font-semibold text-gray-900">{formatPrice(order.total)}</p>
+                                        </div>
+                                    </div>
+                                    <span class={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${config.bgColor} ${config.color}`}>
+                                        {config.label}
                                     </span>
                                 </div>
                             </div>
 
+                            <!-- Order Tracking Timeline -->
+                            {!isCancelled && (
+                                <div class="px-6 py-6 border-b border-gray-100">
+                                    <!-- Timeline Steps -->
+                                    <div class="flex justify-between items-center relative">
+                                        <!-- Progress Line Background -->
+                                        <div class="absolute top-4 left-8 right-8 h-1 bg-gray-200 rounded"></div>
+                                        <!-- Progress Line Active -->
+                                        <div 
+                                            class="absolute top-4 left-8 h-1 bg-green-500 rounded transition-all duration-500"
+                                            style={`width: calc(${config.index >= 0 ? (config.index / 3) * 100 : 0}% - 64px)`}
+                                        ></div>
+
+                                        <!-- Step 1: Pending -->
+                                        <div class="flex flex-col items-center z-10 w-20">
+                                            <div class={`w-8 h-8 rounded-full flex items-center justify-center ${config.index >= 0 ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-400'}`}>
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                            </div>
+                                            <p class={`mt-2 text-xs font-medium ${config.index >= 0 ? 'text-gray-900' : 'text-gray-400'}`}>Pendiente</p>
+                                        </div>
+
+                                        <!-- Step 2: Confirmed -->
+                                        <div class="flex flex-col items-center z-10 w-20">
+                                            <div class={`w-8 h-8 rounded-full flex items-center justify-center ${config.index >= 1 ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-400'}`}>
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                                </svg>
+                                            </div>
+                                            <p class={`mt-2 text-xs font-medium ${config.index >= 1 ? 'text-gray-900' : 'text-gray-400'}`}>Confirmado</p>
+                                        </div>
+
+                                        <!-- Step 3: Shipped -->
+                                        <div class="flex flex-col items-center z-10 w-20">
+                                            <div class={`w-8 h-8 rounded-full flex items-center justify-center ${config.index >= 2 ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-400'}`}>
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
+                                                </svg>
+                                            </div>
+                                            <p class={`mt-2 text-xs font-medium ${config.index >= 2 ? 'text-gray-900' : 'text-gray-400'}`}>Enviado</p>
+                                        </div>
+
+                                        <!-- Step 4: Delivered -->
+                                        <div class="flex flex-col items-center z-10 w-20">
+                                            <div class={`w-8 h-8 rounded-full flex items-center justify-center ${config.index >= 3 ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-400'}`}>
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                                </svg>
+                                            </div>
+                                            <p class={`mt-2 text-xs font-medium ${config.index >= 3 ? 'text-gray-900' : 'text-gray-400'}`}>Entregado</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Current Status Description -->
+                                    <div class="mt-6 text-center">
+                                        <p class="text-sm text-gray-600">{config.description}</p>
+                                    </div>
+                                </div>
+                            )}
+
+                            <!-- Cancelled Order Message -->
+                            {isCancelled && (
+                                <div class="px-6 py-4 bg-red-50 border-b border-red-100">
+                                    <div class="flex items-center gap-3">
+                                        <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                        <p class="text-red-700">Este pedido ha sido cancelado</p>
+                                    </div>
+                                </div>
+                            )}
+
                             <!-- Order Items -->
                             <div class="px-6 py-4">
+                                <h4 class="text-sm font-medium text-gray-500 mb-3">Productos</h4>
                                 <div class="space-y-3">
                                     {order.order_items?.map((item: any) => (
                                         <div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
@@ -157,13 +231,21 @@ const getStatusBadge = (status: string) => {
 
                             <!-- Order Footer -->
                             <div class="px-6 py-4 bg-gray-50 border-t border-gray-100">
-                                <div class="flex items-center justify-between">
+                                <div class="flex flex-wrap items-center justify-between gap-2">
                                     <div class="text-sm text-gray-500">
-                                        Enviado a: {order.customer_name} ({order.customer_email})
+                                        {order.shipping_address && order.shipping_address !== 'N/A' ? (
+                                            <span>
+                                                <span class="font-medium text-gray-700">Envío:</span> {order.shipping_address}, {order.shipping_city || ''} {order.shipping_postal_code || ''}
+                                            </span>
+                                        ) : (
+                                            <span>
+                                                <span class="font-medium text-gray-700">Cliente:</span> {order.customer_name} ({order.customer_email})
+                                            </span>
+                                        )}
                                     </div>
                                     {order.discount_amount > 0 && (
                                         <div class="text-sm text-green-600 font-medium">
-                                            Descuento aplicado: -{formatPrice(order.discount_amount)}
+                                            Descuento: -{formatPrice(order.discount_amount)}
                                         </div>
                                     )}
                                 </div>

@@ -269,3 +269,260 @@ El equipo de FashionStore
         return { success: false, error };
     }
 }
+
+interface OrderStatusEmailData {
+    customerEmail: string;
+    customerName: string;
+    orderId: string;
+    newStatus: string;
+    orderTotal: number;
+}
+
+const statusInfo: Record<string, { emoji: string; title: string; message: string; color: string }> = {
+    confirmed: {
+        emoji: '✅',
+        title: '¡Tu pedido ha sido confirmado!',
+        message: 'Hemos recibido tu pago correctamente y estamos preparando tu pedido.',
+        color: '#3b82f6',
+    },
+    shipped: {
+        emoji: '🚚',
+        title: '¡Tu pedido está en camino!',
+        message: 'Tu pedido ha sido enviado y está de camino a tu dirección.',
+        color: '#8b5cf6',
+    },
+    delivered: {
+        emoji: '🎉',
+        title: '¡Tu pedido ha sido entregado!',
+        message: '¡Esperamos que disfrutes tu compra! No olvides dejarnos una reseña.',
+        color: '#22c55e',
+    },
+    cancelled: {
+        emoji: '❌',
+        title: 'Tu pedido ha sido cancelado',
+        message: 'Lamentamos informarte que tu pedido ha sido cancelado. Si tienes dudas, contáctanos.',
+        color: '#ef4444',
+    },
+};
+
+export async function sendOrderStatusUpdateEmail(data: OrderStatusEmailData) {
+    const { customerEmail, customerName, orderId, newStatus, orderTotal } = data;
+
+    const status = statusInfo[newStatus];
+    if (!status) {
+        console.log('No email template for status:', newStatus);
+        return { success: true, skipped: true };
+    }
+
+    const emailHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: ${status.color}; color: white; padding: 30px; text-align: center; }
+        .header h1 { margin: 0; font-size: 24px; }
+        .emoji { font-size: 48px; margin-bottom: 15px; }
+        .content { background-color: #ffffff; padding: 30px; }
+        .order-box { background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center; }
+        .order-id { font-family: monospace; font-size: 18px; font-weight: bold; color: #1a2332; }
+        .status-box { background-color: ${status.color}15; border-left: 4px solid ${status.color}; padding: 15px; margin: 20px 0; }
+        .button { display: inline-block; background-color: #1a2332; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+        .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="emoji">${status.emoji}</div>
+            <h1>${status.title}</h1>
+        </div>
+        
+        <div class="content">
+            <p>Hola ${customerName},</p>
+            
+            <div class="status-box">
+                <p style="margin: 0;">${status.message}</p>
+            </div>
+            
+            <div class="order-box">
+                <p style="margin: 0 0 10px 0; color: #666;">Número de pedido</p>
+                <p class="order-id">#${orderId.slice(0, 8).toUpperCase()}</p>
+                <p style="margin: 10px 0 0 0; font-size: 18px; font-weight: bold;">Total: ${formatPrice(orderTotal)}</p>
+            </div>
+            
+            <center>
+                <a href="${import.meta.env.PUBLIC_SITE_URL || 'http://localhost:4321'}/mis-pedidos" class="button">
+                    Ver mi pedido
+                </a>
+            </center>
+            
+            <p style="margin-top: 30px;">Si tienes alguna pregunta sobre tu pedido, no dudes en contactarnos.</p>
+            
+            <p>¡Gracias por confiar en nosotros!</p>
+        </div>
+        
+        <div class="footer">
+            <p>Este es un email automático, por favor no respondas a este mensaje.</p>
+            <p>&copy; ${new Date().getFullYear()} FashionStore. Todos los derechos reservados.</p>
+        </div>
+    </div>
+</body>
+</html>
+    `;
+
+    const emailText = `
+${status.title}
+
+Hola ${customerName},
+
+${status.message}
+
+Número de pedido: #${orderId.slice(0, 8).toUpperCase()}
+Total: ${formatPrice(orderTotal)}
+
+Para ver el estado de tu pedido, visita: ${import.meta.env.PUBLIC_SITE_URL || 'http://localhost:4321'}/mis-pedidos
+
+¡Gracias por confiar en nosotros!
+
+FashionStore
+    `;
+
+    try {
+        console.log('=== SENDING ORDER STATUS UPDATE EMAIL ===');
+        console.log('To:', customerEmail);
+        console.log('Order ID:', orderId);
+        console.log('New Status:', newStatus);
+
+        const { data: emailData, error } = await resend.emails.send({
+            from: 'FashionStore <onboarding@resend.dev>',
+            to: [customerEmail],
+            subject: `${status.emoji} ${status.title} - Pedido #${orderId.slice(0, 8).toUpperCase()}`,
+            html: emailHtml,
+            text: emailText,
+        });
+
+        if (error) {
+            console.error('Error sending status update email:', error);
+            return { success: false, error };
+        }
+
+        console.log('Status update email sent successfully:', emailData);
+        return { success: true, data: emailData };
+    } catch (error) {
+        console.error('Error sending status update email:', error);
+        return { success: false, error };
+    }
+}
+
+// Stock Available Notification Email
+interface StockNotificationEmailData {
+    customerEmail: string;
+    productName: string;
+    productSlug: string;
+    productImage?: string;
+    productPrice: number;
+}
+
+export async function sendStockAvailableEmail(data: StockNotificationEmailData) {
+    const { customerEmail, productName, productSlug, productImage, productPrice } = data;
+
+    const productUrl = `https://fashionstore.com/productos/${productSlug}`;
+
+    const emailHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .header { background-color: #1a2332; color: white; padding: 30px; text-align: center; }
+        .header h1 { margin: 0; font-size: 28px; }
+        .content { background-color: #ffffff; padding: 30px; }
+        .product-card { background-color: #f8f9fa; border-radius: 12px; overflow: hidden; margin: 20px 0; }
+        .product-image { width: 100%; height: 200px; object-fit: cover; }
+        .product-info { padding: 20px; }
+        .product-name { font-size: 20px; font-weight: bold; color: #1a2332; margin-bottom: 8px; }
+        .product-price { font-size: 24px; color: #d97706; font-weight: bold; }
+        .button { display: inline-block; background-color: #22c55e; color: white; padding: 15px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; margin-top: 15px; }
+        .button:hover { background-color: #16a34a; }
+        .highlight { background-color: #fef3c7; border-left: 4px solid #d97706; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; background-color: #f8f9fa; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎉 FashionStore</h1>
+            <p>¡Buenas noticias!</p>
+        </div>
+        
+        <div class="content">
+            <h2>¡El producto que esperabas ya está disponible!</h2>
+            
+            <div class="highlight">
+                <p><strong>¡Date prisa!</strong> Este producto tiene alta demanda y podría agotarse rápidamente.</p>
+            </div>
+            
+            <div class="product-card">
+                ${productImage ? `<img src="${productImage}" alt="${productName}" class="product-image">` : ''}
+                <div class="product-info">
+                    <div class="product-name">${productName}</div>
+                    <div class="product-price">${formatPrice(productPrice)}</div>
+                    <a href="${productUrl}" class="button">🛒 Comprar ahora</a>
+                </div>
+            </div>
+            
+            <p>Te avisamos porque solicitaste ser notificado cuando este producto estuviera disponible.</p>
+            
+            <p style="margin-top: 30px;">¡Gracias por confiar en FashionStore!</p>
+        </div>
+        
+        <div class="footer">
+            <p>Este es un email automático de FashionStore</p>
+            <p>Si no solicitaste esta notificación, puedes ignorar este mensaje.</p>
+        </div>
+    </div>
+</body>
+</html>
+    `;
+
+    const emailText = `
+🎉 ¡Buenas noticias de FashionStore!
+
+El producto que esperabas ya está disponible:
+
+${productName}
+Precio: ${formatPrice(productPrice)}
+
+¡Date prisa! Este producto tiene alta demanda y podría agotarse rápidamente.
+
+Comprar ahora: ${productUrl}
+
+¡Gracias por confiar en FashionStore!
+    `;
+
+    try {
+        const { data: emailData, error } = await resend.emails.send({
+            from: 'FashionStore <onboarding@resend.dev>',
+            to: [customerEmail],
+            subject: `🎉 ¡${productName} ya está disponible! - FashionStore`,
+            html: emailHtml,
+            text: emailText,
+        });
+
+        if (error) {
+            console.error('Error sending stock notification email:', error);
+            return { success: false, error };
+        }
+
+        console.log('Stock notification email sent successfully:', emailData);
+        return { success: true, data: emailData };
+    } catch (error) {
+        console.error('Error sending stock notification email:', error);
+        return { success: false, error };
+    }
+}

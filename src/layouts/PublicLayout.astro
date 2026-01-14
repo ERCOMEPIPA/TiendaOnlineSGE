@@ -3,6 +3,7 @@ import BaseLayout from "./BaseLayout.astro";
 import CartIcon from "../components/islands/CartIcon";
 import CartSlideOver from "../components/islands/CartSlideOver";
 import SearchButton from "../components/islands/SearchButton";
+import WishlistIcon from "../components/islands/WishlistIcon";
 import UserMenu from "../components/ui/UserMenu.astro";
 import { getUserSession } from "../lib/auth";
 
@@ -21,6 +22,7 @@ const navLinks = [
     { href: "/productos", label: "Productos" },
     { href: "/categoria/camisetas", label: "Camisetas" },
     { href: "/categoria/sudaderas", label: "Sudaderas" },
+    { href: "/categoria/zapatos", label: "Zapatos" },
     { href: "/categoria/accesorios", label: "Accesorios" },
 ];
 
@@ -66,6 +68,9 @@ const currentPath = Astro.url.pathname;
                 <div class="flex items-center gap-4">
                     <!-- Search -->
                     <SearchButton client:load />
+
+                    <!-- Wishlist -->
+                    <WishlistIcon client:load />
 
                     <!-- Cart -->
                     <CartIcon client:load />
@@ -163,6 +168,13 @@ const currentPath = Astro.url.pathname;
                                 href="/categoria/sudaderas"
                                 class="hover:text-white transition-colors"
                                 >Sudaderas</a
+                            >
+                        </li>
+                        <li>
+                            <a
+                                href="/categoria/zapatos"
+                                class="hover:text-white transition-colors"
+                                >Zapatos</a
                             >
                         </li>
                         <li>

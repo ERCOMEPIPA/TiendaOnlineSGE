@@ -4,6 +4,7 @@ export const prerender = false;
 import AdminLayout from "../../layouts/AdminLayout.astro";
 import Button from "../../components/ui/Button.astro";
 import { supabase, formatPrice } from "../../lib/supabase";
+import { sendOrderStatusUpdateEmail } from "../../lib/email";
 
 // Handle status update
 let message = "";
@@ -16,6 +17,15 @@ if (Astro.request.method === "POST") {
 
     if (action === "update_status") {
         const newStatus = formData.get("status") as string;
+
+        // First get the order details for the email
+        const { data: orderData } = await supabase
+            .from("orders")
+            .select("*")
+            .eq("id", orderId)
+            .single();
+
+        // Update the status
         const { error } = await supabase
             .from("orders")
             .update({ status: newStatus, updated_at: new Date().toISOString() })
@@ -26,6 +36,23 @@ if (Astro.request.method === "POST") {
             messageType = "error";
         } else {
             message = "Estado actualizado correctamente";
+
+            // Send email notification to customer
+            if (orderData && newStatus !== "pending") {
+                try {
+                    await sendOrderStatusUpdateEmail({
+                        customerEmail: orderData.customer_email,
+                        customerName: orderData.customer_name,
+                        orderId: orderId,
+                        newStatus: newStatus,
+                        orderTotal: orderData.total,
+                    });
+                    message += " y email enviado al cliente";
+                } catch (emailError) {
+                    console.error("Error sending status email:", emailError);
+                    message += " (email no enviado)";
+                }
+            }
         }
     }
 }

@@ -247,7 +247,9 @@ if (sessionId) {
 </PublicLayout>
 
 <script>
-    // Clear cart after successful purchase
+    // Clear cart and reservation after successful purchase
     import { clearCart } from "../../stores/cart";
+    import { clearReservation } from "../../lib/cartReservation";
     clearCart();
+    clearReservation();
 </script>

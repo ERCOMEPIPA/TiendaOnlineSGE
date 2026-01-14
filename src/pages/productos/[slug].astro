@@ -5,6 +5,8 @@ import PublicLayout from "../../layouts/PublicLayout.astro";
 import ProductGallery from "../../components/product/ProductGallery.astro";
 import ProductCard from "../../components/product/ProductCard.astro";
 import AddToCartButton from "../../components/islands/AddToCartButton";
+import ProductReviews from "../../components/islands/ProductReviews";
+import WishlistButton from "../../components/islands/WishlistButton";
 import { supabase, formatPrice } from "../../lib/supabase";
 import type { Product } from "../../lib/supabase";
 
@@ -184,6 +186,13 @@ const related = relatedProducts || [];
                 </div>
             </div>
         </div>
+
+        <!-- Product Reviews Section -->
+        <ProductReviews
+            client:load
+            productId={currentProduct.id}
+            productName={currentProduct.name}
+        />
 
         <!-- Related Products -->
         {
