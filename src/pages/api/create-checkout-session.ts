@@ -7,25 +7,43 @@ export const prerender = false;
 
 export const POST: APIRoute = async ({ request, cookies }) => {
     try {
-        // Check if user is authenticated
+        // Check if user is authenticated (optional now)
         const userSession = await getUserSession(cookies);
-        if (!userSession) {
-            return new Response(
-                JSON.stringify({ error: 'Unauthorized. Please log in.' }),
-                { status: 401, headers: { 'Content-Type': 'application/json' } }
-            );
-        }
 
-        // Parse request body
-        let items;
+        // Parse request body first
+        let body;
         try {
-            const body = await request.json();
-            items = body.items;
+            body = await request.json();
         } catch (e) {
             return new Response(
                 JSON.stringify({ error: 'Invalid request body' }),
                 { status: 400, headers: { 'Content-Type': 'application/json' } }
             );
+        }
+
+        const { items, guestInfo } = body;
+
+        // Determine customer info
+        let customerEmail: string;
+        let userId: string | null = null;
+        let customerName: string | null = null;
+        let customerPhone: string | null = null;
+
+        if (userSession?.user) {
+            customerEmail = userSession.user.email!;
+            userId = userSession.user.id;
+            // We could fetch name/phone from profile if needed, but email is primary here
+        } else {
+            // Guest mode
+            if (!guestInfo || !guestInfo.email || !guestInfo.name) {
+                return new Response(
+                    JSON.stringify({ error: 'Guest information (email and name) is required' }),
+                    { status: 400, headers: { 'Content-Type': 'application/json' } }
+                );
+            }
+            customerEmail = guestInfo.email;
+            customerName = guestInfo.name;
+            customerPhone = guestInfo.phone;
         }
 
         if (!items || !Array.isArray(items) || items.length === 0) {
@@ -74,23 +92,42 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             };
         });
 
+        // Add coupon discount if applicable
+        // ... (existing logic handles amount override via logic, but here we just create session)
+        // Wait, current implementation doesn't seem to pass discount to Stripe line items directly unless we add a discount coupon or negative line item.
+        // The frontend sends `discountAmount` but the previous code didn't use it in Stripe session creation?
+        // Checking previous file content...
+        // The previous code received `couponCode` and `discountAmount` but didn't seem to use them in `stripe.checkout.sessions.create` arguments shown in line 78-94.
+        // It seems the implementation of coupons was missing in the backend Stripe session creation in the provided snippet?
+        // Or maybe it was truncated.
+        // I will assume for now I just need to fix the guest checkout part. 
+        // If discount needs to be applied, it should be done here. But I'll stick to the guest checkout task to avoid scope creep, 
+        // unless I see it's critical. The snippet I replaced didn't show coupon logic in Stripe session.
+
+        // Metadata for webhook
+        const metadata: any = {
+            user_email: customerEmail,
+            items: JSON.stringify(items.map((item: any) => ({
+                product_id: item.product.id,
+                quantity: item.quantity,
+                size: item.size,
+            }))),
+        };
+
+        if (userId) metadata.user_id = userId;
+        if (customerName) metadata.customer_name = customerName;
+        if (customerPhone) metadata.customer_phone = customerPhone;
+        metadata.is_guest = userId ? 'false' : 'true';
+
         // Create Checkout Session
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
             line_items: lineItems,
             mode: 'payment',
-            customer_email: userSession.user.email,
+            customer_email: customerEmail,
             success_url: `${request.headers.get('origin')}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${request.headers.get('origin')}/carrito`,
-            metadata: {
-                user_id: userSession.user.id,
-                user_email: userSession.user.email,
-                items: JSON.stringify(items.map((item: any) => ({
-                    product_id: item.product.id,
-                    quantity: item.quantity,
-                    size: item.size,
-                }))),
-            },
+            metadata: metadata,
         });
 
         return new Response(

@@ -36,7 +36,14 @@ if (sessionId) {
                     session.metadata?.user_email ||
                     "unknown@email.com";
                 const customerName =
-                    session.customer_details?.name || "Cliente";
+                    session.customer_details?.name ||
+                    session.metadata?.customer_name ||
+                    "Cliente";
+                const customerPhone =
+                    session.customer_details?.phone ||
+                    session.metadata?.customer_phone ||
+                    null;
+
                 const shippingAddress =
                     session.customer_details?.address?.line1 || "N/A";
                 const shippingCity =
@@ -48,9 +55,10 @@ if (sessionId) {
                 const { data: order, error: orderDbError } = await supabase
                     .from("orders")
                     .insert({
-                        user_id: userId,
+                        user_id: userId || null,
                         customer_email: customerEmail,
                         customer_name: customerName,
+                        customer_phone: customerPhone,
                         shipping_address: shippingAddress,
                         shipping_city: shippingCity,
                         shipping_postal_code: shippingPostalCode,
@@ -62,8 +70,16 @@ if (sessionId) {
                     .single();
 
                 if (orderDbError || !order) {
-                    console.error("Error creating order:", orderDbError);
-                    orderError = "Error al guardar el pedido";
+                    console.error("=== ERROR CREATING ORDER ===");
+                    console.error("Error code:", orderDbError?.code);
+                    console.error("Error message:", orderDbError?.message);
+                    console.error("Error details:", orderDbError?.details);
+                    console.error("Error hint:", orderDbError?.hint);
+                    console.error(
+                        "Full error:",
+                        JSON.stringify(orderDbError, null, 2),
+                    );
+                    orderError = `Error al guardar el pedido: ${orderDbError?.message || "Unknown error"}`;
                 } else {
                     orderId = order.id;
 

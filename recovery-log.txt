@@ -1,0 +1,41 @@
+=== RECOVERING ORDER ITEMS ===
+Found 7 orders with stripe_session_id
+
+Order: 087ed392-5423-443e-be50-57a2d3d1d99f
+  Session: cs_test_b1uLnPlHC0WEEK3X0Yj2cvxGbaE6lclf9hbLUm8PMGkm70axoZST3907xm
+  Metadata items: 2
+  Added: Anillo Sabrina Carpenter x1
+  Added: Camiseta Sabrina Carpenter Tour x1
+
+Order: edf1c321-f214-4067-90a3-26a228d4d9db
+  Session: cs_test_a1WhuLAkwciURc9ZkKvuGTNfrTcIUIWJeiYndlwXOYFL3XtpUekTQIyJxb
+  Metadata items: 1
+  Added: Camiseta Tour 2024 - Bad Bunny x2
+
+Order: 76d4000e-0338-4102-98b0-f049df6f91e4
+  Session: cs_test_b1Jv5poi4HP607PBsGpnFZBodRJKcqksNizL1Y0HRHijrI8UxICsjMgusz
+  Metadata items: 2
+  Added: Camiseta Saiko Cara x1
+  Added: Anillo Sabrina Carpenter x1
+
+Order: 86ea6f91-2c5d-448f-897b-4796ce79342b
+  Session: cs_test_a1Wd6wfuJ1cQA7LZSsEvPMdDxRso8ilUakgELICEsPgFugmsQ3JEe0ERMY
+  Metadata items: 1
+  Added: Hoodie Astroworld - Travis Scott x1
+
+Order: 9337bcaf-7553-4e73-8fa3-7464f840cbe0
+  Session: cs_test_a14pXyal9gKejXq8u052kkvKzghGC0NxebHUFIeA9q7FHsK7ZiFLfJy4yp
+  Metadata items: 1
+  Added: Gorra Saiko x1
+
+Order: b770bb9f-0dc6-4235-bae2-367d336d5971
+  Session: cs_test_a1q7lY9R49rbWBiMROwuD9aOhNzfg7ApYF6KJUrImfIsrEV5NJRRHktyCJ
+  Metadata items: 1
+  Added: Camiseta Saiko Cara x1
+
+Order: 4fa06d61-9888-42b2-8e73-f505a27b4a06
+  Session: cs_test_a1mIdR0hhA6JFFZboRSHFo9QPDhA9komStiBlXxdANdA7GHoIhAJGsjVe1
+  Metadata items: 1
+  Added: Camiseta Tour 2024 - Bad Bunny x1
+
+=== DONE ===

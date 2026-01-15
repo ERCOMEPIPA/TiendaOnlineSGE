@@ -5,6 +5,7 @@ import CartSlideOver from "../components/islands/CartSlideOver";
 import SearchButton from "../components/islands/SearchButton";
 import WishlistIcon from "../components/islands/WishlistIcon";
 import UserMenu from "../components/ui/UserMenu.astro";
+import Newsletter from "../components/Newsletter.astro";
 import { getUserSession } from "../lib/auth";
 
 interface Props {
@@ -129,6 +130,9 @@ const currentPath = Astro.url.pathname;
     <main class="min-h-[calc(100vh-4rem-12rem)]">
         <slot />
     </main>
+
+    <!-- Newsletter Section -->
+    <Newsletter />
 
     <!-- Footer -->
     <footer class="bg-navy-900 text-white mt-auto">

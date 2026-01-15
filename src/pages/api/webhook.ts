@@ -97,15 +97,17 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
     // Get customer details
     const customerEmail = session.customer_details?.email || session.metadata?.user_email || 'unknown@email.com';
-    const customerName = session.customer_details?.name || 'Cliente';
+    const customerName = session.customer_details?.name || session.metadata?.customer_name || 'Cliente';
+    const customerPhone = session.customer_details?.phone || session.metadata?.customer_phone || null;
 
     // Create order in database
     const { data: order, error: orderDbError } = await supabase
         .from('orders')
         .insert({
-            user_id: userId,
+            user_id: userId || null,
             customer_email: customerEmail,
             customer_name: customerName,
+            customer_phone: customerPhone,
             total: session.amount_total || 0,
             status: 'pending',
             stripe_session_id: session.id,

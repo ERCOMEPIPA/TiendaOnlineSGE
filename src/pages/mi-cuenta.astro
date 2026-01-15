@@ -1,0 +1,316 @@
+---
+export const prerender = false;
+
+import PublicLayout from "../layouts/PublicLayout.astro";
+import { getUserSession } from "../lib/auth";
+import { supabase } from "../lib/supabase";
+
+// Check authentication
+const userSession = await getUserSession(Astro.cookies);
+
+if (!userSession?.user) {
+    return Astro.redirect("/login?redirect=/mi-cuenta");
+}
+
+const userEmail = userSession.user.email;
+const userName =
+    userSession.user.user_metadata?.full_name ||
+    userSession.user.user_metadata?.name ||
+    "Usuario";
+
+// Handle form submission for password change
+let message = "";
+let messageType: "success" | "error" = "success";
+
+if (Astro.request.method === "POST") {
+    const formData = await Astro.request.formData();
+    const action = formData.get("action") as string;
+
+    if (action === "change_password") {
+        const currentPassword = formData.get("current_password") as string;
+        const newPassword = formData.get("new_password") as string;
+        const confirmPassword = formData.get("confirm_password") as string;
+
+        // Validate passwords
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            message = "Todos los campos son obligatorios";
+            messageType = "error";
+        } else if (newPassword !== confirmPassword) {
+            message = "Las contraseñas nuevas no coinciden";
+            messageType = "error";
+        } else if (newPassword.length < 6) {
+            message = "La contraseña debe tener al menos 6 caracteres";
+            messageType = "error";
+        } else {
+            // Verify current password by re-signing in
+            const { error: signInError } =
+                await supabase.auth.signInWithPassword({
+                    email: userEmail,
+                    password: currentPassword,
+                });
+
+            if (signInError) {
+                message = "La contraseña actual es incorrecta";
+                messageType = "error";
+            } else {
+                // Update password
+                const { error: updateError } = await supabase.auth.updateUser({
+                    password: newPassword,
+                });
+
+                if (updateError) {
+                    message = `Error al cambiar la contraseña: ${updateError.message}`;
+                    messageType = "error";
+                } else {
+                    message = "¡Contraseña actualizada correctamente!";
+                    messageType = "success";
+                }
+            }
+        }
+    }
+}
+---
+
+<PublicLayout title="Mi Cuenta" description="Gestiona tu cuenta y preferencias">
+    <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-serif font-bold text-gray-900">
+                👤 Mi Cuenta
+            </h1>
+            <p class="mt-2 text-gray-600">
+                Gestiona tu información personal y seguridad
+            </p>
+        </div>
+
+        {
+            message && (
+                <div
+                    class={`mb-6 p-4 rounded-lg ${messageType === "success" ? "bg-green-50 border border-green-200 text-green-700" : "bg-red-50 border border-red-200 text-red-700"}`}
+                >
+                    <div class="flex items-center gap-2">
+                        {messageType === "success" ? (
+                            <svg
+                                class="w-5 h-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M5 13l4 4L19 7"
+                                />
+                            </svg>
+                        ) : (
+                            <svg
+                                class="w-5 h-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12"
+                                />
+                            </svg>
+                        )}
+                        <span>{message}</span>
+                    </div>
+                </div>
+            )
+        }
+
+        <!-- User Info Card -->
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-100">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Información de la cuenta
+                </h2>
+            </div>
+            <div class="p-6">
+                <div class="flex items-center gap-4">
+                    <div
+                        class="w-16 h-16 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center text-white text-2xl font-semibold"
+                    >
+                        {userName.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                        <p class="text-lg font-medium text-gray-900">
+                            {userName}
+                        </p>
+                        <p class="text-gray-500">{userEmail}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Change Password Card -->
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-100">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    🔒 Cambiar contraseña
+                </h2>
+            </div>
+            <div class="p-6">
+                <form method="POST" class="space-y-4">
+                    <input
+                        type="hidden"
+                        name="action"
+                        value="change_password"
+                    />
+
+                    <div>
+                        <label
+                            for="current_password"
+                            class="block text-sm font-medium text-gray-700 mb-2"
+                        >
+                            Contraseña actual
+                        </label>
+                        <input
+                            type="password"
+                            id="current_password"
+                            name="current_password"
+                            required
+                            class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+                            placeholder="••••••••"
+                        />
+                    </div>
+
+                    <div>
+                        <label
+                            for="new_password"
+                            class="block text-sm font-medium text-gray-700 mb-2"
+                        >
+                            Nueva contraseña
+                        </label>
+                        <input
+                            type="password"
+                            id="new_password"
+                            name="new_password"
+                            required
+                            minlength="6"
+                            class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+                            placeholder="••••••••"
+                        />
+                        <p class="text-xs text-gray-500 mt-1">
+                            Mínimo 6 caracteres
+                        </p>
+                    </div>
+
+                    <div>
+                        <label
+                            for="confirm_password"
+                            class="block text-sm font-medium text-gray-700 mb-2"
+                        >
+                            Confirmar nueva contraseña
+                        </label>
+                        <input
+                            type="password"
+                            id="confirm_password"
+                            name="confirm_password"
+                            required
+                            minlength="6"
+                            class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+                            placeholder="••••••••"
+                        />
+                    </div>
+
+                    <div class="pt-4">
+                        <button
+                            type="submit"
+                            class="w-full sm:w-auto px-6 py-3 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                        >
+                            Cambiar contraseña
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-100">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Accesos rápidos
+                </h2>
+            </div>
+            <div class="divide-y divide-gray-100">
+                <a
+                    href="/mis-pedidos"
+                    class="flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors"
+                >
+                    <div class="flex items-center gap-3">
+                        <span class="text-xl">📦</span>
+                        <span class="font-medium text-gray-900"
+                            >Mis pedidos</span
+                        >
+                    </div>
+                    <svg
+                        class="w-5 h-5 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </a>
+                <a
+                    href="/mis-favoritos"
+                    class="flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors"
+                >
+                    <div class="flex items-center gap-3">
+                        <span class="text-xl">❤️</span>
+                        <span class="font-medium text-gray-900"
+                            >Mis favoritos</span
+                        >
+                    </div>
+                    <svg
+                        class="w-5 h-5 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </a>
+                <a
+                    href="/auth/logout"
+                    class="flex items-center justify-between px-6 py-4 hover:bg-red-50 transition-colors group"
+                >
+                    <div class="flex items-center gap-3">
+                        <span class="text-xl">🚪</span>
+                        <span
+                            class="font-medium text-red-600 group-hover:text-red-700"
+                            >Cerrar sesión</span
+                        >
+                    </div>
+                    <svg
+                        class="w-5 h-5 text-red-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                        ></path>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </div>
+</PublicLayout>

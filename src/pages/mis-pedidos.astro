@@ -108,6 +108,9 @@ const getStatusConfig = (status: string) => statusConfig[status] || statusConfig
                 {orders.map((order: any) => {
                     const config = getStatusConfig(order.status);
                     const isCancelled = order.status === "cancelled";
+                    const canCancel = order.status === "pending" || order.status === "confirmed";
+                    const canRequestReturn = order.status === "delivered" && !order.return_requested;
+                    const returnRequested = order.return_requested;
                     
                     return (
                         <div class="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -243,11 +246,48 @@ const getStatusConfig = (status: string) => statusConfig[status] || statusConfig
                                             </span>
                                         )}
                                     </div>
-                                    {order.discount_amount > 0 && (
-                                        <div class="text-sm text-green-600 font-medium">
-                                            Descuento: -{formatPrice(order.discount_amount)}
-                                        </div>
-                                    )}
+                                    <div class="flex items-center gap-3">
+                                        {order.discount_amount > 0 && (
+                                            <div class="text-sm text-green-600 font-medium">
+                                                Descuento: -{formatPrice(order.discount_amount)}
+                                            </div>
+                                        )}
+                                        
+                                        {/* Botón Cancelar Pedido - Solo para pending/confirmed */}
+                                        {canCancel && (
+                                            <button
+                                                type="button"
+                                                class="cancel-order-btn px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors flex items-center gap-2"
+                                                data-order-id={order.id}
+                                            >
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                </svg>
+                                                Cancelar Pedido
+                                            </button>
+                                        )}
+                                        
+                                        {/* Botón Solicitar Devolución - Solo para delivered */}
+                                        {canRequestReturn && (
+                                            <button
+                                                type="button"
+                                                class="return-order-btn px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors flex items-center gap-2"
+                                                data-order-id={order.id}
+                                            >
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
+                                                </svg>
+                                                Solicitar Devolución
+                                            </button>
+                                        )}
+                                        
+                                        {/* Indicador de devolución ya solicitada */}
+                                        {returnRequested && (
+                                            <span class="px-3 py-1 text-sm bg-orange-100 text-orange-700 rounded-full">
+                                                📦 Devolución en proceso
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -256,4 +296,262 @@ const getStatusConfig = (status: string) => statusConfig[status] || statusConfig
             </div>
         )}
     </div>
+
+    <!-- Modal de Devolución -->
+    <div id="return-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-gray-900">📦 Solicitar Devolución</h3>
+                    <button id="close-return-modal" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <!-- Instrucciones de envío -->
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+                    <h4 class="font-semibold text-yellow-800 mb-2">📍 Dirección de envío</h4>
+                    <p class="text-yellow-700">Debes enviar los artículos en su embalaje original a:</p>
+                    <p class="font-bold text-yellow-900 mt-2">
+                        Calle de la Moda 123<br>
+                        Polígono Industrial<br>
+                        28001 Madrid, España
+                    </p>
+                </div>
+                
+                <!-- Confirmación email -->
+                <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-4">
+                    <h4 class="font-semibold text-blue-800 mb-2">📧 Confirmación por email</h4>
+                    <p class="text-blue-700">
+                        Hemos enviado un correo con la <strong>etiqueta de devolución prepagada</strong> a tu email asociado.
+                    </p>
+                </div>
+                
+                <!-- Disclaimer financiero -->
+                <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
+                    <h4 class="font-semibold text-red-800 mb-2">⚠️ Información importante</h4>
+                    <p class="text-red-700">
+                        <strong>Una vez recibido y validado el paquete, el reembolso se procesará en tu método de pago original en un plazo de 5 a 7 días hábiles.</strong>
+                    </p>
+                </div>
+                
+                <div class="flex gap-3">
+                    <button id="confirm-return-btn" class="flex-1 px-4 py-3 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition-colors">
+                        Confirmar solicitud
+                    </button>
+                    <button id="cancel-return-modal" class="px-4 py-3 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmación de Cancelación -->
+    <div id="cancel-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4">
+            <div class="p-6">
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 mx-auto bg-red-100 rounded-full flex items-center justify-center mb-4">
+                        <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">¿Cancelar pedido?</h3>
+                    <p class="text-gray-600">
+                        Esta acción cancelará tu pedido y restaurará el stock de los productos. Esta acción no se puede deshacer.
+                    </p>
+                </div>
+                
+                <div class="flex gap-3">
+                    <button id="confirm-cancel-btn" class="flex-1 px-4 py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors">
+                        Sí, cancelar pedido
+                    </button>
+                    <button id="cancel-cancel-modal" class="flex-1 px-4 py-3 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+                        No, mantener
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </PublicLayout>
+
+<script>
+    let currentOrderId: string | null = null;
+    
+    // =====================================================
+    // Sistema de notificaciones Toast bonitas
+    // =====================================================
+    function showToast(message: string, type: 'success' | 'error' | 'info' = 'success') {
+        // Crear contenedor si no existe
+        let container = document.getElementById('toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'toast-container';
+            container.className = 'fixed top-4 right-4 z-[100] flex flex-col gap-3';
+            document.body.appendChild(container);
+        }
+        
+        // Iconos según tipo
+        const icons = {
+            success: `<svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`,
+            error: `<svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`,
+            info: `<svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`
+        };
+        
+        const bgColors = {
+            success: 'bg-green-50 border-green-200',
+            error: 'bg-red-50 border-red-200',
+            info: 'bg-blue-50 border-blue-200'
+        };
+        
+        // Crear toast
+        const toast = document.createElement('div');
+        toast.className = `flex items-center gap-3 px-5 py-4 rounded-xl shadow-lg border ${bgColors[type]} transform translate-x-full opacity-0 transition-all duration-300 max-w-sm`;
+        toast.innerHTML = `
+            ${icons[type]}
+            <p class="text-gray-800 font-medium text-sm">${message}</p>
+            <button class="ml-auto text-gray-400 hover:text-gray-600 transition-colors" onclick="this.parentElement.remove()">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        `;
+        
+        container.appendChild(toast);
+        
+        // Animar entrada
+        requestAnimationFrame(() => {
+            toast.classList.remove('translate-x-full', 'opacity-0');
+        });
+        
+        // Auto-remover después de 4 segundos
+        setTimeout(() => {
+            toast.classList.add('translate-x-full', 'opacity-0');
+            setTimeout(() => toast.remove(), 300);
+        }, 4000);
+    }
+    
+    // Modal de cancelación
+    const cancelModal = document.getElementById('cancel-modal');
+    const confirmCancelBtn = document.getElementById('confirm-cancel-btn');
+    const cancelCancelModal = document.getElementById('cancel-cancel-modal');
+    
+    // Modal de devolución
+    const returnModal = document.getElementById('return-modal');
+    const closeReturnModal = document.getElementById('close-return-modal');
+    const confirmReturnBtn = document.getElementById('confirm-return-btn');
+    const cancelReturnModal = document.getElementById('cancel-return-modal');
+    
+    // Event listeners para botones de cancelar
+    document.querySelectorAll('.cancel-order-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            currentOrderId = (e.currentTarget as HTMLElement).dataset.orderId || null;
+            cancelModal?.classList.remove('hidden');
+        });
+    });
+    
+    // Event listeners para botones de devolución
+    document.querySelectorAll('.return-order-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            currentOrderId = (e.currentTarget as HTMLElement).dataset.orderId || null;
+            returnModal?.classList.remove('hidden');
+        });
+    });
+    
+    // Cerrar modal de cancelación
+    cancelCancelModal?.addEventListener('click', () => {
+        cancelModal?.classList.add('hidden');
+        currentOrderId = null;
+    });
+    
+    // Cerrar modal de devolución
+    closeReturnModal?.addEventListener('click', () => {
+        returnModal?.classList.add('hidden');
+        currentOrderId = null;
+    });
+    cancelReturnModal?.addEventListener('click', () => {
+        returnModal?.classList.add('hidden');
+        currentOrderId = null;
+    });
+    
+    // Confirmar cancelación
+    confirmCancelBtn?.addEventListener('click', async () => {
+        if (!currentOrderId) return;
+        
+        const btn = confirmCancelBtn as HTMLButtonElement;
+        btn.disabled = true;
+        btn.textContent = 'Cancelando...';
+        
+        try {
+            const response = await fetch('/api/orders/cancel', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ orderId: currentOrderId })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                cancelModal?.classList.add('hidden');
+                showToast('✅ Pedido cancelado correctamente. El stock ha sido restaurado.', 'success');
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                showToast('❌ ' + (data.error || 'No se pudo cancelar el pedido'), 'error');
+            }
+        } catch (error) {
+            showToast('❌ Error de conexión. Por favor, inténtalo de nuevo.', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Sí, cancelar pedido';
+        }
+    });
+    
+    // Confirmar devolución
+    confirmReturnBtn?.addEventListener('click', async () => {
+        if (!currentOrderId) return;
+        
+        const btn = confirmReturnBtn as HTMLButtonElement;
+        btn.disabled = true;
+        btn.textContent = 'Procesando...';
+        
+        try {
+            const response = await fetch('/api/orders/return-request', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ orderId: currentOrderId })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                returnModal?.classList.add('hidden');
+                showToast('📧 Solicitud de devolución registrada. Revisa tu email para las instrucciones.', 'success');
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                showToast('❌ ' + (data.error || 'No se pudo procesar la solicitud'), 'error');
+            }
+        } catch (error) {
+            showToast('❌ Error de conexión. Por favor, inténtalo de nuevo.', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Confirmar solicitud';
+        }
+    });
+    
+    // Cerrar modales al hacer clic fuera
+    cancelModal?.addEventListener('click', (e) => {
+        if (e.target === cancelModal) {
+            cancelModal.classList.add('hidden');
+            currentOrderId = null;
+        }
+    });
+    returnModal?.addEventListener('click', (e) => {
+        if (e.target === returnModal) {
+            returnModal.classList.add('hidden');
+            currentOrderId = null;
+        }
+    });
+</script>

@@ -138,120 +138,243 @@ const statusLabels: Record<string, string> = {
                             </thead>
                             <tbody class="divide-y divide-carbon-100">
                                 {orders.map((order) => (
-                                    <tr class="hover:bg-cream-50">
-                                        <td class="px-6 py-4">
-                                            <p class="font-mono text-sm text-carbon-600">
-                                                #{order.id.slice(0, 8)}
-                                            </p>
-                                            <p class="text-xs text-carbon-400">
-                                                {order.order_items?.length || 0}{" "}
-                                                producto(s)
-                                            </p>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <p class="font-medium text-carbon-800">
-                                                {order.customer_name}
-                                            </p>
-                                            <p class="text-sm text-carbon-500">
-                                                {order.customer_email}
-                                            </p>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <p class="font-semibold text-carbon-900">
-                                                {formatPrice(order.total)}
-                                            </p>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <span
-                                                class={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${statusColors[order.status] || "bg-gray-100 text-gray-800"}`}
-                                            >
-                                                {statusLabels[order.status] ||
-                                                    order.status}
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 text-sm text-carbon-500">
-                                            {new Date(
-                                                order.created_at,
-                                            ).toLocaleDateString("es-ES", {
-                                                day: "2-digit",
-                                                month: "short",
-                                                year: "numeric",
-                                            })}
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <form
-                                                method="POST"
-                                                class="flex items-center gap-2"
-                                            >
-                                                <input
-                                                    type="hidden"
-                                                    name="action"
-                                                    value="update_status"
-                                                />
-                                                <input
-                                                    type="hidden"
-                                                    name="order_id"
-                                                    value={order.id}
-                                                />
-                                                <select
-                                                    name="status"
-                                                    class="text-sm border border-carbon-200 rounded px-2 py-1"
+                                    <>
+                                        <tr
+                                            class="hover:bg-cream-50 cursor-pointer order-row"
+                                            data-order-id={order.id}
+                                        >
+                                            <td class="px-6 py-4">
+                                                <div class="flex items-center gap-2">
+                                                    <svg
+                                                        class="w-4 h-4 text-carbon-400 transition-transform order-chevron"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path
+                                                            stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M9 5l7 7-7 7"
+                                                        />
+                                                    </svg>
+                                                    <div>
+                                                        <p class="font-mono text-sm text-carbon-600">
+                                                            #
+                                                            {order.id.slice(
+                                                                0,
+                                                                8,
+                                                            )}
+                                                        </p>
+                                                        <p class="text-xs text-carbon-400">
+                                                            {order.order_items
+                                                                ?.length ||
+                                                                0}{" "}
+                                                            producto(s)
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <p class="font-medium text-carbon-800 flex items-center gap-2">
+                                                    {order.customer_name}
+                                                    {!order.user_id && (
+                                                        <span class="text-[10px] uppercase tracking-wider px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded border border-gray-200 font-bold">
+                                                            Invitado
+                                                        </span>
+                                                    )}
+                                                </p>
+                                                <p class="text-sm text-carbon-500">
+                                                    {order.customer_email}
+                                                </p>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <p class="font-semibold text-carbon-900">
+                                                    {formatPrice(order.total)}
+                                                </p>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <span
+                                                    class={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${statusColors[order.status] || "bg-gray-100 text-gray-800"}`}
                                                 >
-                                                    <option
-                                                        value="pending"
-                                                        selected={
-                                                            order.status ===
-                                                            "pending"
-                                                        }
-                                                    >
-                                                        Pendiente
-                                                    </option>
-                                                    <option
-                                                        value="confirmed"
-                                                        selected={
-                                                            order.status ===
-                                                            "confirmed"
-                                                        }
-                                                    >
-                                                        Confirmado
-                                                    </option>
-                                                    <option
-                                                        value="shipped"
-                                                        selected={
-                                                            order.status ===
-                                                            "shipped"
-                                                        }
-                                                    >
-                                                        Enviado
-                                                    </option>
-                                                    <option
-                                                        value="delivered"
-                                                        selected={
-                                                            order.status ===
-                                                            "delivered"
-                                                        }
-                                                    >
-                                                        Entregado
-                                                    </option>
-                                                    <option
-                                                        value="cancelled"
-                                                        selected={
-                                                            order.status ===
-                                                            "cancelled"
-                                                        }
-                                                    >
-                                                        Cancelado
-                                                    </option>
-                                                </select>
-                                                <button
-                                                    type="submit"
-                                                    class="text-navy-600 hover:text-navy-800 text-sm font-medium"
+                                                    {statusLabels[
+                                                        order.status
+                                                    ] || order.status}
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4 text-sm text-carbon-500">
+                                                {new Date(
+                                                    order.created_at,
+                                                ).toLocaleDateString("es-ES", {
+                                                    day: "2-digit",
+                                                    month: "short",
+                                                    year: "numeric",
+                                                })}
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <form
+                                                    method="POST"
+                                                    class="flex items-center gap-2"
+                                                    onclick="event.stopPropagation()"
                                                 >
-                                                    Actualizar
-                                                </button>
-                                            </form>
-                                        </td>
-                                    </tr>
+                                                    <input
+                                                        type="hidden"
+                                                        name="action"
+                                                        value="update_status"
+                                                    />
+                                                    <input
+                                                        type="hidden"
+                                                        name="order_id"
+                                                        value={order.id}
+                                                    />
+                                                    <select
+                                                        name="status"
+                                                        class="text-sm border border-carbon-200 rounded px-2 py-1"
+                                                    >
+                                                        <option
+                                                            value="pending"
+                                                            selected={
+                                                                order.status ===
+                                                                "pending"
+                                                            }
+                                                        >
+                                                            Pendiente
+                                                        </option>
+                                                        <option
+                                                            value="confirmed"
+                                                            selected={
+                                                                order.status ===
+                                                                "confirmed"
+                                                            }
+                                                        >
+                                                            Confirmado
+                                                        </option>
+                                                        <option
+                                                            value="shipped"
+                                                            selected={
+                                                                order.status ===
+                                                                "shipped"
+                                                            }
+                                                        >
+                                                            Enviado
+                                                        </option>
+                                                        <option
+                                                            value="delivered"
+                                                            selected={
+                                                                order.status ===
+                                                                "delivered"
+                                                            }
+                                                        >
+                                                            Entregado
+                                                        </option>
+                                                        <option
+                                                            value="cancelled"
+                                                            selected={
+                                                                order.status ===
+                                                                "cancelled"
+                                                            }
+                                                        >
+                                                            Cancelado
+                                                        </option>
+                                                    </select>
+                                                    <button
+                                                        type="submit"
+                                                        class="text-navy-600 hover:text-navy-800 text-sm font-medium"
+                                                    >
+                                                        Actualizar
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        {/* Fila de detalles del pedido (oculta por defecto) */}
+                                        <tr
+                                            class="order-details hidden bg-cream-50"
+                                            data-details-for={order.id}
+                                        >
+                                            <td colspan="6" class="px-6 py-4">
+                                                <div class="ml-6 p-4 bg-white rounded-lg border border-carbon-100">
+                                                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                                                        <h4 class="font-semibold text-carbon-800">
+                                                            Productos del pedido
+                                                        </h4>
+                                                        {order.customer_phone && (
+                                                            <div class="flex items-center gap-2 text-sm text-carbon-600 bg-carbon-50 px-3 py-1.5 rounded-lg border border-carbon-100">
+                                                                <svg
+                                                                    class="w-4 h-4"
+                                                                    fill="none"
+                                                                    stroke="currentColor"
+                                                                    viewBox="0 0 24 24"
+                                                                >
+                                                                    <path
+                                                                        stroke-linecap="round"
+                                                                        stroke-linejoin="round"
+                                                                        stroke-width="2"
+                                                                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                                                                    />
+                                                                </svg>
+                                                                <span>
+                                                                    Teléfono:{" "}
+                                                                    <strong class="text-carbon-800">
+                                                                        {
+                                                                            order.customer_phone
+                                                                        }
+                                                                    </strong>
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    {order.order_items &&
+                                                    order.order_items.length >
+                                                        0 ? (
+                                                        <div class="space-y-2">
+                                                            {order.order_items.map(
+                                                                (item: any) => (
+                                                                    <div class="flex items-center justify-between py-2 border-b border-carbon-100 last:border-0">
+                                                                        <div class="flex items-center gap-3">
+                                                                            <span class="text-carbon-800 font-medium">
+                                                                                {item.product_name ||
+                                                                                    "Producto"}
+                                                                            </span>
+                                                                            {item.size &&
+                                                                                item.size !==
+                                                                                    "N/A" && (
+                                                                                    <span class="text-xs bg-carbon-100 px-2 py-0.5 rounded">
+                                                                                        Talla:{" "}
+                                                                                        {
+                                                                                            item.size
+                                                                                        }
+                                                                                    </span>
+                                                                                )}
+                                                                        </div>
+                                                                        <div class="flex items-center gap-4">
+                                                                            <span class="text-carbon-500">
+                                                                                x
+                                                                                {
+                                                                                    item.quantity
+                                                                                }
+                                                                            </span>
+                                                                            <span class="font-semibold text-carbon-800">
+                                                                                {formatPrice(
+                                                                                    item.product_price ||
+                                                                                        item.price ||
+                                                                                        0,
+                                                                                )}
+                                                                            </span>
+                                                                        </div>
+                                                                    </div>
+                                                                ),
+                                                            )}
+                                                        </div>
+                                                    ) : (
+                                                        <p class="text-carbon-500 text-sm">
+                                                            No hay productos
+                                                            registrados
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </>
                                 ))}
                             </tbody>
                         </table>
@@ -313,3 +436,21 @@ const statusLabels: Record<string, string> = {
         </div>
     </div>
 </AdminLayout>
+
+<script>
+    // Toggle order details on row click
+    document.querySelectorAll(".order-row").forEach((row) => {
+        row.addEventListener("click", () => {
+            const orderId = row.getAttribute("data-order-id");
+            const detailsRow = document.querySelector(
+                `[data-details-for="${orderId}"]`,
+            );
+            const chevron = row.querySelector(".order-chevron");
+
+            if (detailsRow) {
+                detailsRow.classList.toggle("hidden");
+                chevron?.classList.toggle("rotate-90");
+            }
+        });
+    });
+</script>
