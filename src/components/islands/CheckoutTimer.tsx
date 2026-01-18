@@ -33,7 +33,14 @@ export default function CheckoutTimer({ onExpire }: CheckoutTimerProps) {
             checkReservation();
         };
 
+        // Listen for reservation cleared event (when cart is emptied)
+        const handleReservationCleared = () => {
+            setIsVisible(false);
+            setRemainingMs(0);
+        };
+
         window.addEventListener('reservationStarted', handleReservationStarted);
+        window.addEventListener('reservationCleared', handleReservationCleared);
 
         // Update every second
         const interval = setInterval(() => {
@@ -57,6 +64,7 @@ export default function CheckoutTimer({ onExpire }: CheckoutTimerProps) {
         return () => {
             clearInterval(interval);
             window.removeEventListener('reservationStarted', handleReservationStarted);
+            window.removeEventListener('reservationCleared', handleReservationCleared);
         };
     }, [onExpire, isVisible, checkReservation]);
 

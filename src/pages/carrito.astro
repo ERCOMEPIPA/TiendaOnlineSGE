@@ -173,7 +173,7 @@ const userSession = await getUserSession(Astro.cookies);
     clearCart,
     loadCart,
   } from "../stores/cart";
-  import { formatPrice } from "../lib/supabase";
+  import { formatPrice, supabase } from "../lib/supabase";
   import {
     startReservation,
     getReservation,
@@ -452,14 +452,21 @@ const userSession = await getUserSession(Astro.cookies);
 
     if (checkoutBtn) {
       checkoutBtn.addEventListener("click", async () => {
-        const isLoggedIn = checkoutBtn.dataset.loggedIn === "true";
+        // Check auth state via API endpoint
+        try {
+          const response = await fetch("/api/auth/session");
+          const data = await response.json();
 
-        if (!isLoggedIn) {
+          if (!data.user) {
+            guestModal?.classList.remove("hidden");
+            return;
+          }
+
+          await processCheckout();
+        } catch (error) {
+          console.error("Error checking session:", error);
           guestModal?.classList.remove("hidden");
-          return;
         }
-
-        await processCheckout();
       });
     }
 

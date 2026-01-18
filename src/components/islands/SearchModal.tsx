@@ -104,6 +104,11 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                         type="text"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && query.length >= 2) {
+                                window.location.href = `/productos?q=${encodeURIComponent(query)}`;
+                            }
+                        }}
                         placeholder="Buscar productos, artistas..."
                         className="flex-1 text-lg outline-none placeholder:text-gray-400"
                     />

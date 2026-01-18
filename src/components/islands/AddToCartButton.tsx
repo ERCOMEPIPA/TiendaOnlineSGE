@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { addItem, loadCart } from '../../stores/cart';
 import type { Product } from '../../lib/supabase';
+import SizeRecommender from './SizeRecommender';
 
 interface AddToCartButtonProps {
     product: Product;
@@ -193,6 +194,10 @@ export default function AddToCartButton({ product, sizes, colors = [] }: AddToCa
                             </button>
                         ))}
                     </div>
+                    {/* Size Recommender */}
+                    <div className="mt-2">
+                        <SizeRecommender sizes={sizes} onSelectSize={setSelectedSize} />
+                    </div>
                 </div>
             )}
 
@@ -203,13 +208,19 @@ export default function AddToCartButton({ product, sizes, colors = [] }: AddToCa
                         Color
                     </label>
                     <div className="flex flex-wrap gap-3">
-                        {colors.map((colorStr) => {
+                        {colors.map((colorStr, index) => {
                             const { name, hex } = parseColor(colorStr);
                             const isSelected = selectedColor === colorStr;
                             return (
                                 <button
                                     key={colorStr}
-                                    onClick={() => setSelectedColor(colorStr)}
+                                    onClick={() => {
+                                        setSelectedColor(colorStr);
+                                        // Dispatch event to change gallery image
+                                        document.dispatchEvent(
+                                            new CustomEvent('colorSelected', { detail: { colorIndex: index } })
+                                        );
+                                    }}
                                     className={`
                                         flex flex-col items-center gap-1 p-2 rounded-lg transition-all duration-200
                                         ${isSelected

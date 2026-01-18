@@ -67,28 +67,41 @@ const hasImages = images && images.length > 0;
     const mainImage = document.getElementById("main-image");
     const thumbnails = document.querySelectorAll(".thumbnail");
 
+    // Function to update gallery to specific image index
+    function updateGalleryImage(index) {
+        if (mainImage && images[index]) {
+            mainImage.src = images[index];
+            mainImage.classList.add("animate-fade-in");
+            setTimeout(
+                () => mainImage.classList.remove("animate-fade-in"),
+                200,
+            );
+        }
+
+        // Update active thumbnail
+        thumbnails.forEach((t, i) => {
+            if (i === index) {
+                t.classList.add("border-navy-800");
+                t.classList.remove("border-transparent");
+            } else {
+                t.classList.remove("border-navy-800");
+                t.classList.add("border-transparent");
+            }
+        });
+    }
+
+    // Listen for thumbnail clicks
     thumbnails.forEach((thumb, index) => {
         thumb.addEventListener("click", () => {
-            // Update main image
-            if (mainImage) {
-                mainImage.src = images[index];
-                mainImage.classList.add("animate-fade-in");
-                setTimeout(
-                    () => mainImage.classList.remove("animate-fade-in"),
-                    200,
-                );
-            }
-
-            // Update active thumbnail
-            thumbnails.forEach((t, i) => {
-                if (i === index) {
-                    t.classList.add("border-navy-800");
-                    t.classList.remove("border-transparent");
-                } else {
-                    t.classList.remove("border-navy-800");
-                    t.classList.add("border-transparent");
-                }
-            });
+            updateGalleryImage(index);
         });
+    });
+
+    // Listen for color selection events from AddToCartButton
+    document.addEventListener("colorSelected", (e) => {
+        const colorIndex = e.detail?.colorIndex;
+        if (typeof colorIndex === "number") {
+            updateGalleryImage(colorIndex);
+        }
     });
 </script>

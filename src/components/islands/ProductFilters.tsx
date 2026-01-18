@@ -28,6 +28,11 @@ interface ProductFiltersProps {
 }
 
 export default function ProductFilters({ products, categories }: ProductFiltersProps) {
+    // Get search query from URL
+    const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+    const initialQuery = urlParams?.get('q') || '';
+
+    const [searchQuery, setSearchQuery] = useState(initialQuery);
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
     const [selectedPriceRanges, setSelectedPriceRanges] = useState<string[]>([]);
     const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
@@ -36,6 +41,15 @@ export default function ProductFilters({ products, categories }: ProductFiltersP
     // Filter products
     const filteredProducts = useMemo(() => {
         let result = [...products];
+
+        // Filter by search query (name or artist)
+        if (searchQuery.length >= 2) {
+            const query = searchQuery.toLowerCase();
+            result = result.filter(p =>
+                p.name.toLowerCase().includes(query) ||
+                (p.artist && p.artist.toLowerCase().includes(query))
+            );
+        }
 
         // Filter by category
         if (selectedCategories.length > 0) {
@@ -70,7 +84,7 @@ export default function ProductFilters({ products, categories }: ProductFiltersP
         }
 
         return result;
-    }, [products, selectedCategories, selectedPriceRanges, selectedSizes, sortBy]);
+    }, [products, searchQuery, selectedCategories, selectedPriceRanges, selectedSizes, sortBy]);
 
     const toggleCategory = (id: string) => {
         setSelectedCategories(prev =>
@@ -91,12 +105,17 @@ export default function ProductFilters({ products, categories }: ProductFiltersP
     };
 
     const clearFilters = () => {
+        setSearchQuery('');
         setSelectedCategories([]);
         setSelectedPriceRanges([]);
         setSelectedSizes([]);
+        // Clear URL param
+        if (typeof window !== 'undefined') {
+            window.history.replaceState({}, '', window.location.pathname);
+        }
     };
 
-    const hasActiveFilters = selectedCategories.length > 0 || selectedPriceRanges.length > 0 || selectedSizes.length > 0;
+    const hasActiveFilters = searchQuery.length > 0 || selectedCategories.length > 0 || selectedPriceRanges.length > 0 || selectedSizes.length > 0;
 
     const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
@@ -114,6 +133,23 @@ export default function ProductFilters({ products, categories }: ProductFiltersP
                             >
                                 Limpiar
                             </button>
+                        )}
+                    </div>
+
+                    {/* Search filter */}
+                    <div className="mb-6">
+                        <h4 className="text-sm font-medium text-gray-600 mb-3">Buscar</h4>
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Producto o artista..."
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                        {searchQuery && (
+                            <p className="mt-2 text-xs text-blue-600">
+                                Buscando: "{searchQuery}"
+                            </p>
                         )}
                     </div>
 

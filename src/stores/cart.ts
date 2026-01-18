@@ -1,5 +1,6 @@
 import { atom, computed, map } from 'nanostores';
 import type { Product } from '../lib/supabase';
+import { clearReservation } from '../lib/cartReservation';
 
 // Cart item interface
 export interface CartItem {
@@ -67,6 +68,14 @@ export function removeItem(productId: string, size: string, color: string = ''):
     delete currentItems[key];
     $cartItems.set(currentItems);
     saveCart();
+
+    // If cart is now empty, clear the reservation and notify timer
+    if (Object.keys(currentItems).length === 0) {
+        clearReservation();
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('reservationCleared'));
+        }
+    }
 }
 
 // Update item quantity
@@ -89,6 +98,11 @@ export function updateQuantity(productId: string, size: string, color: string = 
 export function clearCart(): void {
     $cartItems.set({});
     saveCart();
+    // Clear reservation when cart is emptied
+    clearReservation();
+    if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('reservationCleared'));
+    }
 }
 
 // Toggle cart visibility

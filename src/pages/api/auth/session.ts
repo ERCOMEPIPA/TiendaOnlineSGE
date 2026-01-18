@@ -5,8 +5,10 @@ import { supabase } from '../../../lib/supabase';
 
 export const GET: APIRoute = async ({ cookies }) => {
     try {
-        const accessToken = cookies.get('sb-access-token')?.value;
-        const refreshToken = cookies.get('sb-refresh-token')?.value;
+        // Only check user tokens for the public storefront
+        // Admin tokens (sb-access-token) are for the admin panel, not for shopping
+        const accessToken = cookies.get('user-access-token')?.value;
+        const refreshToken = cookies.get('user-refresh-token')?.value;
 
         if (!accessToken || !refreshToken) {
             return new Response(
