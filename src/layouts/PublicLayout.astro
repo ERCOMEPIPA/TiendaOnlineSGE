@@ -6,6 +6,7 @@ import SearchButton from "../components/islands/SearchButton";
 import WishlistIcon from "../components/islands/WishlistIcon";
 import UserMenu from "../components/ui/UserMenu.astro";
 import Newsletter from "../components/Newsletter.astro";
+import NewsletterPopup from "../components/islands/NewsletterPopup.astro";
 import { getUserSession } from "../lib/auth";
 
 interface Props {
@@ -276,4 +277,7 @@ const currentPath = Astro.url.pathname;
             mobileMenu?.classList.toggle("hidden");
         });
     </script>
+
+    <!-- Newsletter Popup -->
+    <NewsletterPopup />
 </BaseLayout>

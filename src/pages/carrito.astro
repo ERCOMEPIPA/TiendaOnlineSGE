@@ -237,9 +237,10 @@ const userSession = await getUserSession(Astro.cookies);
     }
 
     const itemsHtml = items
-      .map(
-        (item) => `
-      <div class="flex gap-4 p-4 border-b border-carbon-100" data-item-key="${item.product.id}-${item.size}">
+      .map((item) => {
+        const colorDisplay = item.color ? item.color.split(":")[0] : "";
+        return `
+      <div class="flex gap-4 p-4 border-b border-carbon-100" data-item-key="${item.product.id}-${item.size}-${item.color}">
         <div class="w-24 h-24 bg-carbon-100 rounded-lg overflow-hidden flex-shrink-0">
           ${
             item.product.images?.[0]
@@ -254,7 +255,7 @@ const userSession = await getUserSession(Astro.cookies);
         </div>
         <div class="flex-1">
           <h3 class="font-medium text-carbon-800">${item.product.name}</h3>
-          <p class="text-sm text-carbon-500">Talla: ${item.size}</p>
+          <p class="text-sm text-carbon-500">Talla: ${item.size}${colorDisplay ? ` | Color: ${colorDisplay}` : ""}</p>
           <p class="font-semibold text-navy-800 mt-1">${formatPrice(item.product.price)}</p>
           
           <div class="flex items-center gap-4 mt-3">
@@ -264,6 +265,7 @@ const userSession = await getUserSession(Astro.cookies);
                 data-action="decrease"
                 data-product-id="${item.product.id}"
                 data-size="${item.size}"
+                data-color="${item.color || ""}"
                 data-qty="${item.quantity}"
               >−</button>
               <span class="w-10 text-center font-medium">${item.quantity}</span>
@@ -272,6 +274,7 @@ const userSession = await getUserSession(Astro.cookies);
                 data-action="increase"
                 data-product-id="${item.product.id}"
                 data-size="${item.size}"
+                data-color="${item.color || ""}"
                 data-qty="${item.quantity}"
               >+</button>
             </div>
@@ -279,6 +282,7 @@ const userSession = await getUserSession(Astro.cookies);
               class="remove-btn text-carbon-400 hover:text-red-500 transition-colors"
               data-product-id="${item.product.id}"
               data-size="${item.size}"
+              data-color="${item.color || ""}"
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
@@ -291,8 +295,8 @@ const userSession = await getUserSession(Astro.cookies);
           <p class="font-semibold text-carbon-900">${formatPrice(item.product.price * item.quantity)}</p>
         </div>
       </div>
-    `,
-      )
+    `;
+      })
       .join("");
 
     container.innerHTML = `
@@ -393,12 +397,13 @@ const userSession = await getUserSession(Astro.cookies);
         const action = target.dataset.action;
         const productId = target.dataset.productId!;
         const size = target.dataset.size!;
+        const color = target.dataset.color || "";
         const qty = parseInt(target.dataset.qty!);
 
         if (action === "decrease") {
-          updateQuantity(productId, size, qty - 1);
+          updateQuantity(productId, size, color, qty - 1);
         } else {
-          updateQuantity(productId, size, qty + 1);
+          updateQuantity(productId, size, color, qty + 1);
         }
         renderCart();
       });
@@ -409,7 +414,8 @@ const userSession = await getUserSession(Astro.cookies);
         const target = e.currentTarget as HTMLElement;
         const productId = target.dataset.productId!;
         const size = target.dataset.size!;
-        removeItem(productId, size);
+        const color = target.dataset.color || "";
+        removeItem(productId, size, color);
         renderCart();
       });
     });

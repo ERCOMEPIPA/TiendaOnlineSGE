@@ -5,15 +5,23 @@ import type { Product } from '../../lib/supabase';
 interface AddToCartButtonProps {
     product: Product;
     sizes: string[];
+    colors?: string[]; // Format: "ColorName:#HexCode"
 }
 
-export default function AddToCartButton({ product, sizes }: AddToCartButtonProps) {
+export default function AddToCartButton({ product, sizes, colors = [] }: AddToCartButtonProps) {
     const [selectedSize, setSelectedSize] = useState<string>(sizes[0] || '');
+    const [selectedColor, setSelectedColor] = useState<string>(colors[0] || '');
     const [quantity, setQuantity] = useState(1);
     const [isAdding, setIsAdding] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
     const [notifyState, setNotifyState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [userEmail, setUserEmail] = useState<string>('');
+
+    // Helper to parse color format "Name:#HexCode"
+    const parseColor = (colorStr: string) => {
+        const [name, hex] = colorStr.split(':');
+        return { name: name || colorStr, hex: hex || '#888888' };
+    };
 
     useEffect(() => {
         loadCart();
@@ -30,12 +38,14 @@ export default function AddToCartButton({ product, sizes }: AddToCartButtonProps
 
     const handleAddToCart = () => {
         if (!selectedSize) return;
+        // Only require color if product has colors
+        if (colors.length > 0 && !selectedColor) return;
 
         setIsAdding(true);
 
         // Simulate a small delay for UX feedback
         setTimeout(() => {
-            addItem(product, quantity, selectedSize);
+            addItem(product, quantity, selectedSize, selectedColor);
             setIsAdding(false);
             setShowSuccess(true);
 
@@ -182,6 +192,46 @@ export default function AddToCartButton({ product, sizes }: AddToCartButtonProps
                                 {size}
                             </button>
                         ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Color Selection */}
+            {colors.length > 0 && (
+                <div>
+                    <label className="block text-sm font-medium text-carbon-700 mb-2">
+                        Color
+                    </label>
+                    <div className="flex flex-wrap gap-3">
+                        {colors.map((colorStr) => {
+                            const { name, hex } = parseColor(colorStr);
+                            const isSelected = selectedColor === colorStr;
+                            return (
+                                <button
+                                    key={colorStr}
+                                    onClick={() => setSelectedColor(colorStr)}
+                                    className={`
+                                        flex flex-col items-center gap-1 p-2 rounded-lg transition-all duration-200
+                                        ${isSelected
+                                            ? 'bg-navy-50 ring-2 ring-navy-800'
+                                            : 'hover:bg-carbon-50'
+                                        }
+                                    `}
+                                    title={name}
+                                >
+                                    <span
+                                        className={`
+                                            w-8 h-8 rounded-full border-2 transition-all
+                                            ${isSelected ? 'border-navy-800 scale-110' : 'border-carbon-200'}
+                                        `}
+                                        style={{ backgroundColor: hex }}
+                                    />
+                                    <span className={`text-xs ${isSelected ? 'font-semibold text-navy-800' : 'text-carbon-600'}`}>
+                                        {name}
+                                    </span>
+                                </button>
+                            );
+                        })}
                     </div>
                 </div>
             )}

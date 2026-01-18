@@ -35,6 +35,7 @@ const mockProduct: Product = {
     price: 3500,
     stock: 15,
     sizes: ["S", "M", "L", "XL", "XXL"],
+    colors: ["Negro:#000000", "Blanco:#FFFFFF", "Rojo:#DC2626"],
     category_id: null,
     images: [
         "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800",
@@ -133,6 +134,7 @@ const related = relatedProducts || [];
                     client:load
                     product={currentProduct}
                     sizes={currentProduct.sizes}
+                    colors={currentProduct.colors || []}
                 />
 
                 {/* Additional info */}

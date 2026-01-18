@@ -21,6 +21,7 @@ export interface Product {
     price: number; // Price in cents
     stock: number;
     sizes: string[];
+    colors: string[]; // Format: "ColorName:#HexCode"
     category_id: string | null;
     images: string[];
     featured: boolean;

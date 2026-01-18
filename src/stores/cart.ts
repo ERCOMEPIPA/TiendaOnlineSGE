@@ -6,6 +6,7 @@ export interface CartItem {
     product: Product;
     quantity: number;
     size: string;
+    color: string; // Format: "ColorName:#HexCode" or empty string
 }
 
 // Cart state using a map for efficient updates
@@ -32,14 +33,14 @@ export const $cartItemsArray = computed($cartItems, (items) => {
     return Object.values(items);
 });
 
-// Generate unique key for cart item (product id + size)
-function getCartKey(productId: string, size: string): string {
-    return `${productId}-${size}`;
+// Generate unique key for cart item (product id + size + color)
+function getCartKey(productId: string, size: string, color: string = ''): string {
+    return `${productId}-${size}-${color}`;
 }
 
 // Add item to cart
-export function addItem(product: Product, quantity: number = 1, size: string): void {
-    const key = getCartKey(product.id, size);
+export function addItem(product: Product, quantity: number = 1, size: string, color: string = ''): void {
+    const key = getCartKey(product.id, size, color);
     const currentItems = $cartItems.get();
     const existingItem = currentItems[key];
 
@@ -49,7 +50,7 @@ export function addItem(product: Product, quantity: number = 1, size: string): v
             quantity: existingItem.quantity + quantity,
         });
     } else {
-        $cartItems.setKey(key, { product, quantity, size });
+        $cartItems.setKey(key, { product, quantity, size, color });
     }
 
     // Save to localStorage
@@ -60,8 +61,8 @@ export function addItem(product: Product, quantity: number = 1, size: string): v
 }
 
 // Remove item from cart
-export function removeItem(productId: string, size: string): void {
-    const key = getCartKey(productId, size);
+export function removeItem(productId: string, size: string, color: string = ''): void {
+    const key = getCartKey(productId, size, color);
     const currentItems = { ...$cartItems.get() };
     delete currentItems[key];
     $cartItems.set(currentItems);
@@ -69,14 +70,14 @@ export function removeItem(productId: string, size: string): void {
 }
 
 // Update item quantity
-export function updateQuantity(productId: string, size: string, quantity: number): void {
-    const key = getCartKey(productId, size);
+export function updateQuantity(productId: string, size: string, color: string = '', quantity: number): void {
+    const key = getCartKey(productId, size, color);
     const currentItems = $cartItems.get();
     const item = currentItems[key];
 
     if (item) {
         if (quantity <= 0) {
-            removeItem(productId, size);
+            removeItem(productId, size, color);
         } else {
             $cartItems.setKey(key, { ...item, quantity });
             saveCart();
