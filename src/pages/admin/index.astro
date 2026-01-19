@@ -30,7 +30,7 @@ const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 const { data: monthlySalesData } = await supabase
     .from("orders")
     .select("total")
-    .eq("status", "paid")
+    .in("status", ["confirmed", "shipped", "delivered"])
     .gte("created_at", monthStart);
 
 const monthlySales =
@@ -76,7 +76,7 @@ const sevenDaysAgo = new Date(
 const { data: dailySalesData } = await supabase
     .from("orders")
     .select("created_at, total")
-    .eq("status", "paid")
+    .in("status", ["confirmed", "shipped", "delivered"])
     .gte("created_at", sevenDaysAgo)
     .order("created_at", { ascending: true });
 

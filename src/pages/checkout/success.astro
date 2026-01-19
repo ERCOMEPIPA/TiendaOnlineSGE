@@ -63,7 +63,7 @@ if (sessionId) {
                         shipping_city: shippingCity,
                         shipping_postal_code: shippingPostalCode,
                         total: session.amount_total || 0,
-                        status: "pending",
+                        status: "confirmed",
                         stripe_session_id: sessionId,
                     })
                     .select()

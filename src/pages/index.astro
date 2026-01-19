@@ -132,19 +132,50 @@ cats.forEach((cat) => {
 	title="Inicio"
 	description="FashionStore - Tu tienda de merch personalizado de tus artistas favoritos"
 >
-	<!-- Hero Section -->
-	<section class="relative bg-navy-900 text-white overflow-hidden">
-		<div class="absolute inset-0 opacity-20">
+	<!-- Hero Section with Fullscreen Product Carousel Background -->
+	<section
+		class="relative bg-navy-900 text-white overflow-hidden min-h-[500px] lg:min-h-[600px]"
+	>
+		<!-- Background Carousel -->
+		<div class="absolute inset-0">
 			<div
-				class="absolute inset-0 bg-gradient-to-br from-accent-gold/30 to-transparent"
+				id="hero-product-carousel"
+				class="flex transition-transform duration-1000 ease-in-out h-full"
+				data-products={JSON.stringify(
+					products.slice(0, 6).map((p) => ({
+						artist: p.artist || "Exclusivo",
+						name: p.name,
+						price: p.price,
+					})),
+				)}
+			>
+				{
+					products.slice(0, 6).map((product, index) => (
+						<div class="min-w-full h-full relative flex-shrink-0">
+							<img
+								src={
+									product.images?.[0] ||
+									"https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=1200"
+								}
+								alt={product.name}
+								class="w-full h-full object-cover"
+							/>
+						</div>
+					))
+				}
+			</div>
+			<!-- Dark overlay for text readability -->
+			<div
+				class="absolute inset-0 bg-gradient-to-r from-navy-900/80 via-navy-900/50 to-transparent"
 			>
 			</div>
 		</div>
 
+		<!-- Content -->
 		<div
-			class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32"
+			class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32 z-10"
 		>
-			<div class="max-w-2xl">
+			<div class="max-w-xl">
 				<h1
 					class="text-4xl lg:text-6xl font-serif font-bold leading-tight animate-slide-up"
 				>
@@ -174,8 +205,93 @@ cats.forEach((cat) => {
 						Explorar
 					</Button>
 				</div>
+
+				<!-- Current Product Info -->
+				<div
+					id="hero-product-info"
+					class="mt-10 animate-slide-up"
+					style="animation-delay: 0.3s;"
+				>
+					<div
+						class="inline-flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2"
+					>
+						<span
+							class="text-accent-gold font-medium"
+							id="hero-product-artist"
+							>{products[0]?.artist || "Exclusivo"}</span
+						>
+						<span class="text-white/60">|</span>
+						<span class="text-white" id="hero-product-name"
+							>{products[0]?.name}</span
+						>
+						<span class="text-white/60">|</span>
+						<span
+							class="text-accent-gold font-semibold"
+							id="hero-product-price"
+						>
+							{
+								new Intl.NumberFormat("es-ES", {
+									style: "currency",
+									currency: "EUR",
+								}).format((products[0]?.price || 0) / 100)
+							}
+						</span>
+					</div>
+				</div>
 			</div>
 		</div>
+
+		<!-- Carousel Indicators -->
+		<div
+			class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-20"
+		>
+			{
+				products
+					.slice(0, 6)
+					.map((_, index) => (
+						<button
+							class={`hero-carousel-dot w-3 h-3 rounded-full transition-all duration-300 ${index === 0 ? "bg-accent-gold scale-125" : "bg-white/40 hover:bg-white/70"}`}
+							data-index={index}
+						/>
+					))
+			}
+		</div>
+
+		<!-- Navigation Arrows -->
+		<button
+			id="hero-carousel-prev"
+			class="absolute left-4 lg:left-8 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/30 transition-all z-20"
+		>
+			<svg
+				class="w-6 h-6"
+				fill="none"
+				stroke="currentColor"
+				viewBox="0 0 24 24"
+			>
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="2"
+					d="M15 19l-7-7 7-7"></path>
+			</svg>
+		</button>
+		<button
+			id="hero-carousel-next"
+			class="absolute right-4 lg:right-8 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/30 transition-all z-20"
+		>
+			<svg
+				class="w-6 h-6"
+				fill="none"
+				stroke="currentColor"
+				viewBox="0 0 24 24"
+			>
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="2"
+					d="M9 5l7 7-7 7"></path>
+			</svg>
+		</button>
 	</section>
 
 	<!-- Featured Products -->
@@ -322,5 +438,108 @@ cats.forEach((cat) => {
 				images[currentIndex].classList.add("opacity-100");
 			}, 3000);
 		});
+
+		// Hero Product Carousel
+		const carousel = document.getElementById("hero-product-carousel");
+		const prevBtn = document.getElementById("hero-carousel-prev");
+		const nextBtn = document.getElementById("hero-carousel-next");
+		const dots = document.querySelectorAll(".hero-carousel-dot");
+		const productArtist = document.getElementById("hero-product-artist");
+		const productName = document.getElementById("hero-product-name");
+		const productPrice = document.getElementById("hero-product-price");
+
+		if (carousel && dots.length > 0) {
+			const slides = carousel.children;
+			const totalSlides = slides.length;
+			let currentSlide = 0;
+			let autoPlayInterval: number;
+
+			// Get products data from the carousel data attribute
+			const productsData = JSON.parse(carousel.dataset.products || "[]");
+
+			function formatPrice(cents: number): string {
+				return new Intl.NumberFormat("es-ES", {
+					style: "currency",
+					currency: "EUR",
+				}).format(cents / 100);
+			}
+
+			function updateProductInfo(index: number) {
+				if (productsData[index]) {
+					const product = productsData[index];
+					if (productArtist)
+						productArtist.textContent = product.artist;
+					if (productName) productName.textContent = product.name;
+					if (productPrice)
+						productPrice.textContent = formatPrice(product.price);
+				}
+			}
+
+			function goToSlide(index: number) {
+				if (index < 0) index = totalSlides - 1;
+				if (index >= totalSlides) index = 0;
+
+				currentSlide = index;
+				carousel.style.transform = `translateX(-${currentSlide * 100}%)`;
+
+				// Update dots
+				dots.forEach((dot, i) => {
+					if (i === currentSlide) {
+						dot.classList.add("bg-accent-gold", "scale-125");
+						dot.classList.remove("bg-white/40");
+					} else {
+						dot.classList.remove("bg-accent-gold", "scale-125");
+						dot.classList.add("bg-white/40");
+					}
+				});
+
+				// Update product info
+				updateProductInfo(currentSlide);
+			}
+
+			function nextSlide() {
+				goToSlide(currentSlide + 1);
+			}
+
+			function prevSlide() {
+				goToSlide(currentSlide - 1);
+			}
+
+			function startAutoPlay() {
+				autoPlayInterval = window.setInterval(nextSlide, 4000);
+			}
+
+			function stopAutoPlay() {
+				clearInterval(autoPlayInterval);
+			}
+
+			// Event listeners
+			prevBtn?.addEventListener("click", () => {
+				prevSlide();
+				stopAutoPlay();
+				startAutoPlay();
+			});
+
+			nextBtn?.addEventListener("click", () => {
+				nextSlide();
+				stopAutoPlay();
+				startAutoPlay();
+			});
+
+			dots.forEach((dot, index) => {
+				dot.addEventListener("click", () => {
+					goToSlide(index);
+					stopAutoPlay();
+					startAutoPlay();
+				});
+			});
+
+			// Pause on hover
+			carousel.addEventListener("mouseenter", stopAutoPlay);
+			carousel.addEventListener("mouseleave", startAutoPlay);
+
+			// Start auto-play
+			startAutoPlay();
+		}
 	});
 </script>

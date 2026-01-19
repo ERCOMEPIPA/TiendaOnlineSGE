@@ -4,45 +4,45 @@ export default {
     theme: {
         extend: {
             colors: {
-                // Paleta principal - Minimalismo Sofisticado
+                // Paleta principal - Rosa/Lavanda Moderno
                 navy: {
-                    50: '#f0f4f8',
-                    100: '#d9e2ec',
-                    200: '#bcccdc',
-                    300: '#9fb3c8',
-                    400: '#829ab1',
-                    500: '#627d98',
-                    600: '#486581',
-                    700: '#334e68',
-                    800: '#243b53',
-                    900: '#102a43',
-                    950: '#0a1929',
+                    50: '#fdf2f8',   // rose-50
+                    100: '#fce7f3',  // rose-100
+                    200: '#fbcfe8',  // rose-200
+                    300: '#f9a8d4',  // rose-300
+                    400: '#f472b6',  // rose-400
+                    500: '#ec4899',  // rose-500
+                    600: '#db2777',  // rose-600
+                    700: '#be185d',  // rose-700
+                    800: '#9d174d',  // rose-800
+                    900: '#831843',  // rose-900
+                    950: '#500724',  // rose-950
                 },
                 carbon: {
-                    50: '#f7f7f7',
-                    100: '#e3e3e3',
-                    200: '#c8c8c8',
-                    300: '#a4a4a4',
-                    400: '#818181',
-                    500: '#666666',
-                    600: '#515151',
-                    700: '#434343',
-                    800: '#383838',
-                    900: '#1a1a1a',
-                    950: '#0d0d0d',
+                    50: '#faf5ff',   // purple-50
+                    100: '#f3e8ff',  // purple-100
+                    200: '#e9d5ff',  // purple-200
+                    300: '#d8b4fe',  // purple-300
+                    400: '#c084fc',  // purple-400
+                    500: '#a855f7',  // purple-500
+                    600: '#9333ea',  // purple-600
+                    700: '#7c3aed',  // purple-700 (violet)
+                    800: '#6b21a8',  // purple-800
+                    900: '#581c87',  // purple-900
+                    950: '#3b0764',  // purple-950
                 },
                 cream: {
-                    50: '#fefdfb',
-                    100: '#faf8f3',
-                    200: '#f5f0e6',
-                    300: '#ede5d3',
-                    400: '#e2d5bb',
-                    500: '#d4c4a1',
+                    50: '#fefce8',   // yellow-50 (soft cream)
+                    100: '#fef9c3',  // yellow-100
+                    200: '#fef08a',  // yellow-200
+                    300: '#fde047',  // yellow-300
+                    400: '#facc15',  // yellow-400
+                    500: '#eab308',  // yellow-500
                 },
                 accent: {
-                    leather: '#8B5A2B',
-                    gold: '#C9A227',
-                    'gold-matte': '#B8960F',
+                    leather: '#be185d',  // rose-700 for buttons
+                    gold: '#f472b6',     // rose-400 for highlights
+                    'gold-matte': '#db2777', // rose-600 for hover
                 }
             },
             fontFamily: {
