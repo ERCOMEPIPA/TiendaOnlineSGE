@@ -69,8 +69,8 @@ export default function WishlistButton({
                 rounded-full
                 transition-all duration-200
                 ${isInList
-                    ? 'bg-red-50 text-red-500 hover:bg-red-100'
-                    : 'bg-white/90 text-gray-400 hover:text-red-500 hover:bg-white'
+                    ? 'bg-[#8B4513] text-[#fdfcf9] hover:bg-[#a0522d]'
+                    : 'bg-white/90 text-[#6f6458] hover:text-[#8B4513] hover:bg-white'
                 }
                 shadow-md hover:shadow-lg
                 ${isAnimating ? 'scale-125' : 'scale-100'}

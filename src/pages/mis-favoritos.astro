@@ -12,10 +12,12 @@ import ProductCard from "../components/product/ProductCard.astro";
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <!-- Header -->
         <div class="mb-8">
-            <h1 class="text-3xl lg:text-4xl font-serif font-bold text-navy-900">
+            <h1
+                class="text-3xl lg:text-4xl font-serif font-bold text-[#2a2622]"
+            >
                 💖 Mis Favoritos
             </h1>
-            <p class="mt-2 text-carbon-600">
+            <p class="mt-2 text-[#6f6458]">
                 Productos que has guardado para más tarde
             </p>
         </div>
@@ -36,17 +38,17 @@ import ProductCard from "../components/product/ProductCard.astro";
                         d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                     ></path>
                 </svg>
-                <h2 class="mt-4 text-xl font-semibold text-carbon-800">
+                <h2 class="mt-4 text-xl font-semibold text-[#2a2622]">
                     Tu lista de favoritos está vacía
                 </h2>
-                <p class="mt-2 text-carbon-500">
+                <p class="mt-2 text-[#6f6458]">
                     Explora nuestra tienda y guarda los productos que te gusten
                     haciendo clic en el ícono de corazón.
                 </p>
                 <a
                     href="/productos"
-                    class="mt-6 inline-flex items-center gap-2 bg-navy-800 text-white px-6 py-3 rounded-lg
-                           hover:bg-navy-900 transition-colors font-medium"
+                    class="mt-6 inline-flex items-center gap-2 bg-[#2a2622] text-[#fdfcf9] px-6 py-3 rounded-none
+                           hover:bg-[#3d3831] transition-colors font-medium"
                 >
                     <svg
                         class="w-5 h-5"
@@ -70,7 +72,7 @@ import ProductCard from "../components/product/ProductCard.astro";
         <div id="wishlist-grid" class="hidden">
             <!-- Header with count -->
             <div class="flex items-center justify-between mb-6">
-                <p class="text-carbon-600">
+                <p class="text-[#6f6458]">
                     <span id="wishlist-count">0</span> producto(s) en tu lista
                 </p>
                 <button
@@ -117,7 +119,7 @@ import ProductCard from "../components/product/ProductCard.astro";
         <div class="flex items-center justify-center min-h-screen p-4">
             <div
                 id="modal-content"
-                class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all"
+                class="relative bg-white rounded-none shadow-2xl max-w-md w-full p-6 transform transition-all border border-[#ccc5b8]"
             >
                 <!-- Icon -->
                 <div
@@ -139,10 +141,10 @@ import ProductCard from "../components/product/ProductCard.astro";
                 </div>
 
                 <!-- Text -->
-                <h3 class="text-xl font-bold text-gray-900 text-center mb-2">
+                <h3 class="text-xl font-bold text-[#2a2622] text-center mb-2">
                     ¿Vaciar lista de favoritos?
                 </h3>
-                <p class="text-gray-500 text-center mb-6">
+                <p class="text-[#6f6458] text-center mb-6">
                     Se eliminarán todos los productos de tu lista de favoritos.
                     Esta acción no se puede deshacer.
                 </p>
@@ -151,13 +153,13 @@ import ProductCard from "../components/product/ProductCard.astro";
                 <div class="flex gap-3">
                     <button
                         id="modal-cancel"
-                        class="flex-1 px-4 py-3 border border-gray-300 rounded-xl text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                        class="flex-1 px-4 py-3 border border-[#ccc5b8] rounded-none text-[#6f6458] font-medium hover:bg-[#fdfcf9] transition-colors"
                     >
                         Cancelar
                     </button>
                     <button
                         id="modal-confirm"
-                        class="flex-1 px-4 py-3 bg-red-500 text-white rounded-xl font-medium hover:bg-red-600 transition-colors flex items-center justify-center gap-2"
+                        class="flex-1 px-4 py-3 bg-[#8B4513] text-[#fdfcf9] rounded-none font-medium hover:bg-[#a0522d] transition-colors flex items-center justify-center gap-2"
                     >
                         <svg
                             class="w-5 h-5"
@@ -260,37 +262,37 @@ import ProductCard from "../components/product/ProductCard.astro";
             productsContainer.innerHTML = items
                 .map(
                     ({ product, addedAt }) => `
-                <div class="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300">
+                <div class="group bg-white rounded-none overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-[#ccc5b8]">
                     <a href="/productos/${product.slug}" class="block">
-                        <div class="aspect-[3/4] bg-carbon-100 relative overflow-hidden">
+                        <div class="aspect-[3/4] bg-[#fdfcf9] relative overflow-hidden">
                             ${
                                 product.images?.[0]
                                     ? `<img src="${product.images[0]}" alt="${product.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">`
-                                    : `<div class="w-full h-full flex items-center justify-center text-carbon-300">
+                                    : `<div class="w-full h-full flex items-center justify-center text-[#ccc5b8]">
                                     <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                     </svg>
                                 </div>`
                             }
-                            ${product.featured ? `<span class="absolute top-3 left-3 bg-accent-gold text-white text-xs font-bold px-2 py-1 rounded-full uppercase tracking-wide">Destacado</span>` : ""}
-                            ${product.stock < 1 ? `<div class="absolute inset-0 bg-carbon-900/60 flex items-center justify-center"><span class="bg-white text-carbon-800 px-4 py-2 rounded-lg font-semibold">Agotado</span></div>` : ""}
+                            ${product.featured ? `<span class="absolute top-3 left-3 bg-[#A68A4B] text-[#fdfcf9] text-xs font-bold px-2 py-1 rounded-none uppercase tracking-wider">Destacado</span>` : ""}
+                            ${product.stock < 1 ? `<div class="absolute inset-0 bg-[#2a2622]/60 flex items-center justify-center"><span class="bg-[#fdfcf9] text-[#2a2622] px-4 py-2 rounded-none font-semibold">Agotado</span></div>` : ""}
                         </div>
                     </a>
                     
                     <div class="p-4">
-                        ${product.artist ? `<p class="text-xs text-accent-gold font-semibold uppercase tracking-wider mb-1">${product.artist}</p>` : ""}
+                        ${product.artist ? `<p class="text-xs text-[#8B4513] font-semibold uppercase tracking-wider mb-1">${product.artist}</p>` : ""}
                         <a href="/productos/${product.slug}">
-                            <h3 class="font-medium text-carbon-800 hover:text-navy-800 transition-colors line-clamp-2">${product.name}</h3>
+                            <h3 class="font-medium text-[#2a2622] hover:text-[#8B4513] transition-colors line-clamp-2">${product.name}</h3>
                         </a>
-                        <p class="mt-2 text-lg font-serif font-semibold text-navy-900">${formatPrice(product.price)}</p>
+                        <p class="mt-2 text-lg font-serif font-semibold text-[#2a2622]">${formatPrice(product.price)}</p>
                         
                         <div class="mt-3 flex items-center justify-between">
-                            <span class="text-xs text-carbon-400">
+                            <span class="text-xs text-[#6f6458]">
                                 Añadido el ${new Date(addedAt).toLocaleDateString("es-ES")}
                             </span>
                             <button 
                                 data-remove-id="${product.id}"
-                                class="text-red-500 hover:text-red-700 transition-colors p-1"
+                                class="text-[#8B4513] hover:text-[#2a2622] transition-colors p-1"
                                 title="Quitar de favoritos"
                             >
                                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">

@@ -1,21 +1,22 @@
 ---
-// Newsletter Subscription Component
+// Newsletter Subscription Component - Origin Style
 ---
 
-<div
-    class="newsletter-section bg-gradient-to-r from-gray-900 to-gray-800 py-12"
->
+<div class="newsletter-section bg-cream-100 py-16">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div
             class="flex flex-col md:flex-row items-center justify-between gap-8"
         >
             <div class="text-center md:text-left">
-                <h3 class="text-2xl font-bold text-white mb-2">
-                    ✨ Únete a nuestra Newsletter
+                <h3
+                    class="text-2xl md:text-3xl font-serif italic text-[#2a2622] mb-3"
+                >
+                    Únete a nuestra Newsletter
                 </h3>
-                <p class="text-gray-300">
+                <p class="text-[#6f6458] max-w-md">
                     Recibe ofertas exclusivas, novedades y un <strong
-                        class="text-white">10% de descuento</strong
+                        class="text-[#8B4513] font-medium"
+                        >10% de descuento</strong
                     > en tu primera compra
                 </p>
             </div>
@@ -24,22 +25,28 @@
                 id="newsletter-form"
                 class="flex flex-col sm:flex-row gap-3 w-full md:w-auto"
             >
-                <input
-                    type="email"
-                    id="newsletter-email"
-                    name="email"
-                    placeholder="Tu email..."
-                    required
-                    class="px-5 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/50 w-full sm:w-72"
-                />
+                <div class="relative">
+                    <input
+                        type="email"
+                        id="newsletter-email"
+                        name="email"
+                        placeholder="Tu email..."
+                        required
+                        class="px-6 py-4 bg-[#fdfcf9] border border-[#ccc5b8] text-[#2a2622]
+                               placeholder-[#ada397] focus:outline-none focus:border-[#2a2622]
+                               w-full sm:w-80 transition-all duration-300"
+                    />
+                </div>
                 <button
                     type="submit"
                     id="newsletter-btn"
-                    class="px-6 py-3 bg-white text-gray-900 font-semibold rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
+                    class="px-8 py-4 bg-[#2a2622] text-[#fdfcf9] text-xs tracking-wider uppercase font-medium
+                           hover:bg-[#3d3831] transition-all duration-300
+                           flex items-center justify-center gap-2 group"
                 >
                     <span>Suscribirme</span>
                     <svg
-                        class="w-5 h-5"
+                        class="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -57,7 +64,7 @@
         <!-- Toast container for this component -->
         <div
             id="newsletter-toast"
-            class="hidden mt-4 p-4 rounded-lg text-center transition-all"
+            class="hidden mt-4 p-4 rounded-xl text-center transition-all backdrop-blur-sm"
         >
         </div>
     </div>

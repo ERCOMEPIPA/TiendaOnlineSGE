@@ -105,13 +105,15 @@ if (Astro.request.method === "POST") {
 <PublicLayout title="Registrarse" description="Crea tu cuenta en FashionStore">
     <div class="min-h-[80vh] flex items-center justify-center px-4 py-12">
         <div class="max-w-md w-full">
-            <div class="bg-white rounded-xl shadow-lg p-8">
+            <div
+                class="bg-white rounded-none shadow-lg p-8 border border-[#ccc5b8]"
+            >
                 <h1
-                    class="text-3xl font-serif font-bold text-carbon-900 mb-2 text-center"
+                    class="text-3xl font-serif font-bold text-[#2a2622] mb-2 text-center"
                 >
                     Crear Cuenta
                 </h1>
-                <p class="text-carbon-500 text-center mb-8">
+                <p class="text-[#6f6458] text-center mb-8">
                     Regístrate para realizar tus compras
                 </p>
 
@@ -135,7 +137,7 @@ if (Astro.request.method === "POST") {
                     <div>
                         <label
                             for="name"
-                            class="block text-sm font-medium text-carbon-700 mb-2"
+                            class="block text-sm font-medium text-[#2a2622] mb-2"
                         >
                             Nombre completo
                         </label>
@@ -144,7 +146,7 @@ if (Astro.request.method === "POST") {
                             id="name"
                             name="name"
                             required
-                            class="w-full px-4 py-3 border border-carbon-200 rounded-lg focus:ring-2 focus:ring-navy-500 focus:border-transparent"
+                            class="w-full px-4 py-3 border border-[#ccc5b8] rounded-none focus:outline-none focus:border-[#2a2622]"
                             placeholder="Tu nombre"
                         />
                     </div>
@@ -152,7 +154,7 @@ if (Astro.request.method === "POST") {
                     <div>
                         <label
                             for="email"
-                            class="block text-sm font-medium text-carbon-700 mb-2"
+                            class="block text-sm font-medium text-[#2a2622] mb-2"
                         >
                             Email
                         </label>
@@ -161,7 +163,7 @@ if (Astro.request.method === "POST") {
                             id="email"
                             name="email"
                             required
-                            class="w-full px-4 py-3 border border-carbon-200 rounded-lg focus:ring-2 focus:ring-navy-500 focus:border-transparent"
+                            class="w-full px-4 py-3 border border-[#ccc5b8] rounded-none focus:outline-none focus:border-[#2a2622]"
                             placeholder="tu@email.com"
                         />
                     </div>
@@ -169,7 +171,7 @@ if (Astro.request.method === "POST") {
                     <div>
                         <label
                             for="password"
-                            class="block text-sm font-medium text-carbon-700 mb-2"
+                            class="block text-sm font-medium text-[#2a2622] mb-2"
                         >
                             Contraseña
                         </label>
@@ -179,7 +181,7 @@ if (Astro.request.method === "POST") {
                             name="password"
                             required
                             minlength="6"
-                            class="w-full px-4 py-3 border border-carbon-200 rounded-lg focus:ring-2 focus:ring-navy-500 focus:border-transparent"
+                            class="w-full px-4 py-3 border border-[#ccc5b8] rounded-none focus:outline-none focus:border-[#2a2622]"
                             placeholder="Mínimo 6 caracteres"
                         />
                     </div>
@@ -187,7 +189,7 @@ if (Astro.request.method === "POST") {
                     <div>
                         <label
                             for="confirm-password"
-                            class="block text-sm font-medium text-carbon-700 mb-2"
+                            class="block text-sm font-medium text-[#2a2622] mb-2"
                         >
                             Confirmar contraseña
                         </label>
@@ -197,25 +199,25 @@ if (Astro.request.method === "POST") {
                             name="confirm-password"
                             required
                             minlength="6"
-                            class="w-full px-4 py-3 border border-carbon-200 rounded-lg focus:ring-2 focus:ring-navy-500 focus:border-transparent"
+                            class="w-full px-4 py-3 border border-[#ccc5b8] rounded-none focus:outline-none focus:border-[#2a2622]"
                             placeholder="Repite tu contraseña"
                         />
                     </div>
 
                     <button
                         type="submit"
-                        class="w-full bg-navy-800 text-white py-3 rounded-lg font-semibold hover:bg-navy-900 transition-colors"
+                        class="w-full bg-[#2a2622] text-[#fdfcf9] py-3 rounded-none font-semibold hover:bg-[#3d3831] transition-colors uppercase tracking-widest text-sm"
                     >
                         Crear Cuenta
                     </button>
                 </form>
 
                 <div class="mt-6 text-center">
-                    <p class="text-carbon-500 text-sm">
+                    <p class="text-[#6f6458] text-sm">
                         ¿Ya tienes cuenta?{" "}
                         <a
                             href={`/login?redirect=${Astro.url.searchParams.get("redirect") || "/"}`}
-                            class="text-navy-800 font-semibold hover:underline"
+                            class="text-[#8B4513] font-semibold hover:underline"
                         >
                             Inicia sesión aquí
                         </a>

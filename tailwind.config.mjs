@@ -4,45 +4,47 @@ export default {
     theme: {
         extend: {
             colors: {
-                // Paleta principal - Rosa/Lavanda Moderno
+                // Paleta Origin - Minimalista y Elegante
                 navy: {
-                    50: '#fdf2f8',   // rose-50
-                    100: '#fce7f3',  // rose-100
-                    200: '#fbcfe8',  // rose-200
-                    300: '#f9a8d4',  // rose-300
-                    400: '#f472b6',  // rose-400
-                    500: '#ec4899',  // rose-500
-                    600: '#db2777',  // rose-600
-                    700: '#be185d',  // rose-700
-                    800: '#9d174d',  // rose-800
-                    900: '#831843',  // rose-900
-                    950: '#500724',  // rose-950
+                    50: '#faf9f7',    // off-white cálido
+                    100: '#f5f3ef',   // crema muy claro
+                    200: '#e8e4dc',   // beige claro
+                    300: '#d4cfc3',   // beige medio
+                    400: '#b8b0a0',   // taupe claro
+                    500: '#9c9283',   // taupe
+                    600: '#7a7064',   // gris cálido
+                    700: '#5c544a',   // gris marrón
+                    800: '#3d3831',   // marrón oscuro
+                    900: '#2a2622',   // casi negro cálido
+                    950: '#1a1816',   // negro cálido
                 },
                 carbon: {
-                    50: '#faf5ff',   // purple-50
-                    100: '#f3e8ff',  // purple-100
-                    200: '#e9d5ff',  // purple-200
-                    300: '#d8b4fe',  // purple-300
-                    400: '#c084fc',  // purple-400
-                    500: '#a855f7',  // purple-500
-                    600: '#9333ea',  // purple-600
-                    700: '#7c3aed',  // purple-700 (violet)
-                    800: '#6b21a8',  // purple-800
-                    900: '#581c87',  // purple-900
-                    950: '#3b0764',  // purple-950
+                    50: '#f8f7f5',    // blanco cálido
+                    100: '#f0ede8',   // crema
+                    200: '#e0dbd2',   // beige
+                    300: '#ccc5b8',   // taupe claro
+                    400: '#ada397',   // taupe medio
+                    500: '#8e8275',   // taupe oscuro
+                    600: '#6f6458',   // marrón medio
+                    700: '#544a40',   // marrón
+                    800: '#3a332c',   // marrón oscuro
+                    900: '#252119',   // muy oscuro
+                    950: '#151310',   // casi negro
                 },
                 cream: {
-                    50: '#fefce8',   // yellow-50 (soft cream)
-                    100: '#fef9c3',  // yellow-100
-                    200: '#fef08a',  // yellow-200
-                    300: '#fde047',  // yellow-300
-                    400: '#facc15',  // yellow-400
-                    500: '#eab308',  // yellow-500
+                    50: '#fdfcf9',    // blanco cremoso
+                    100: '#f9f7f2',   // crema muy claro
+                    200: '#f2ede4',   // crema
+                    300: '#e8e0d1',   // beige claro
+                    400: '#d9cdb8',   // beige
+                    500: '#c4b49a',   // beige dorado
                 },
                 accent: {
-                    leather: '#be185d',  // rose-700 for buttons
-                    gold: '#f472b6',     // rose-400 for highlights
-                    'gold-matte': '#db2777', // rose-600 for hover
+                    leather: '#8B4513',   // cuero (marrón silla)
+                    gold: '#C9A962',       // dorado mate
+                    'gold-matte': '#A68A4B', // dorado oscuro
+                    terracotta: '#C4704E', // terracota
+                    olive: '#6B7B3A',      // oliva
                 }
             },
             fontFamily: {
@@ -54,10 +56,22 @@ export default {
                 '88': '22rem',
                 '128': '32rem',
             },
+            backgroundImage: {
+                'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+                'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+            },
+            boxShadow: {
+                'soft': '0 2px 15px rgba(42, 38, 34, 0.08)',
+                'medium': '0 4px 25px rgba(42, 38, 34, 0.12)',
+                'card-hover': '0 15px 40px rgba(42, 38, 34, 0.15)',
+                'card-premium': '0 4px 20px rgba(42, 38, 34, 0.08)',
+                'elegant': '0 10px 50px rgba(42, 38, 34, 0.1)',
+            },
             animation: {
                 'slide-in': 'slideIn 0.3s ease-out',
-                'fade-in': 'fadeIn 0.2s ease-out',
-                'slide-up': 'slideUp 0.4s ease-out',
+                'fade-in': 'fadeIn 0.5s ease-out',
+                'slide-up': 'slideUp 0.6s ease-out',
+                'float': 'float 6s ease-in-out infinite',
             },
             keyframes: {
                 slideIn: {
@@ -69,11 +83,19 @@ export default {
                     '100%': { opacity: '1' },
                 },
                 slideUp: {
-                    '0%': { transform: 'translateY(20px)', opacity: '0' },
+                    '0%': { transform: 'translateY(30px)', opacity: '0' },
                     '100%': { transform: 'translateY(0)', opacity: '1' },
                 },
+                float: {
+                    '0%, 100%': { transform: 'translateY(0px)' },
+                    '50%': { transform: 'translateY(-8px)' },
+                },
+            },
+            transitionDuration: {
+                '400': '400ms',
             },
         },
     },
     plugins: [],
 };
+

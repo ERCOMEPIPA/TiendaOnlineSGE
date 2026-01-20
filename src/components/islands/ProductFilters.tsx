@@ -129,7 +129,7 @@ export default function ProductFilters({ products, categories }: ProductFiltersP
                         {hasActiveFilters && (
                             <button
                                 onClick={clearFilters}
-                                className="text-sm text-blue-600 hover:text-blue-800"
+                                className="text-sm text-[#8B4513] hover:text-[#2a2622]"
                             >
                                 Limpiar
                             </button>
@@ -144,10 +144,10 @@ export default function ProductFilters({ products, categories }: ProductFiltersP
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Producto o artista..."
-                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-3 py-2 border border-[#ccc5b8] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#8B4513]"
                         />
                         {searchQuery && (
-                            <p className="mt-2 text-xs text-blue-600">
+                            <p className="mt-2 text-xs text-[#8B4513]">
                                 Buscando: "{searchQuery}"
                             </p>
                         )}
@@ -164,7 +164,7 @@ export default function ProductFilters({ products, categories }: ProductFiltersP
                                             type="checkbox"
                                             checked={selectedCategories.includes(cat.id)}
                                             onChange={() => toggleCategory(cat.id)}
-                                            className="rounded border-gray-300 text-blue-800 focus:ring-blue-500"
+                                            className="rounded border-[#ccc5b8] text-[#2a2622] focus:ring-[#2a2622]"
                                         />
                                         <span className="text-sm text-gray-700">{cat.name}</span>
                                     </label>
@@ -182,7 +182,7 @@ export default function ProductFilters({ products, categories }: ProductFiltersP
                                     type="checkbox"
                                     checked={selectedPriceRanges.includes('under30')}
                                     onChange={() => togglePriceRange('under30')}
-                                    className="rounded border-gray-300 text-blue-800 focus:ring-blue-500"
+                                    className="rounded border-[#ccc5b8] text-[#2a2622] focus:ring-[#2a2622]"
                                 />
                                 <span className="text-sm text-gray-700">Menos de 30€</span>
                             </label>
@@ -191,7 +191,7 @@ export default function ProductFilters({ products, categories }: ProductFiltersP
                                     type="checkbox"
                                     checked={selectedPriceRanges.includes('30to50')}
                                     onChange={() => togglePriceRange('30to50')}
-                                    className="rounded border-gray-300 text-blue-800 focus:ring-blue-500"
+                                    className="rounded border-[#ccc5b8] text-[#2a2622] focus:ring-[#2a2622]"
                                 />
                                 <span className="text-sm text-gray-700">30€ - 50€</span>
                             </label>
@@ -200,7 +200,7 @@ export default function ProductFilters({ products, categories }: ProductFiltersP
                                     type="checkbox"
                                     checked={selectedPriceRanges.includes('over50')}
                                     onChange={() => togglePriceRange('over50')}
-                                    className="rounded border-gray-300 text-blue-800 focus:ring-blue-500"
+                                    className="rounded border-[#ccc5b8] text-[#2a2622] focus:ring-[#2a2622]"
                                 />
                                 <span className="text-sm text-gray-700">Más de 50€</span>
                             </label>
@@ -216,8 +216,8 @@ export default function ProductFilters({ products, categories }: ProductFiltersP
                                     key={size}
                                     onClick={() => toggleSize(size)}
                                     className={`px-3 py-1 text-sm border rounded transition-colors ${selectedSizes.includes(size)
-                                        ? 'bg-blue-800 text-white border-blue-800'
-                                        : 'border-gray-200 hover:border-gray-400'
+                                        ? 'bg-[#2a2622] text-[#fdfcf9] border-[#2a2622]'
+                                        : 'border-[#ccc5b8] hover:border-[#8B4513]'
                                         }`}
                                 >
                                     {size}
@@ -238,7 +238,7 @@ export default function ProductFilters({ products, categories }: ProductFiltersP
                     <select
                         value={sortBy}
                         onChange={(e) => setSortBy(e.target.value)}
-                        className="text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="text-sm border border-[#ccc5b8] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#8B4513]"
                     >
                         <option value="recent">Más recientes</option>
                         <option value="price-asc">Precio: menor a mayor</option>
@@ -275,7 +275,7 @@ export default function ProductFilters({ products, categories }: ProductFiltersP
                                         </div>
                                     )}
                                     {product.featured && (
-                                        <span className="absolute top-3 left-3 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                                        <span className="absolute top-3 left-3 bg-[#A68A4B] text-[#fdfcf9] text-xs font-bold px-2 py-1 rounded-none uppercase tracking-wider">
                                             Destacado
                                         </span>
                                     )}
@@ -291,11 +291,11 @@ export default function ProductFilters({ products, categories }: ProductFiltersP
                                 {/* Info */}
                                 <div className="p-4">
                                     {product.artist && (
-                                        <p className="text-xs font-semibold text-yellow-600 uppercase tracking-wide mb-1">
+                                        <p className="text-xs font-semibold text-[#8B4513] uppercase tracking-wide mb-1">
                                             {product.artist}
                                         </p>
                                     )}
-                                    <h3 className="font-medium text-gray-800 group-hover:text-blue-800 transition-colors line-clamp-2">
+                                    <h3 className="font-medium text-[#2a2622] group-hover:text-[#8B4513] transition-colors line-clamp-2">
                                         {product.name}
                                     </h3>
                                     <p className="mt-2 text-lg font-serif font-semibold text-gray-900">
@@ -321,7 +321,7 @@ export default function ProductFilters({ products, categories }: ProductFiltersP
                         <p className="text-gray-500 font-medium">No hay productos con estos filtros</p>
                         <button
                             onClick={clearFilters}
-                            className="mt-4 text-blue-600 hover:text-blue-800 font-medium"
+                            className="mt-4 text-[#8B4513] hover:text-[#2a2622] font-medium"
                         >
                             Limpiar filtros
                         </button>

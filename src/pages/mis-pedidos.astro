@@ -61,11 +61,11 @@ const formatShortDate = (date: string) => {
 
 // Status configuration
 const statusConfig: Record<string, { index: number; label: string; color: string; bgColor: string; icon: string; description: string }> = {
-    pending: { index: 0, label: "Pendiente", color: "text-yellow-800", bgColor: "bg-yellow-100", icon: "clock", description: "Tu pedido ha sido recibido" },
-    confirmed: { index: 1, label: "Confirmado", color: "text-blue-800", bgColor: "bg-blue-100", icon: "check", description: "Pago verificado, preparando pedido" },
-    shipped: { index: 2, label: "Enviado", color: "text-purple-800", bgColor: "bg-purple-100", icon: "truck", description: "Tu pedido está en camino" },
-    delivered: { index: 3, label: "Entregado", color: "text-green-800", bgColor: "bg-green-100", icon: "home", description: "¡Pedido entregado con éxito!" },
-    cancelled: { index: -1, label: "Cancelado", color: "text-red-800", bgColor: "bg-red-100", icon: "x", description: "Pedido cancelado" },
+    pending: { index: 0, label: "Pendiente", color: "text-[#8B4513]", bgColor: "bg-[#fdfcf9]", icon: "clock", description: "Tu pedido ha sido recibido" },
+    confirmed: { index: 1, label: "Confirmado", color: "text-[#2a2622]", bgColor: "bg-[#e8e4db]", icon: "check", description: "Pago verificado, preparando pedido" },
+    shipped: { index: 2, label: "Enviado", color: "text-[#8B4513]", bgColor: "bg-[#fdfcf9]", icon: "truck", description: "Tu pedido está en camino" },
+    delivered: { index: 3, label: "Entregado", color: "text-[#2a2622]", bgColor: "bg-[#e8e4db]", icon: "home", description: "¡Pedido entregado con éxito!" },
+    cancelled: { index: -1, label: "Cancelado", color: "text-red-800", bgColor: "bg-red-50", icon: "x", description: "Pedido cancelado" },
 };
 
 const getStatusConfig = (status: string) => statusConfig[status] || statusConfig.pending;
@@ -75,8 +75,8 @@ const getStatusConfig = (status: string) => statusConfig[status] || statusConfig
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <!-- Header -->
         <div class="mb-8">
-            <h1 class="text-3xl font-serif font-bold text-gray-900">📦 Mis Pedidos</h1>
-            <p class="mt-2 text-gray-600">
+            <h1 class="text-3xl font-serif font-bold text-[#2a2622]">📦 Mis Pedidos</h1>
+            <p class="mt-2 text-[#6f6458]">
                 Historial y seguimiento de todas tus compras
             </p>
         </div>
@@ -113,24 +113,24 @@ const getStatusConfig = (status: string) => statusConfig[status] || statusConfig
                     const returnRequested = order.return_requested;
                     
                     return (
-                        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                        <div class="bg-white rounded-none shadow-sm overflow-hidden border border-[#ccc5b8]">
                             <!-- Order Header -->
-                            <div class="px-6 py-4 bg-gray-50 border-b border-gray-100">
+                            <div class="px-6 py-4 bg-[#fdfcf9] border-b border-[#ccc5b8]">
                                 <div class="flex flex-wrap items-center justify-between gap-4">
                                     <div class="flex items-center gap-6">
                                         <div>
-                                            <p class="text-sm text-gray-500">Pedido</p>
-                                            <p class="font-mono font-semibold text-gray-900">
+                                            <p class="text-sm text-[#6f6458]">Pedido</p>
+                                            <p class="font-mono font-semibold text-[#2a2622]">
                                                 #{order.id.slice(0, 8).toUpperCase()}
                                             </p>
                                         </div>
                                         <div>
-                                            <p class="text-sm text-gray-500">Fecha</p>
-                                            <p class="font-medium text-gray-900">{formatShortDate(order.created_at)}</p>
+                                            <p class="text-sm text-[#6f6458]">Fecha</p>
+                                            <p class="font-medium text-[#2a2622]">{formatShortDate(order.created_at)}</p>
                                         </div>
                                         <div>
-                                            <p class="text-sm text-gray-500">Total</p>
-                                            <p class="font-semibold text-gray-900">{formatPrice(order.total)}</p>
+                                            <p class="text-sm text-[#6f6458]">Total</p>
+                                            <p class="font-semibold text-[#2a2622]">{formatPrice(order.total)}</p>
                                         </div>
                                     </div>
                                     <span class={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${config.bgColor} ${config.color}`}>
@@ -145,21 +145,21 @@ const getStatusConfig = (status: string) => statusConfig[status] || statusConfig
                                     <!-- Timeline Steps -->
                                     <div class="flex justify-between items-center relative">
                                         <!-- Progress Line Background -->
-                                        <div class="absolute top-4 left-8 right-8 h-1 bg-gray-200 rounded"></div>
+                                        <div class="absolute top-4 left-8 right-8 h-1 bg-[#e8e4db] rounded-none"></div>
                                         <!-- Progress Line Active -->
                                         <div 
-                                            class="absolute top-4 left-8 h-1 bg-green-500 rounded transition-all duration-500"
+                                            class="absolute top-4 left-8 h-1 bg-[#2a2622] rounded-none transition-all duration-500"
                                             style={`width: calc(${config.index >= 0 ? (config.index / 3) * 100 : 0}% - 64px)`}
                                         ></div>
 
                                         <!-- Step 1: Pending -->
                                         <div class="flex flex-col items-center z-10 w-20">
-                                            <div class={`w-8 h-8 rounded-full flex items-center justify-center ${config.index >= 0 ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-400'}`}>
+                                            <div class={`w-8 h-8 rounded-none flex items-center justify-center ${config.index >= 0 ? 'bg-[#2a2622] text-[#fdfcf9]' : 'bg-[#e8e4db] text-[#ada397]'}`}>
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                 </svg>
                                             </div>
-                                            <p class={`mt-2 text-xs font-medium ${config.index >= 0 ? 'text-gray-900' : 'text-gray-400'}`}>Pendiente</p>
+                                            <p class={`mt-2 text-xs font-medium ${config.index >= 0 ? 'text-[#2a2622]' : 'text-[#ada397]'}`}>Pendiente</p>
                                         </div>
 
                                         <!-- Step 2: Confirmed -->
@@ -219,8 +219,8 @@ const getStatusConfig = (status: string) => statusConfig[status] || statusConfig
                                     {order.order_items?.map((item: any) => (
                                         <div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
                                             <div class="flex-1">
-                                                <p class="font-medium text-gray-900">{item.product_name}</p>
-                                                <p class="text-sm text-gray-500">
+                                                <p class="font-medium text-[#2a2622]">{item.product_name}</p>
+                                                <p class="text-sm text-[#6f6458]">
                                                     Talla: {item.size} · Cantidad: {item.quantity}
                                                 </p>
                                             </div>
@@ -238,11 +238,11 @@ const getStatusConfig = (status: string) => statusConfig[status] || statusConfig
                                     <div class="text-sm text-gray-500">
                                         {order.shipping_address && order.shipping_address !== 'N/A' ? (
                                             <span>
-                                                <span class="font-medium text-gray-700">Envío:</span> {order.shipping_address}, {order.shipping_city || ''} {order.shipping_postal_code || ''}
+                                                <span class="font-medium text-[#2a2622]">Envío:</span> {order.shipping_address}, {order.shipping_city || ''} {order.shipping_postal_code || ''}
                                             </span>
                                         ) : (
                                             <span>
-                                                <span class="font-medium text-gray-700">Cliente:</span> {order.customer_name} ({order.customer_email})
+                                                <span class="font-medium text-[#2a2622]">Cliente:</span> {order.customer_name} ({order.customer_email})
                                             </span>
                                         )}
                                     </div>
@@ -271,7 +271,7 @@ const getStatusConfig = (status: string) => statusConfig[status] || statusConfig
                                         {canRequestReturn && (
                                             <button
                                                 type="button"
-                                                class="return-order-btn px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors flex items-center gap-2"
+                                                class="return-order-btn px-4 py-2 text-sm font-medium text-[#8B4513] bg-[#fdfcf9] border border-[#8B4513] rounded-none hover:bg-[#8B4513] hover:text-[#fdfcf9] transition-colors flex items-center gap-2"
                                                 data-order-id={order.id}
                                             >
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -298,11 +298,11 @@ const getStatusConfig = (status: string) => statusConfig[status] || statusConfig
     </div>
 
     <!-- Modal de Devolución -->
-    <div id="return-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
+    <div id="return-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden backdrop-blur-sm">
+        <div class="bg-white rounded-none shadow-2xl max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto border border-[#ccc5b8]">
             <div class="p-6">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-xl font-bold text-gray-900">📦 Solicitar Devolución</h3>
+                    <h3 class="text-xl font-bold text-[#2a2622]">📦 Solicitar Devolución</h3>
                     <button id="close-return-modal" class="text-gray-400 hover:text-gray-600">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -338,10 +338,10 @@ const getStatusConfig = (status: string) => statusConfig[status] || statusConfig
                 </div>
                 
                 <div class="flex gap-3">
-                    <button id="confirm-return-btn" class="flex-1 px-4 py-3 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition-colors">
+                    <button id="confirm-return-btn" class="flex-1 px-4 py-3 bg-[#2a2622] text-[#fdfcf9] rounded-none font-medium hover:bg-[#3d3831] transition-colors uppercase tracking-widest text-sm">
                         Confirmar solicitud
                     </button>
-                    <button id="cancel-return-modal" class="px-4 py-3 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+                    <button id="cancel-return-modal" class="px-4 py-3 border border-[#ccc5b8] rounded-none font-medium text-[#6f6458] hover:bg-[#fdfcf9] transition-colors">
                         Cancelar
                     </button>
                 </div>

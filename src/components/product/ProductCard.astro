@@ -12,17 +12,19 @@ const { product } = Astro.props;
 
 <a
     href={`/productos/${product.slug}`}
-    class="group block bg-white rounded-xl overflow-hidden shadow-sm
-         hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+    class="group block bg-cream-50 overflow-hidden
+           border border-carbon-200 shadow-soft
+           hover:shadow-medium hover:border-carbon-300
+           transition-all duration-400"
 >
     <!-- Image -->
-    <div class="aspect-[3/4] bg-carbon-100 relative overflow-hidden">
+    <div class="aspect-[3/4] bg-cream-100 relative overflow-hidden">
         {
             product.images?.[0] ? (
                 <img
                     src={product.images[0]}
                     alt={product.name}
-                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
                     loading="lazy"
                 />
             ) : (
@@ -44,18 +46,21 @@ const { product } = Astro.props;
             )
         }
 
+        {/* Subtle gradient overlay on hover */}
+        <div
+            class="absolute inset-0 bg-[#2a2622]/0 group-hover:bg-[#2a2622]/10 transition-all duration-400"
+        >
+        </div>
+
         {/* Wishlist button */}
         <div class="absolute top-3 right-3 z-10">
             <WishlistButton client:load product={product} size="sm" />
         </div>
 
-        {/* Featured badge */}
+        {/* Featured badge - minimal */}
         {
             product.featured && (
-                <span
-                    class="absolute top-3 left-3 bg-accent-gold text-white text-xs font-bold 
-                   px-2 py-1 rounded-full uppercase tracking-wide"
-                >
+                <span class="absolute top-3 left-3 bg-[#8B4513] text-[#fdfcf9] text-xs font-medium px-2 py-1 uppercase tracking-wider">
                     Destacado
                 </span>
             )
@@ -64,33 +69,43 @@ const { product } = Astro.props;
         {/* Out of stock overlay */}
         {
             product.stock < 1 && (
-                <div class="absolute inset-0 bg-carbon-900/60 flex items-center justify-center">
-                    <span class="bg-white text-carbon-800 px-4 py-2 rounded-lg font-semibold">
+                <div class="absolute inset-0 bg-[#fdfcf9]/80 flex items-center justify-center">
+                    <span class="bg-[#2a2622] text-[#fdfcf9] px-4 py-2 text-xs uppercase tracking-wider font-medium">
                         Agotado
                     </span>
                 </div>
             )
         }
 
-        {/* Low stock indicator */}
+        {/* Low stock indicator - subtle */}
         {
             product.stock > 0 && product.stock < 6 && (
-                <span
-                    class="absolute bottom-3 right-3 bg-accent-leather text-white text-xs font-bold 
-                   px-2 py-1 rounded-full"
-                >
-                    ¡Últimas {product.stock}!
+                <span class="absolute bottom-3 right-3 bg-[#2a2622] text-[#fdfcf9] text-xs font-medium px-2 py-1 uppercase tracking-wider">
+                    Últimas {product.stock}
                 </span>
             )
         }
+
+        {/* Quick view on hover - minimal */}
+        <div
+            class="absolute bottom-0 left-0 right-0 opacity-0 group-hover:opacity-100
+                    translate-y-2 group-hover:translate-y-0 transition-all duration-300 z-10"
+        >
+            <span
+                class="block w-full py-3 bg-[#2a2622] text-[#fdfcf9]
+                         text-center text-xs font-medium uppercase tracking-wider"
+            >
+                Ver producto
+            </span>
+        </div>
     </div>
 
     <!-- Content -->
-    <div class="p-4">
+    <div class="p-5">
         {/* Artist */}
         {
             product.artist && (
-                <p class="text-xs text-accent-gold font-semibold uppercase tracking-wider mb-1">
+                <p class="text-xs text-[#8B4513] font-medium uppercase tracking-wider mb-1.5">
                     {product.artist}
                 </p>
             )
@@ -98,27 +113,31 @@ const { product } = Astro.props;
 
         {/* Name */}
         <h3
-            class="font-medium text-carbon-800 group-hover:text-navy-800 transition-colors line-clamp-2"
+            class="font-medium text-carbon-800 group-hover:text-navy-800 transition-colors duration-300 line-clamp-2"
         >
             {product.name}
         </h3>
 
         {/* Price */}
-        <p class="mt-2 text-lg font-serif font-semibold text-navy-900">
+        <p class="mt-3 text-xl font-serif text-navy-900">
             {formatPrice(product.price)}
         </p>
 
-        {/* Sizes preview */}
+        {/* Sizes preview with better styling */}
         {
             product.sizes?.length > 0 && (
-                <div class="mt-2 flex gap-1 flex-wrap">
+                <div class="mt-3 flex gap-1.5 flex-wrap">
                     {product.sizes.slice(0, 5).map((size) => (
-                        <span class="text-xs text-carbon-400 border border-carbon-200 px-1.5 py-0.5 rounded">
+                        <span
+                            class="text-xs text-carbon-500 bg-carbon-50 border border-carbon-200/50 
+                                     px-2 py-1 rounded-lg hover:border-accent-gold/50 hover:bg-accent-gold/5 
+                                     transition-colors duration-200"
+                        >
                             {size}
                         </span>
                     ))}
                     {product.sizes.length > 5 && (
-                        <span class="text-xs text-carbon-400">
+                        <span class="text-xs text-accent-gold font-medium px-2 py-1">
                             +{product.sizes.length - 5}
                         </span>
                     )}

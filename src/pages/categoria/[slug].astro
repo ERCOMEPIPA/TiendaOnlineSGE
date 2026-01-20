@@ -68,6 +68,7 @@ const mockProducts: Product[] = [
         ],
         featured: true,
         artist: "Bad Bunny",
+        colors: [],
         created_at: "",
         updated_at: "",
     },
@@ -85,6 +86,7 @@ const mockProducts: Product[] = [
         ],
         featured: false,
         artist: "Beyoncé",
+        colors: [],
         created_at: "",
         updated_at: "",
     },
@@ -100,10 +102,10 @@ const categoryProducts = products?.length ? products : mockProducts;
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Breadcrumb -->
         <nav class="mb-8">
-            <ol class="flex items-center gap-2 text-sm text-carbon-500">
-                <li><a href="/" class="hover:text-navy-800">Inicio</a></li>
+            <ol class="flex items-center gap-2 text-sm text-[#6f6458]">
+                <li><a href="/" class="hover:text-[#2a2622]">Inicio</a></li>
                 <li>/</li>
-                <li class="text-carbon-800 font-medium">
+                <li class="text-[#2a2622] font-medium">
                     {currentCategory.name}
                 </li>
             </ol>
@@ -112,11 +114,11 @@ const categoryProducts = products?.length ? products : mockProducts;
         <!-- Header -->
         <div class="mb-10">
             <h1
-                class="text-3xl lg:text-4xl font-serif font-bold text-carbon-900"
+                class="text-3xl lg:text-4xl font-serif font-bold text-[#2a2622]"
             >
                 {currentCategory.name}
             </h1>
-            <p class="mt-2 text-carbon-500">
+            <p class="mt-2 text-[#6f6458]">
                 {categoryProducts.length} productos en esta categoría
             </p>
         </div>
@@ -147,12 +149,12 @@ const categoryProducts = products?.length ? products : mockProducts;
                             d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
                         />
                     </svg>
-                    <p class="text-carbon-500 font-medium">
+                    <p class="text-[#6f6458] font-medium">
                         No hay productos en esta categoría
                     </p>
                     <a
                         href="/productos"
-                        class="inline-block mt-4 text-navy-800 font-medium hover:text-accent-gold"
+                        class="inline-block mt-4 text-[#8B4513] font-medium hover:text-[#2a2622]"
                     >
                         Ver todos los productos →
                     </a>

@@ -14,12 +14,12 @@
     <div class="flex items-center justify-center min-h-screen p-4">
         <div
             id="popup-modal"
-            class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 transform transition-all duration-300 scale-95 opacity-0"
+            class="relative bg-[#fdfcf9] rounded-none shadow-2xl max-w-md w-full p-10 transform transition-all duration-300 scale-95 opacity-0 border border-[#ccc5b8]"
         >
             <!-- Close button -->
             <button
                 id="close-popup"
-                class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+                class="absolute top-4 right-4 text-[#6f6458] hover:text-[#2a2622] transition-colors"
             >
                 <svg
                     class="w-6 h-6"
@@ -41,14 +41,15 @@
                 <div class="text-5xl mb-4">🎁</div>
 
                 <!-- Title -->
-                <h2 class="text-2xl font-serif font-bold text-gray-900 mb-2">
+                <h2 class="text-2xl font-serif italic text-[#2a2622] mb-3">
                     ¡Obtén un 10% de descuento!
                 </h2>
 
                 <!-- Description -->
-                <p class="text-gray-600 mb-6">
+                <p class="text-[#6f6458] mb-8 leading-relaxed">
                     Suscríbete a nuestra newsletter y recibe un <strong
-                        class="text-navy-800">10% de descuento</strong
+                        class="text-[#8B4513] font-medium"
+                        >10% de descuento</strong
                     > en tu primera compra, además de ofertas exclusivas y novedades.
                 </p>
 
@@ -60,12 +61,12 @@
                         name="email"
                         placeholder="Tu email..."
                         required
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-navy-500 focus:border-transparent transition-shadow"
+                        class="w-full px-5 py-4 border border-[#ccc5b8] bg-white text-[#2a2622] placeholder-[#ada397] focus:outline-none focus:border-[#2a2622] transition-colors rounded-none"
                     />
                     <button
                         type="submit"
                         id="popup-submit-btn"
-                        class="w-full px-6 py-3 bg-navy-800 text-white font-semibold rounded-xl hover:bg-navy-900 transition-colors flex items-center justify-center gap-2"
+                        class="w-full px-6 py-4 bg-[#2a2622] text-[#fdfcf9] font-medium uppercase tracking-widest text-xs rounded-none hover:bg-[#3d3831] transition-all flex items-center justify-center gap-2 group"
                     >
                         <span>¡Quiero mi descuento!</span>
                         <svg
@@ -84,17 +85,17 @@
                 </form>
 
                 <!-- Success message (hidden by default) -->
-                <div id="popup-success" class="hidden">
-                    <div class="text-5xl mb-4">🎉</div>
-                    <h3 class="text-xl font-bold text-green-700 mb-2">
+                <div id="popup-success" class="hidden py-4">
+                    <div class="text-5xl mb-6">🎉</div>
+                    <h3 class="text-xl font-serif italic text-[#8B4513] mb-3">
                         ¡Suscripción completada!
                     </h3>
-                    <p class="text-gray-600 mb-4">
+                    <p class="text-[#6f6458] mb-8">
                         Revisa tu email para obtener tu código de descuento.
                     </p>
                     <button
                         id="popup-continue"
-                        class="px-6 py-3 bg-navy-800 text-white font-semibold rounded-xl hover:bg-navy-900 transition-colors"
+                        class="w-full px-6 py-4 bg-[#2a2622] text-[#fdfcf9] font-medium uppercase tracking-widest text-xs rounded-none hover:bg-[#3d3831] transition-all"
                     >
                         Continuar comprando
                     </button>
@@ -103,7 +104,7 @@
                 <!-- No thanks link -->
                 <button
                     id="popup-skip"
-                    class="mt-4 text-sm text-gray-400 hover:text-gray-600 transition-colors"
+                    class="mt-6 text-xs uppercase tracking-widest text-[#6f6458] hover:text-[#2a2622] transition-colors"
                 >
                     No, gracias
                 </button>

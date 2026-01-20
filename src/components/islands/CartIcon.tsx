@@ -13,7 +13,7 @@ export default function CartIcon() {
     return (
         <button
             onClick={() => toggleCart()}
-            className="relative p-2 text-carbon-700 hover:text-navy-800 transition-colors"
+            className="relative p-2 text-[#6f6458] hover:text-[#2a2622] transition-colors"
             aria-label={`Carrito de compras (${count} items)`}
         >
             <svg
@@ -34,8 +34,8 @@ export default function CartIcon() {
             {count > 0 && (
                 <span
                     className="absolute -top-1 -right-1 w-5 h-5 
-                     bg-accent-gold text-white text-xs font-bold 
-                     rounded-full flex items-center justify-center
+                     bg-[#8B4513] text-[#fdfcf9] text-xs font-bold 
+                     rounded-none flex items-center justify-center
                      animate-fade-in"
                 >
                     {count > 99 ? '99+' : count}

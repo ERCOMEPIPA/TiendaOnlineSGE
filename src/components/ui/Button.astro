@@ -1,6 +1,6 @@
 ---
 interface Props {
-    variant?: "primary" | "secondary" | "outline" | "ghost";
+    variant?: "primary" | "secondary" | "outline" | "ghost" | "gradient";
     size?: "sm" | "md" | "lg";
     href?: string;
     class?: string;
@@ -18,21 +18,21 @@ const {
 } = Astro.props;
 
 const baseStyles =
-    "inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
+    "inline-flex items-center justify-center font-medium transition-all duration-300 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed";
 
 const variants = {
-    primary: "bg-navy-800 text-white hover:bg-navy-900 focus:ring-navy-500",
-    secondary:
-        "bg-accent-gold text-white hover:bg-accent-gold-matte focus:ring-accent-gold",
+    primary: "bg-[#2a2622] text-[#fdfcf9] hover:bg-[#3d3831] rounded-none",
+    secondary: "bg-[#8B4513] text-[#fdfcf9] hover:bg-[#A68A4B] rounded-none",
     outline:
-        "border-2 border-navy-800 text-navy-800 hover:bg-navy-800 hover:text-white focus:ring-navy-500",
-    ghost: "text-carbon-600 hover:bg-carbon-100 hover:text-navy-800 focus:ring-carbon-300",
+        "border border-[#2a2622] text-[#2a2622] hover:bg-[#2a2622] hover:text-[#fdfcf9] rounded-none",
+    ghost: "text-[#6f6458] hover:text-[#2a2622] underline-offset-4 hover:underline",
+    gradient: "bg-[#3d3831] text-[#fdfcf9] hover:bg-[#2a2622] rounded-none",
 };
 
 const sizes = {
-    sm: "px-3 py-1.5 text-sm",
-    md: "px-4 py-2 text-sm",
-    lg: "px-6 py-3 text-base",
+    sm: "px-4 py-2 text-xs tracking-wider uppercase",
+    md: "px-6 py-3 text-xs tracking-wider uppercase",
+    lg: "px-8 py-4 text-sm tracking-wider uppercase",
 };
 
 const classes = `${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`;

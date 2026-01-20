@@ -38,7 +38,7 @@ export default function CartSlideOver() {
         <>
             {/* Backdrop */}
             <div
-                className="fixed inset-0 bg-carbon-900/50 z-40 animate-fade-in"
+                className="fixed inset-0 bg-[#2a2622]/50 z-40 animate-fade-in backdrop-blur-sm"
                 onClick={() => closeCart()}
             />
 
@@ -46,13 +46,13 @@ export default function CartSlideOver() {
             <div className="fixed inset-y-0 right-0 w-full sm:w-96 bg-white z-50 
                       shadow-2xl animate-slide-in flex flex-col">
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-carbon-100">
-                    <h2 className="text-lg font-serif font-semibold text-carbon-900">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-[#ccc5b8] bg-[#fdfcf9]">
+                    <h2 className="text-lg font-serif font-semibold text-[#2a2622]">
                         Tu Carrito
                     </h2>
                     <button
                         onClick={() => closeCart()}
-                        className="p-2 text-carbon-500 hover:text-carbon-800 transition-colors"
+                        className="p-2 text-[#6f6458] hover:text-[#2a2622] transition-colors"
                     >
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -64,12 +64,12 @@ export default function CartSlideOver() {
                 <div className="flex-1 overflow-y-auto px-6 py-4">
                     {items.length === 0 ? (
                         <div className="text-center py-12">
-                            <svg className="w-16 h-16 mx-auto text-carbon-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-16 h-16 mx-auto text-[#ccc5b8] mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                                     d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                             </svg>
-                            <p className="text-carbon-500 font-medium">Tu carrito está vacío</p>
-                            <p className="text-carbon-400 text-sm mt-1">¡Añade algunos productos!</p>
+                            <p className="text-[#2a2622] font-medium">Tu carrito está vacío</p>
+                            <p className="text-[#6f6458] text-sm mt-1">¡Añade algunos productos!</p>
                         </div>
                     ) : (
                         <ul className="space-y-4">
@@ -78,7 +78,7 @@ export default function CartSlideOver() {
                                 return (
                                     <li
                                         key={`${item.product.id}-${item.size}-${item.color}`}
-                                        className="flex gap-4 p-4 bg-cream-50 rounded-lg"
+                                        className="flex gap-4 p-4 bg-[#fdfcf9] border border-[#ccc5b8] rounded-none"
                                     >
                                         {/* Product image */}
                                         <div className="w-20 h-20 bg-carbon-100 rounded-md overflow-hidden flex-shrink-0">
@@ -100,14 +100,14 @@ export default function CartSlideOver() {
 
                                         {/* Product info */}
                                         <div className="flex-1 min-w-0">
-                                            <h3 className="font-medium text-carbon-800 truncate">
+                                            <h3 className="font-medium text-[#2a2622] truncate">
                                                 {item.product.name}
                                             </h3>
-                                            <p className="text-sm text-carbon-500">Talla: {item.size}</p>
+                                            <p className="text-sm text-[#6f6458]">Talla: {item.size}</p>
                                             {colorDisplay && (
-                                                <p className="text-sm text-carbon-500">Color: {colorDisplay}</p>
+                                                <p className="text-sm text-[#6f6458]">Color: {colorDisplay}</p>
                                             )}
-                                            <p className="font-semibold text-navy-800 mt-1">
+                                            <p className="font-semibold text-[#8B4513] mt-1">
                                                 {formatPrice(item.product.price)}
                                             </p>
 
@@ -115,26 +115,26 @@ export default function CartSlideOver() {
                                             <div className="flex items-center gap-2 mt-2">
                                                 <button
                                                     onClick={() => updateQuantity(item.product.id, item.size, item.color || '', item.quantity - 1)}
-                                                    className="w-6 h-6 rounded border border-carbon-200 
-                                   flex items-center justify-center text-carbon-600
-                                   hover:border-navy-400"
+                                                    className="w-6 h-6 rounded-none border border-[#ccc5b8] 
+                                   flex items-center justify-center text-[#2a2622]
+                                   hover:border-[#2a2622] transition-colors"
                                                 >
                                                     −
                                                 </button>
-                                                <span className="w-8 text-center text-sm font-medium">
+                                                <span className="w-8 text-center text-sm font-medium text-[#2a2622]">
                                                     {item.quantity}
                                                 </span>
                                                 <button
                                                     onClick={() => updateQuantity(item.product.id, item.size, item.color || '', item.quantity + 1)}
-                                                    className="w-6 h-6 rounded border border-carbon-200 
-                                   flex items-center justify-center text-carbon-600
-                                   hover:border-navy-400"
+                                                    className="w-6 h-6 rounded-none border border-[#ccc5b8] 
+                                   flex items-center justify-center text-[#2a2622]
+                                   hover:border-[#2a2622] transition-colors"
                                                 >
                                                     +
                                                 </button>
                                                 <button
                                                     onClick={() => removeItem(item.product.id, item.size, item.color || '')}
-                                                    className="ml-auto text-carbon-400 hover:text-red-500 transition-colors"
+                                                    className="ml-auto text-[#6f6458] hover:text-[#8B4513] transition-colors"
                                                     aria-label="Eliminar"
                                                 >
                                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -153,24 +153,24 @@ export default function CartSlideOver() {
 
                 {/* Footer with total and checkout */}
                 {items.length > 0 && (
-                    <div className="border-t border-carbon-100 px-6 py-4 bg-white">
-                        <div className="flex justify-between items-center mb-4">
-                            <span className="text-carbon-600">Subtotal</span>
-                            <span className="text-xl font-serif font-semibold text-carbon-900">
+                    <div className="border-t border-[#ccc5b8] px-6 py-6 bg-white">
+                        <div className="flex justify-between items-center mb-6">
+                            <span className="text-[#6f6458] uppercase tracking-widest text-xs font-semibold">Subtotal</span>
+                            <span className="text-2xl font-serif font-bold text-[#2a2622]">
                                 {formatPrice(total)}
                             </span>
                         </div>
                         <a
                             href="/carrito"
-                            className="block w-full py-3 px-6 bg-navy-800 text-white text-center 
-                         font-semibold rounded-lg hover:bg-navy-900 transition-colors"
+                            className="block w-full py-4 px-6 bg-[#2a2622] text-[#fdfcf9] text-center 
+                         font-bold rounded-none hover:bg-[#3d3831] transition-all uppercase tracking-widest text-sm"
                         >
                             Proceder al pago
                         </a>
                         <button
                             onClick={() => closeCart()}
-                            className="block w-full py-3 px-6 mt-2 text-carbon-600 text-center 
-                         font-medium hover:text-navy-800 transition-colors"
+                            className="block w-full py-4 px-6 mt-3 text-[#6f6458] text-center 
+                         font-medium hover:text-[#2a2622] transition-colors text-sm"
                         >
                             Seguir comprando
                         </button>

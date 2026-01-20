@@ -132,9 +132,9 @@ cats.forEach((cat) => {
 	title="Inicio"
 	description="FashionStore - Tu tienda de merch personalizado de tus artistas favoritos"
 >
-	<!-- Hero Section with Fullscreen Product Carousel Background -->
+	<!-- Hero Section Origin Style -->
 	<section
-		class="relative bg-navy-900 text-white overflow-hidden min-h-[500px] lg:min-h-[600px]"
+		class="relative bg-cream-100 text-navy-900 overflow-hidden min-h-[500px] lg:min-h-[600px]"
 	>
 		<!-- Background Carousel -->
 		<div class="absolute inset-0">
@@ -164,9 +164,9 @@ cats.forEach((cat) => {
 					))
 				}
 			</div>
-			<!-- Dark overlay for text readability -->
+			<!-- Overlay Origin style -->
 			<div
-				class="absolute inset-0 bg-gradient-to-r from-navy-900/80 via-navy-900/50 to-transparent"
+				class="absolute inset-0 bg-gradient-to-r from-cream-100/80 via-cream-100/50 to-cream-100/20"
 			>
 			</div>
 		</div>
@@ -177,13 +177,13 @@ cats.forEach((cat) => {
 		>
 			<div class="max-w-xl">
 				<h1
-					class="text-4xl lg:text-6xl font-serif font-bold leading-tight animate-slide-up"
+					class="text-4xl lg:text-6xl font-serif italic leading-tight animate-slide-up text-[#2a2622]"
 				>
 					Merch exclusivo de tus
-					<span class="text-accent-gold">artistas favoritos</span>
+					<span class="text-[#8B4513]">artistas favoritos</span>
 				</h1>
 				<p
-					class="mt-6 text-lg text-navy-200 animate-slide-up"
+					class="mt-6 text-lg text-[#5c544a] animate-slide-up"
 					style="animation-delay: 0.1s;"
 				>
 					Colecciones oficiales, ediciones limitadas y productos
@@ -193,15 +193,10 @@ cats.forEach((cat) => {
 					class="mt-8 flex flex-wrap gap-4 animate-slide-up"
 					style="animation-delay: 0.2s;"
 				>
-					<Button href="/productos" variant="secondary" size="lg">
+					<Button href="/productos" variant="primary" size="lg">
 						Ver colección
 					</Button>
-					<Button
-						href="#categorias"
-						variant="outline"
-						size="lg"
-						class="border-white text-white hover:bg-white hover:text-navy-900"
-					>
+					<Button href="#categorias" variant="outline" size="lg">
 						Explorar
 					</Button>
 				</div>
@@ -213,10 +208,10 @@ cats.forEach((cat) => {
 					style="animation-delay: 0.3s;"
 				>
 					<div
-						class="inline-flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2"
+						class="inline-flex items-center gap-3 bg-white/10 backdrop-blur-xl rounded-full px-5 py-2.5 border border-white/20 shadow-glass"
 					>
 						<span
-							class="text-accent-gold font-medium"
+							class="text-[#8B4513] font-medium"
 							id="hero-product-artist"
 							>{products[0]?.artist || "Exclusivo"}</span
 						>
@@ -226,7 +221,7 @@ cats.forEach((cat) => {
 						>
 						<span class="text-white/60">|</span>
 						<span
-							class="text-accent-gold font-semibold"
+							class="text-[#8B4513] font-semibold"
 							id="hero-product-price"
 						>
 							{
@@ -250,7 +245,7 @@ cats.forEach((cat) => {
 					.slice(0, 6)
 					.map((_, index) => (
 						<button
-							class={`hero-carousel-dot w-3 h-3 rounded-full transition-all duration-300 ${index === 0 ? "bg-accent-gold scale-125" : "bg-white/40 hover:bg-white/70"}`}
+							class={`hero-carousel-dot w-3 h-3 rounded-full transition-all duration-300 ${index === 0 ? "bg-[#8B4513] scale-125" : "bg-white/40 hover:bg-white/70"}`}
 							data-index={index}
 						/>
 					))
@@ -310,7 +305,7 @@ cats.forEach((cat) => {
 				</div>
 				<a
 					href="/productos"
-					class="hidden sm:flex items-center gap-2 text-navy-800 font-medium hover:text-accent-gold transition-colors"
+					class="hidden sm:flex items-center gap-2 text-navy-800 font-medium hover:text-[#8B4513] transition-colors"
 				>
 					Ver todo
 					<svg
@@ -340,28 +335,28 @@ cats.forEach((cat) => {
 		</div>
 	</section>
 
-	<!-- Categories -->
-	<section id="categorias" class="py-16 lg:py-24 bg-white">
+	<!-- Categories Origin Style -->
+	<section id="categorias" class="py-16 lg:py-24 bg-cream-50">
 		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-			<div class="text-center mb-12">
+			<div class="text-center mb-14">
 				<h2
-					class="text-3xl lg:text-4xl font-serif font-bold text-carbon-900"
+					class="text-3xl lg:text-5xl font-serif italic text-navy-900"
 				>
 					Compra por Categoría
 				</h2>
-				<p class="mt-2 text-carbon-500">
+				<p class="mt-3 text-carbon-500 text-lg">
 					Encuentra exactamente lo que buscas
 				</p>
 			</div>
 
-			<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+			<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
 				{
 					cats.map((category) => {
 						const images = categoryProductsMap[category.slug] || [];
 						return (
 							<a
 								href={`/categoria/${category.slug}`}
-								class="group relative h-64 rounded-xl overflow-hidden bg-navy-800"
+								class="group relative h-72 overflow-hidden bg-cream-100 border border-carbon-200 shadow-soft hover:shadow-medium transition-all duration-400"
 								data-category-card
 								data-images={JSON.stringify(images)}
 							>
@@ -382,18 +377,18 @@ cats.forEach((cat) => {
 									)}
 								</div>
 
-								{/* Gradient overlay */}
-								<div class="absolute inset-0 bg-gradient-to-t from-navy-900/90 via-navy-900/50 to-navy-900/20 z-10 group-hover:from-navy-900/95 transition-all duration-300" />
+								{/* Overlay Origin style - Dark brown */}
+								<div class="absolute inset-0 bg-gradient-to-t from-[#2a2622]/90 via-[#2a2622]/50 to-[#2a2622]/20 z-10" />
 
 								{/* Content */}
 								<div class="absolute bottom-0 left-0 right-0 p-6 z-20">
-									<h3 class="text-2xl font-serif font-semibold text-white group-hover:text-accent-gold transition-colors">
+									<h3 class="text-xl font-serif italic text-cream-50">
 										{category.name}
 									</h3>
-									<span class="inline-flex items-center gap-1 mt-2 text-sm text-white/80">
-										Explorar
+									<span class="inline-flex items-center gap-2 mt-2 text-xs uppercase tracking-wider font-medium text-cream-100">
+										Explorar colección
 										<svg
-											class="w-4 h-4 group-hover:translate-x-1 transition-transform"
+											class="w-4 h-4 group-hover:translate-x-2 transition-transform duration-300"
 											fill="none"
 											stroke="currentColor"
 											viewBox="0 0 24 24"
@@ -402,7 +397,7 @@ cats.forEach((cat) => {
 												stroke-linecap="round"
 												stroke-linejoin="round"
 												stroke-width="2"
-												d="M9 5l7 7-7 7"
+												d="M17 8l4 4m0 0l-4 4m4-4H3"
 											/>
 										</svg>
 									</span>
@@ -485,10 +480,10 @@ cats.forEach((cat) => {
 				// Update dots
 				dots.forEach((dot, i) => {
 					if (i === currentSlide) {
-						dot.classList.add("bg-accent-gold", "scale-125");
+						dot.classList.add("bg-[#8B4513]", "scale-125");
 						dot.classList.remove("bg-white/40");
 					} else {
-						dot.classList.remove("bg-accent-gold", "scale-125");
+						dot.classList.remove("bg-[#8B4513]", "scale-125");
 						dot.classList.add("bg-white/40");
 					}
 				});

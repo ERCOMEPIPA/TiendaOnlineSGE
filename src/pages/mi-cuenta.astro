@@ -75,10 +75,10 @@ if (Astro.request.method === "POST") {
     <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <!-- Header -->
         <div class="mb-8">
-            <h1 class="text-3xl font-serif font-bold text-gray-900">
+            <h1 class="text-3xl font-serif font-bold text-[#2a2622]">
                 👤 Mi Cuenta
             </h1>
-            <p class="mt-2 text-gray-600">
+            <p class="mt-2 text-[#6f6458]">
                 Gestiona tu información personal y seguridad
             </p>
         </div>
@@ -125,33 +125,37 @@ if (Astro.request.method === "POST") {
         }
 
         <!-- User Info Card -->
-        <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
-            <div class="px-6 py-4 bg-gray-50 border-b border-gray-100">
-                <h2 class="text-lg font-semibold text-gray-900">
+        <div
+            class="bg-white rounded-none shadow-sm overflow-hidden mb-6 border border-[#ccc5b8]"
+        >
+            <div class="px-6 py-4 bg-[#fdfcf9] border-b border-[#ccc5b8]">
+                <h2 class="text-lg font-semibold text-[#2a2622]">
                     Información de la cuenta
                 </h2>
             </div>
             <div class="p-6">
                 <div class="flex items-center gap-4">
                     <div
-                        class="w-16 h-16 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center text-white text-2xl font-semibold"
+                        class="w-16 h-16 rounded-none bg-[#2a2622] flex items-center justify-center text-[#fdfcf9] text-2xl font-semibold"
                     >
                         {userName.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                        <p class="text-lg font-medium text-gray-900">
+                        <p class="text-lg font-medium text-[#2a2622]">
                             {userName}
                         </p>
-                        <p class="text-gray-500">{userEmail}</p>
+                        <p class="text-[#6f6458]">{userEmail}</p>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Change Password Card -->
-        <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
-            <div class="px-6 py-4 bg-gray-50 border-b border-gray-100">
-                <h2 class="text-lg font-semibold text-gray-900">
+        <div
+            class="bg-white rounded-none shadow-sm overflow-hidden mb-6 border border-[#ccc5b8]"
+        >
+            <div class="px-6 py-4 bg-[#fdfcf9] border-b border-[#ccc5b8]">
+                <h2 class="text-lg font-semibold text-[#2a2622]">
                     🔒 Cambiar contraseña
                 </h2>
             </div>
@@ -166,7 +170,7 @@ if (Astro.request.method === "POST") {
                     <div>
                         <label
                             for="current_password"
-                            class="block text-sm font-medium text-gray-700 mb-2"
+                            class="block text-sm font-medium text-[#2a2622] mb-2"
                         >
                             Contraseña actual
                         </label>
@@ -175,7 +179,7 @@ if (Astro.request.method === "POST") {
                             id="current_password"
                             name="current_password"
                             required
-                            class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+                            class="w-full px-4 py-3 border border-[#ccc5b8] rounded-none focus:outline-none focus:border-[#2a2622] transition-colors"
                             placeholder="••••••••"
                         />
                     </div>
@@ -183,7 +187,7 @@ if (Astro.request.method === "POST") {
                     <div>
                         <label
                             for="new_password"
-                            class="block text-sm font-medium text-gray-700 mb-2"
+                            class="block text-sm font-medium text-[#2a2622] mb-2"
                         >
                             Nueva contraseña
                         </label>
@@ -193,10 +197,10 @@ if (Astro.request.method === "POST") {
                             name="new_password"
                             required
                             minlength="6"
-                            class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+                            class="w-full px-4 py-3 border border-[#ccc5b8] rounded-none focus:outline-none focus:border-[#2a2622] transition-colors"
                             placeholder="••••••••"
                         />
-                        <p class="text-xs text-gray-500 mt-1">
+                        <p class="text-xs text-[#6f6458] mt-1">
                             Mínimo 6 caracteres
                         </p>
                     </div>
@@ -204,7 +208,7 @@ if (Astro.request.method === "POST") {
                     <div>
                         <label
                             for="confirm_password"
-                            class="block text-sm font-medium text-gray-700 mb-2"
+                            class="block text-sm font-medium text-[#2a2622] mb-2"
                         >
                             Confirmar nueva contraseña
                         </label>
@@ -214,7 +218,7 @@ if (Astro.request.method === "POST") {
                             name="confirm_password"
                             required
                             minlength="6"
-                            class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+                            class="w-full px-4 py-3 border border-[#ccc5b8] rounded-none focus:outline-none focus:border-[#2a2622] transition-colors"
                             placeholder="••••••••"
                         />
                     </div>
@@ -222,7 +226,7 @@ if (Astro.request.method === "POST") {
                     <div class="pt-4">
                         <button
                             type="submit"
-                            class="w-full sm:w-auto px-6 py-3 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                            class="w-full sm:w-auto px-6 py-3 bg-[#2a2622] text-[#fdfcf9] rounded-none font-medium hover:bg-[#3d3831] transition-colors uppercase tracking-widest text-sm"
                         >
                             Cambiar contraseña
                         </button>
@@ -232,9 +236,11 @@ if (Astro.request.method === "POST") {
         </div>
 
         <!-- Quick Links -->
-        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-            <div class="px-6 py-4 bg-gray-50 border-b border-gray-100">
-                <h2 class="text-lg font-semibold text-gray-900">
+        <div
+            class="bg-white rounded-none shadow-sm overflow-hidden border border-[#ccc5b8] mb-12"
+        >
+            <div class="px-6 py-4 bg-[#fdfcf9] border-b border-[#ccc5b8]">
+                <h2 class="text-lg font-semibold text-[#2a2622]">
                     Accesos rápidos
                 </h2>
             </div>
@@ -245,12 +251,12 @@ if (Astro.request.method === "POST") {
                 >
                     <div class="flex items-center gap-3">
                         <span class="text-xl">📦</span>
-                        <span class="font-medium text-gray-900"
+                        <span class="font-medium text-[#2a2622]"
                             >Mis pedidos</span
                         >
                     </div>
                     <svg
-                        class="w-5 h-5 text-gray-400"
+                        class="w-5 h-5 text-[#ccc5b8]"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -264,16 +270,16 @@ if (Astro.request.method === "POST") {
                 </a>
                 <a
                     href="/mis-favoritos"
-                    class="flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors"
+                    class="flex items-center justify-between px-6 py-4 hover:bg-[#fdfcf9] transition-colors"
                 >
                     <div class="flex items-center gap-3">
                         <span class="text-xl">❤️</span>
-                        <span class="font-medium text-gray-900"
+                        <span class="font-medium text-[#2a2622]"
                             >Mis favoritos</span
                         >
                     </div>
                     <svg
-                        class="w-5 h-5 text-gray-400"
+                        class="w-5 h-5 text-[#ccc5b8]"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
