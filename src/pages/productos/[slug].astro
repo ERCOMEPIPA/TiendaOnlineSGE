@@ -33,6 +33,8 @@ const mockProduct: Product = {
   - Lavado: Máquina a 30°C
   - Producción: Comercio justo`,
     price: 3500,
+    discount_price: null,
+    discount_end_date: null,
     stock: 15,
     sizes: ["S", "M", "L", "XL", "XXL"],
     colors: ["Negro:#000000", "Blanco:#FFFFFF", "Rojo:#DC2626"],
@@ -49,6 +51,42 @@ const mockProduct: Product = {
 };
 
 const currentProduct = product || mockProduct;
+
+// Check if discount is active (discount_price is in euros, convert to cents)
+const now = new Date();
+const discountPriceInCents = currentProduct.discount_price
+    ? currentProduct.discount_price * 100
+    : null;
+const hasDiscount =
+    discountPriceInCents &&
+    discountPriceInCents < currentProduct.price &&
+    (!currentProduct.discount_end_date ||
+        new Date(currentProduct.discount_end_date) > now);
+
+const discountPercentage = hasDiscount
+    ? Math.round((1 - discountPriceInCents! / currentProduct.price) * 100)
+    : 0;
+
+const displayPrice = hasDiscount ? discountPriceInCents! : currentProduct.price;
+
+// Calculate time remaining for discount
+let timeRemaining = "";
+if (hasDiscount && currentProduct.discount_end_date) {
+    const endDate = new Date(currentProduct.discount_end_date);
+    const diff = endDate.getTime() - now.getTime();
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+    if (days > 0) {
+        timeRemaining = `${days}d ${hours}h`;
+    } else if (hours > 0) {
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        timeRemaining = `${hours}h ${minutes}m`;
+    } else {
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        timeRemaining = `${minutes} minutos`;
+    }
+}
 
 // Fetch related products (only real products from DB, exclude current)
 const { data: relatedProducts } = await supabase
@@ -114,9 +152,51 @@ const related = relatedProducts || [];
                     {currentProduct.name}
                 </h1>
 
-                <p class="text-3xl font-serif font-semibold text-navy-900 mb-6">
-                    {formatPrice(currentProduct.price)}
-                </p>
+                {/* Price section with discount */}
+                <div class="mb-6">
+                    {
+                        hasDiscount ? (
+                            <div>
+                                <div class="flex items-center gap-3 mb-2">
+                                    <span class="text-3xl font-serif font-semibold text-red-600">
+                                        {formatPrice(displayPrice)}
+                                    </span>
+                                    <span class="text-xl text-carbon-400 line-through">
+                                        {formatPrice(currentProduct.price)}
+                                    </span>
+                                    <span class="bg-red-600 text-white text-sm font-bold px-2 py-1 rounded">
+                                        -{discountPercentage}%
+                                    </span>
+                                </div>
+                                {timeRemaining && (
+                                    <div class="flex items-center gap-2 text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">
+                                        <svg
+                                            class="w-4 h-4"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                            />
+                                        </svg>
+                                        <span>
+                                            Oferta termina en:{" "}
+                                            <strong>{timeRemaining}</strong>
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <p class="text-3xl font-serif font-semibold text-navy-900">
+                                {formatPrice(currentProduct.price)}
+                            </p>
+                        )
+                    }
+                </div>
 
                 {/* Description */}
                 {

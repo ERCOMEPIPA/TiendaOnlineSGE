@@ -146,6 +146,8 @@ cats.forEach((cat) => {
 						artist: p.artist || "Exclusivo",
 						name: p.name,
 						price: p.price,
+						discount_price: p.discount_price || null,
+						discount_end_date: p.discount_end_date || null,
 					})),
 				)}
 			>
@@ -216,7 +218,7 @@ cats.forEach((cat) => {
 							>{products[0]?.artist || "Exclusivo"}</span
 						>
 						<span class="text-white/60">|</span>
-						<span class="text-white" id="hero-product-name"
+						<span class="text-[#8B4513]" id="hero-product-name"
 							>{products[0]?.name}</span
 						>
 						<span class="text-white/60">|</span>
@@ -225,10 +227,33 @@ cats.forEach((cat) => {
 							id="hero-product-price"
 						>
 							{
-								new Intl.NumberFormat("es-ES", {
-									style: "currency",
-									currency: "EUR",
-								}).format((products[0]?.price || 0) / 100)
+								(() => {
+									const product = products[0];
+									if (!product) return "0,00 €";
+
+									const now = new Date();
+									const hasDiscount =
+										product.discount_price &&
+										product.discount_price * 100 <
+											product.price &&
+										(!product.discount_end_date ||
+											new Date(
+												product.discount_end_date,
+											) > now);
+
+									const formatCurrency = (cents: number) =>
+										new Intl.NumberFormat("es-ES", {
+											style: "currency",
+											currency: "EUR",
+										}).format(cents / 100);
+
+									if (hasDiscount) {
+										return formatCurrency(
+											product.discount_price * 100,
+										);
+									}
+									return formatCurrency(product.price);
+								})()
 							}
 						</span>
 					</div>
@@ -255,7 +280,7 @@ cats.forEach((cat) => {
 		<!-- Navigation Arrows -->
 		<button
 			id="hero-carousel-prev"
-			class="absolute left-4 lg:left-8 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/30 transition-all z-20"
+			class="absolute left-4 lg:left-8 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-[#2a2622] flex items-center justify-center text-white hover:bg-[#3d3831] transition-all z-20 shadow-lg"
 		>
 			<svg
 				class="w-6 h-6"
@@ -272,7 +297,7 @@ cats.forEach((cat) => {
 		</button>
 		<button
 			id="hero-carousel-next"
-			class="absolute right-4 lg:right-8 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/30 transition-all z-20"
+			class="absolute right-4 lg:right-8 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-[#2a2622] flex items-center justify-center text-white hover:bg-[#3d3831] transition-all z-20 shadow-lg"
 		>
 			<svg
 				class="w-6 h-6"
@@ -465,8 +490,24 @@ cats.forEach((cat) => {
 					if (productArtist)
 						productArtist.textContent = product.artist;
 					if (productName) productName.textContent = product.name;
-					if (productPrice)
-						productPrice.textContent = formatPrice(product.price);
+					if (productPrice) {
+						const now = new Date();
+						const hasDiscount =
+							product.discount_price &&
+							product.discount_price * 100 < product.price &&
+							(!product.discount_end_date ||
+								new Date(product.discount_end_date) > now);
+
+						if (hasDiscount) {
+							productPrice.textContent = formatPrice(
+								product.discount_price * 100,
+							);
+						} else {
+							productPrice.textContent = formatPrice(
+								product.price,
+							);
+						}
+					}
 				}
 			}
 

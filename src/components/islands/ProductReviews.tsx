@@ -188,13 +188,14 @@ export default function ProductReviews({ productId, productName }: ProductReview
                             {isAuthenticated ? (
                                 userHasReviewed ? (
                                     <p className="text-center text-sm text-green-600">
-                                        ✓ Ya has dejado tu opinión
+                                        Ya has dejado tu opinión
                                     </p>
                                 ) : (
                                     <button
                                         onClick={() => setShowForm(!showForm)}
-                                        className="w-full bg-navy-800 text-white py-3 rounded-lg font-medium
-                                                 hover:bg-navy-900 transition-colors"
+                                        className="w-full bg-[#2a2622] text-white py-3 rounded-lg font-medium
+                                                 hover:bg-[#3d3831] transition-colors"
+                                        style={{ color: 'white' }}
                                     >
                                         Escribir una reseña
                                     </button>
@@ -202,8 +203,9 @@ export default function ProductReviews({ productId, productName }: ProductReview
                             ) : (
                                 <a
                                     href="/login"
-                                    className="block w-full text-center bg-navy-800 text-white py-3 rounded-lg font-medium
-                                             hover:bg-navy-900 transition-colors"
+                                    className="block w-full text-center bg-[#2a2622] text-white py-3 rounded-lg font-medium
+                                             hover:bg-[#3d3831] transition-colors"
+                                    style={{ color: 'white' }}
                                 >
                                     Inicia sesión para opinar
                                 </a>
@@ -270,8 +272,9 @@ export default function ProductReviews({ productId, productName }: ProductReview
                                     <button
                                         type="submit"
                                         disabled={submitting}
-                                        className="px-6 py-2 bg-navy-800 text-white rounded-lg font-medium
-                                                 hover:bg-navy-900 transition-colors disabled:opacity-50"
+                                        className="px-6 py-2 bg-[#2a2622] text-white rounded-lg font-medium
+                                                 hover:bg-[#3d3831] transition-colors disabled:opacity-50"
+                                        style={{ color: 'white' }}
                                     >
                                         {submitting ? 'Enviando...' : 'Enviar reseña'}
                                     </button>
@@ -308,7 +311,7 @@ export default function ProductReviews({ productId, productName }: ProductReview
                                                 <StarRating rating={review.rating} size="sm" />
                                                 {review.verified_purchase && (
                                                     <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
-                                                        ✓ Compra verificada
+                                                        Compra verificada
                                                     </span>
                                                 )}
                                             </div>

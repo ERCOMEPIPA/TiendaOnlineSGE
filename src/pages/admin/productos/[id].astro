@@ -9,6 +9,7 @@ import { slugify } from "../../../lib/utils";
 import type { Product } from "../../../lib/supabase";
 
 const { id } = Astro.params;
+console.log("=== PRODUCT ID ===", id);
 
 // Fetch product
 const { data: product } = await supabase
@@ -24,6 +25,8 @@ const mockProduct: Product = {
     slug: "camiseta-tour-2024-bad-bunny",
     description: "Camiseta oficial del World Tour 2024",
     price: 3500,
+    discount_price: null,
+    discount_end_date: null,
     stock: 15,
     sizes: ["S", "M", "L", "XL"],
     colors: ["Negro:#000000", "Blanco:#FFFFFF"],
@@ -66,11 +69,27 @@ if (Astro.request.method === "POST") {
         .map((s) => s.trim())
         .filter(Boolean);
 
+    // Discount fields
+    const discountPriceRaw = formData.get("discount_price") as string;
+    const discountPrice =
+        discountPriceRaw && parseFloat(discountPriceRaw) > 0
+            ? parseFloat(discountPriceRaw)
+            : null;
+    const discountEndDateRaw = formData.get("discount_end_date") as string;
+    // Convert datetime-local format to ISO string for Supabase
+    const discountEndDate = discountEndDateRaw
+        ? new Date(discountEndDateRaw).toISOString()
+        : null;
+
+    console.log("=== DISCOUNT DATA ===");
+    console.log("discountPrice:", discountPrice);
+    console.log("discountEndDate:", discountEndDate);
+
     // Check if stock was 0 before and now has stock (to trigger notifications)
     const previousStock = currentProduct.stock || 0;
     const stockReturned = previousStock <= 0 && stock > 0;
 
-    const { error: updateError } = await supabase
+    const { error: updateError, data: updateData } = await supabase
         .from("products")
         .update({
             name,
@@ -84,11 +103,22 @@ if (Astro.request.method === "POST") {
             featured,
             category_id: categoryId,
             images: imageUrls,
+            discount_price: discountPrice,
+            discount_end_date: discountEndDate,
             updated_at: new Date().toISOString(),
         })
-        .eq("id", id);
+        .eq("id", id)
+        .select();
+
+    console.log("=== UPDATE RESULT ===");
+    console.log("updateData:", updateData);
+    console.log("updateError:", updateError);
 
     if (updateError) {
+        console.error(
+            "Update error details:",
+            JSON.stringify(updateError, null, 2),
+        );
         error = "Error al actualizar el producto.";
     } else {
         success = true;
@@ -260,6 +290,77 @@ const allCategories = categories?.length ? categories : mockCategories;
                                 value={currentProduct.stock}
                                 class="w-full px-4 py-3 border border-carbon-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-500"
                             />
+                        </div>
+                    </div>
+
+                    <!-- Discount Section -->
+                    <div
+                        class="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg"
+                    >
+                        <h4
+                            class="text-sm font-semibold text-red-800 mb-3 flex items-center gap-2"
+                        >
+                            <svg
+                                class="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+                                ></path>
+                            </svg>
+                            Oferta / Descuento
+                        </h4>
+                        <div class="grid sm:grid-cols-2 gap-4">
+                            <div>
+                                <label
+                                    for="discount_price"
+                                    class="block text-sm font-medium text-carbon-700 mb-2"
+                                >
+                                    Precio oferta (€)
+                                </label>
+                                <input
+                                    type="number"
+                                    id="discount_price"
+                                    name="discount_price"
+                                    step="0.01"
+                                    min="0"
+                                    placeholder="Dejar vacío si no hay oferta"
+                                    value={currentProduct.discount_price || ""}
+                                    class="w-full px-4 py-3 border border-carbon-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                                />
+                                <p class="mt-1 text-xs text-carbon-400">
+                                    Pon el precio en euros (ej: 25.00)
+                                </p>
+                            </div>
+
+                            <div>
+                                <label
+                                    for="discount_end_date"
+                                    class="block text-sm font-medium text-carbon-700 mb-2"
+                                >
+                                    Fecha fin de oferta
+                                </label>
+                                <input
+                                    type="datetime-local"
+                                    id="discount_end_date"
+                                    name="discount_end_date"
+                                    value={currentProduct.discount_end_date
+                                        ? currentProduct.discount_end_date.slice(
+                                              0,
+                                              16,
+                                          )
+                                        : ""}
+                                    class="w-full px-4 py-3 border border-carbon-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                                />
+                                <p class="mt-1 text-xs text-carbon-400">
+                                    Dejar vacío para oferta sin límite
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>

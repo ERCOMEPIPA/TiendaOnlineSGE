@@ -122,19 +122,19 @@
 
             if (data.success) {
                 showNewsletterToast(
-                    "🎉 ¡Suscripción completada! Revisa tu email para tu código de descuento.",
+                    "¡Suscripción completada! Revisa tu email para tu código de descuento.",
                     true,
                 );
                 emailInput.value = "";
             } else {
                 showNewsletterToast(
-                    "❌ " + (data.error || "Error al procesar la suscripción"),
+                    "" + (data.error || "Error al procesar la suscripción"),
                     false,
                 );
             }
         } catch (error) {
             showNewsletterToast(
-                "❌ Error de conexión. Inténtalo de nuevo.",
+                "Error de conexión. Inténtalo de nuevo.",
                 false,
             );
         } finally {

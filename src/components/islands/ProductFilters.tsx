@@ -8,6 +8,8 @@ interface Product {
     slug: string;
     description: string | null;
     price: number;
+    discount_price: number | null;
+    discount_end_date: string | null;
     stock: number;
     sizes: string[] | null;
     category_id: string | null;
@@ -274,11 +276,35 @@ export default function ProductFilters({ products, categories }: ProductFiltersP
                                             </svg>
                                         </div>
                                     )}
-                                    {product.featured && (
-                                        <span className="absolute top-3 left-3 bg-[#A68A4B] text-[#fdfcf9] text-xs font-bold px-2 py-1 rounded-none uppercase tracking-wider">
-                                            Destacado
-                                        </span>
-                                    )}
+                                    {(() => {
+                                        const now = new Date();
+                                        const hasDiscount = product.discount_price &&
+                                            product.discount_price * 100 < product.price &&
+                                            (!product.discount_end_date || new Date(product.discount_end_date) > now);
+
+                                        if (hasDiscount && !product.featured) {
+                                            return (
+                                                <span className="absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-2 py-1 uppercase tracking-wider">
+                                                    -{Math.round((1 - (product.discount_price! * 100) / product.price) * 100)}%
+                                                </span>
+                                            );
+                                        }
+                                        if (product.featured && !hasDiscount) {
+                                            return (
+                                                <span className="absolute top-3 left-3 bg-[#A68A4B] text-[#fdfcf9] text-xs font-bold px-2 py-1 rounded-none uppercase tracking-wider">
+                                                    Destacado
+                                                </span>
+                                            );
+                                        }
+                                        if (hasDiscount) {
+                                            return (
+                                                <span className="absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-2 py-1 uppercase tracking-wider">
+                                                    -{Math.round((1 - (product.discount_price! * 100) / product.price) * 100)}%
+                                                </span>
+                                            );
+                                        }
+                                        return null;
+                                    })()}
                                     {product.stock < 1 && (
                                         <div className="absolute inset-0 bg-gray-900/60 flex items-center justify-center">
                                             <span className="bg-white text-gray-800 px-4 py-2 rounded-lg font-semibold">
@@ -298,9 +324,30 @@ export default function ProductFilters({ products, categories }: ProductFiltersP
                                     <h3 className="font-medium text-[#2a2622] group-hover:text-[#8B4513] transition-colors line-clamp-2">
                                         {product.name}
                                     </h3>
-                                    <p className="mt-2 text-lg font-serif font-semibold text-gray-900">
-                                        {formatPrice(product.price)}
-                                    </p>
+                                    {(() => {
+                                        const now = new Date();
+                                        const hasDiscount = product.discount_price &&
+                                            product.discount_price * 100 < product.price &&
+                                            (!product.discount_end_date || new Date(product.discount_end_date) > now);
+
+                                        if (hasDiscount) {
+                                            return (
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-lg font-serif font-semibold text-red-600">
+                                                        {formatPrice(product.discount_price! * 100)}
+                                                    </span>
+                                                    <span className="text-sm text-gray-400 line-through">
+                                                        {formatPrice(product.price)}
+                                                    </span>
+                                                </div>
+                                            );
+                                        }
+                                        return (
+                                            <p className="text-lg font-serif font-semibold text-gray-900">
+                                                {formatPrice(product.price)}
+                                            </p>
+                                        );
+                                    })()}
                                     {product.sizes && product.sizes.length > 0 && (
                                         <p className="mt-1 text-xs text-gray-500">
                                             {product.sizes.join(', ')}

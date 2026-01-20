@@ -1,0 +1,53 @@
+---
+// Announcement Banner Component - Scrolling promotional messages
+const announcements = [
+    "Suscríbete a nuestra newsletter y obtén un 10% de descuento en tu primera compra",
+    "Envío gratis en pedidos superiores a 50€",
+    "Nuevas colecciones disponibles cada semana",
+    "Devoluciones gratuitas en 30 días",
+];
+---
+
+<div class="announcement-banner bg-[#2a2622] text-white overflow-hidden">
+    <div class="relative flex items-center h-9">
+        <!-- Scrolling container -->
+        <div class="announcement-scroll flex whitespace-nowrap animate-scroll">
+            {
+                announcements.map((text, index) => (
+                    <span class="inline-flex items-center px-8">
+                        <span class="w-1.5 h-1.5 bg-[#8B4513] rounded-full mr-3" />
+                        <span class="text-xs tracking-wide">{text}</span>
+                    </span>
+                ))
+            }
+            <!-- Duplicate for seamless loop -->
+            {
+                announcements.map((text, index) => (
+                    <span class="inline-flex items-center px-8">
+                        <span class="w-1.5 h-1.5 bg-[#8B4513] rounded-full mr-3" />
+                        <span class="text-xs tracking-wide">{text}</span>
+                    </span>
+                ))
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes scroll {
+        0% {
+            transform: translateX(0);
+        }
+        100% {
+            transform: translateX(-50%);
+        }
+    }
+
+    .animate-scroll {
+        animation: scroll 30s linear infinite;
+    }
+
+    .announcement-banner:hover .animate-scroll {
+        animation-play-state: paused;
+    }
+</style>

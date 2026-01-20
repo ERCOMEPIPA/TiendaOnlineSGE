@@ -7,6 +7,7 @@ import WishlistIcon from "../components/islands/WishlistIcon";
 import UserMenu from "../components/ui/UserMenu.astro";
 import Newsletter from "../components/Newsletter.astro";
 import NewsletterPopup from "../components/islands/NewsletterPopup.astro";
+import AnnouncementBanner from "../components/AnnouncementBanner.astro";
 import { getUserSession } from "../lib/auth";
 
 interface Props {
@@ -32,6 +33,9 @@ const currentPath = Astro.url.pathname;
 ---
 
 <BaseLayout title={title} description={description}>
+    <!-- Announcement Banner -->
+    <AnnouncementBanner />
+
     <!-- Header Origin Style - Minimal & Elegant -->
     <header class="sticky top-0 z-30 bg-[#fdfcf9] border-b border-[#e8e4dc]">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

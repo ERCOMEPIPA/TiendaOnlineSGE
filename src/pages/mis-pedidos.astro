@@ -75,7 +75,7 @@ const getStatusConfig = (status: string) => statusConfig[status] || statusConfig
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <!-- Header -->
         <div class="mb-8">
-            <h1 class="text-3xl font-serif font-bold text-[#2a2622]">📦 Mis Pedidos</h1>
+            <h1 class="text-3xl font-serif font-bold text-[#2a2622]">Mis Pedidos</h1>
             <p class="mt-2 text-[#6f6458]">
                 Historial y seguimiento de todas tus compras
             </p>
@@ -284,7 +284,7 @@ const getStatusConfig = (status: string) => statusConfig[status] || statusConfig
                                         {/* Indicador de devolución ya solicitada */}
                                         {returnRequested && (
                                             <span class="px-3 py-1 text-sm bg-orange-100 text-orange-700 rounded-full">
-                                                📦 Devolución en proceso
+                                                Devolución en proceso
                                             </span>
                                         )}
                                     </div>
@@ -302,7 +302,7 @@ const getStatusConfig = (status: string) => statusConfig[status] || statusConfig
         <div class="bg-white rounded-none shadow-2xl max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto border border-[#ccc5b8]">
             <div class="p-6">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-xl font-bold text-[#2a2622]">📦 Solicitar Devolución</h3>
+                    <h3 class="text-xl font-bold text-[#2a2622]">Solicitar Devolución</h3>
                     <button id="close-return-modal" class="text-gray-400 hover:text-gray-600">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -312,7 +312,7 @@ const getStatusConfig = (status: string) => statusConfig[status] || statusConfig
                 
                 <!-- Instrucciones de envío -->
                 <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
-                    <h4 class="font-semibold text-yellow-800 mb-2">📍 Dirección de envío</h4>
+                    <h4 class="font-semibold text-yellow-800 mb-2">Dirección de envío</h4>
                     <p class="text-yellow-700">Debes enviar los artículos en su embalaje original a:</p>
                     <p class="font-bold text-yellow-900 mt-2">
                         Calle de la Moda 123<br>
@@ -323,7 +323,7 @@ const getStatusConfig = (status: string) => statusConfig[status] || statusConfig
                 
                 <!-- Confirmación email -->
                 <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-4">
-                    <h4 class="font-semibold text-blue-800 mb-2">📧 Confirmación por email</h4>
+                    <h4 class="font-semibold text-blue-800 mb-2">Confirmación por email</h4>
                     <p class="text-blue-700">
                         Hemos enviado un correo con la <strong>etiqueta de devolución prepagada</strong> a tu email asociado.
                     </p>
@@ -331,7 +331,7 @@ const getStatusConfig = (status: string) => statusConfig[status] || statusConfig
                 
                 <!-- Disclaimer financiero -->
                 <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
-                    <h4 class="font-semibold text-red-800 mb-2">⚠️ Información importante</h4>
+                    <h4 class="font-semibold text-red-800 mb-2">Información importante</h4>
                     <p class="text-red-700">
                         <strong>Una vez recibido y validado el paquete, el reembolso se procesará en tu método de pago original en un plazo de 5 a 7 días hábiles.</strong>
                     </p>
@@ -496,13 +496,13 @@ const getStatusConfig = (status: string) => statusConfig[status] || statusConfig
             
             if (data.success) {
                 cancelModal?.classList.add('hidden');
-                showToast('✅ Pedido cancelado correctamente. El stock ha sido restaurado.', 'success');
+                showToast('Pedido cancelado correctamente. El stock ha sido restaurado.', 'success');
                 setTimeout(() => window.location.reload(), 1500);
             } else {
-                showToast('❌ ' + (data.error || 'No se pudo cancelar el pedido'), 'error');
+                showToast('' + (data.error || 'No se pudo cancelar el pedido'), 'error');
             }
         } catch (error) {
-            showToast('❌ Error de conexión. Por favor, inténtalo de nuevo.', 'error');
+            showToast('Error de conexión. Por favor, inténtalo de nuevo.', 'error');
         } finally {
             btn.disabled = false;
             btn.textContent = 'Sí, cancelar pedido';
@@ -528,13 +528,13 @@ const getStatusConfig = (status: string) => statusConfig[status] || statusConfig
             
             if (data.success) {
                 returnModal?.classList.add('hidden');
-                showToast('📧 Solicitud de devolución registrada. Revisa tu email para las instrucciones.', 'success');
+                showToast('Solicitud de devolución registrada. Revisa tu email para las instrucciones.', 'success');
                 setTimeout(() => window.location.reload(), 1500);
             } else {
-                showToast('❌ ' + (data.error || 'No se pudo procesar la solicitud'), 'error');
+                showToast('' + (data.error || 'No se pudo procesar la solicitud'), 'error');
             }
         } catch (error) {
-            showToast('❌ Error de conexión. Por favor, inténtalo de nuevo.', 'error');
+            showToast('Error de conexión. Por favor, inténtalo de nuevo.', 'error');
         } finally {
             btn.disabled = false;
             btn.textContent = 'Confirmar solicitud';

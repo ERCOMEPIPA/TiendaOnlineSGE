@@ -8,6 +8,22 @@ interface Props {
 }
 
 const { product } = Astro.props;
+
+// Check if discount is active (discount_price is in euros, convert to cents)
+const now = new Date();
+const discountPriceInCents = product.discount_price
+    ? product.discount_price * 100
+    : null;
+const hasDiscount =
+    discountPriceInCents &&
+    discountPriceInCents < product.price &&
+    (!product.discount_end_date || new Date(product.discount_end_date) > now);
+
+const discountPercentage = hasDiscount
+    ? Math.round((1 - discountPriceInCents! / product.price) * 100)
+    : 0;
+
+const displayPrice = hasDiscount ? discountPriceInCents! : product.price;
 ---
 
 <a
@@ -59,9 +75,18 @@ const { product } = Astro.props;
 
         {/* Featured badge - minimal */}
         {
-            product.featured && (
+            product.featured && !hasDiscount && (
                 <span class="absolute top-3 left-3 bg-[#8B4513] text-[#fdfcf9] text-xs font-medium px-2 py-1 uppercase tracking-wider">
                     Destacado
+                </span>
+            )
+        }
+
+        {/* Discount badge */}
+        {
+            hasDiscount && (
+                <span class="absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-2 py-1 uppercase tracking-wider">
+                    -{discountPercentage}%
                 </span>
             )
         }
@@ -119,9 +144,24 @@ const { product } = Astro.props;
         </h3>
 
         {/* Price */}
-        <p class="mt-3 text-xl font-serif text-navy-900">
-            {formatPrice(product.price)}
-        </p>
+        <div class="mt-3">
+            {
+                hasDiscount ? (
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl font-serif text-red-600 font-semibold">
+                            {formatPrice(displayPrice)}
+                        </span>
+                        <span class="text-sm text-carbon-400 line-through">
+                            {formatPrice(product.price)}
+                        </span>
+                    </div>
+                ) : (
+                    <p class="text-xl font-serif text-navy-900">
+                        {formatPrice(product.price)}
+                    </p>
+                )
+            }
+        </div>
 
         {/* Sizes preview with better styling */}
         {

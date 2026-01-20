@@ -21,10 +21,10 @@ const baseStyles =
     "inline-flex items-center justify-center font-medium transition-all duration-300 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed";
 
 const variants = {
-    primary: "bg-[#2a2622] text-[#fdfcf9] hover:bg-[#3d3831] rounded-none",
+    primary: "bg-[#2a2622] text-white hover:bg-[#3d3831] rounded-none",
     secondary: "bg-[#8B4513] text-[#fdfcf9] hover:bg-[#A68A4B] rounded-none",
     outline:
-        "border border-[#2a2622] text-[#2a2622] hover:bg-[#2a2622] hover:text-[#fdfcf9] rounded-none",
+        "border border-[#2a2622] bg-[#2a2622] text-white hover:bg-[#3d3831] rounded-none",
     ghost: "text-[#6f6458] hover:text-[#2a2622] underline-offset-4 hover:underline",
     gradient: "bg-[#3d3831] text-[#fdfcf9] hover:bg-[#2a2622] rounded-none",
 };
@@ -42,11 +42,34 @@ const Element = href ? "a" : "button";
 
 {
     href ? (
-        <a href={href} class={classes}>
+        <a
+            href={href}
+            class={classes}
+            style={
+                variant === "primary" ||
+                variant === "outline" ||
+                variant === "secondary" ||
+                variant === "gradient"
+                    ? "color: white !important;"
+                    : undefined
+            }
+        >
             <slot />
         </a>
     ) : (
-        <button type={type} class={classes} disabled={disabled}>
+        <button
+            type={type}
+            class={classes}
+            disabled={disabled}
+            style={
+                variant === "primary" ||
+                variant === "outline" ||
+                variant === "secondary" ||
+                variant === "gradient"
+                    ? "color: white !important;"
+                    : undefined
+            }
+        >
             <slot />
         </button>
     )

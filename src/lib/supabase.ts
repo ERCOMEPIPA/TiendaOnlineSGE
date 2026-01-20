@@ -19,6 +19,8 @@ export interface Product {
     slug: string;
     description: string | null;
     price: number; // Price in cents
+    discount_price: number | null; // Discounted price in cents
+    discount_end_date: string | null; // ISO timestamp when discount expires
     stock: number;
     sizes: string[];
     colors: string[]; // Format: "ColorName:#HexCode"
