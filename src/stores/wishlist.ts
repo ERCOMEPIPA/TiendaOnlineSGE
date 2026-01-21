@@ -80,21 +80,21 @@ export function clearWishlist(): void {
 function saveWishlist(): void {
     if (typeof window !== 'undefined') {
         const items = $wishlistItems.get();
-        localStorage.setItem('fashionstore-wishlist', JSON.stringify(items));
+        localStorage.setItem('hypestage-wishlist', JSON.stringify(items));
     }
 }
 
 // Persistence: Load from localStorage
 export function loadWishlist(): void {
     if (typeof window !== 'undefined') {
-        const saved = localStorage.getItem('fashionstore-wishlist');
+        const saved = localStorage.getItem('hypestage-wishlist');
         if (saved) {
             try {
                 const items = JSON.parse(saved);
                 $wishlistItems.set(items);
             } catch (e) {
                 console.error('Error loading wishlist:', e);
-                localStorage.removeItem('fashionstore-wishlist');
+                localStorage.removeItem('hypestage-wishlist');
             }
         }
     }

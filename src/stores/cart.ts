@@ -21,12 +21,21 @@ export const $cartCount = computed($cartItems, (items) => {
     return Object.values(items).reduce((total, item) => total + item.quantity, 0);
 });
 
-// Computed: Total price in cents
+// Computed: Total price in cents (considers discount prices)
 export const $cartTotal = computed($cartItems, (items) => {
-    return Object.values(items).reduce(
-        (total, item) => total + item.product.price * item.quantity,
-        0
-    );
+    const now = new Date();
+    return Object.values(items).reduce((total, item) => {
+        // Check if product has active discount
+        const discountPriceInCents = item.product.discount_price
+            ? item.product.discount_price * 100
+            : null;
+        const hasDiscount =
+            discountPriceInCents &&
+            discountPriceInCents < item.product.price &&
+            (!item.product.discount_end_date || new Date(item.product.discount_end_date) > now);
+        const priceToUse = hasDiscount ? discountPriceInCents : item.product.price;
+        return total + priceToUse * item.quantity;
+    }, 0);
 });
 
 // Computed: Cart items as array
@@ -122,21 +131,21 @@ export function closeCart(): void {
 function saveCart(): void {
     if (typeof window !== 'undefined') {
         const items = $cartItems.get();
-        localStorage.setItem('fashionstore-cart', JSON.stringify(items));
+        localStorage.setItem('hypestage-cart', JSON.stringify(items));
     }
 }
 
 // Persistence: Load from localStorage
 export function loadCart(): void {
     if (typeof window !== 'undefined') {
-        const saved = localStorage.getItem('fashionstore-cart');
+        const saved = localStorage.getItem('hypestage-cart');
         if (saved) {
             try {
                 const items = JSON.parse(saved);
                 $cartItems.set(items);
             } catch (e) {
                 console.error('Error loading cart:', e);
-                localStorage.removeItem('fashionstore-cart');
+                localStorage.removeItem('hypestage-cart');
             }
         }
     }

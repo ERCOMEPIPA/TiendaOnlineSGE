@@ -89,20 +89,38 @@ if (sessionId) {
                     );
                     const { data: products } = await supabase
                         .from("products")
-                        .select("id, name, price")
+                        .select(
+                            "id, name, price, discount_price, discount_end_date",
+                        )
                         .in("id", productIds);
 
                     if (products) {
-                        // Create order items
+                        // Create order items with correct price (discount if active)
                         const orderItems = items.map((item: any) => {
                             const product = products.find(
                                 (p) => p.id === item.product_id,
                             );
+
+                            // Check if product has active discount
+                            const now = new Date();
+                            const discountPriceInCents = product?.discount_price
+                                ? product.discount_price * 100
+                                : null;
+                            const hasDiscount =
+                                discountPriceInCents &&
+                                product &&
+                                discountPriceInCents < product.price &&
+                                (!product.discount_end_date ||
+                                    new Date(product.discount_end_date) > now);
+                            const priceToUse = hasDiscount
+                                ? discountPriceInCents
+                                : product?.price || 0;
+
                             return {
                                 order_id: order.id,
                                 product_id: item.product_id,
                                 product_name: product?.name || "Producto",
-                                product_price: product?.price || 0,
+                                product_price: priceToUse,
                                 quantity: item.quantity,
                                 size: item.size,
                             };

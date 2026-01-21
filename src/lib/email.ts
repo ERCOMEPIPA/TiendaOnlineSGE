@@ -46,7 +46,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
 <body>
     <div class="container">
         <div class="header">
-            <h1>FashionStore</h1>
+            <h1>HYPESTAGE</h1>
             <p>¡Gracias por tu compra!</p>
         </div>
         
@@ -87,7 +87,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
         
         <div class="footer">
             <p>Este es un email automático, por favor no respondas a este mensaje.</p>
-            <p>&copy; ${new Date().getFullYear()} FashionStore. Todos los derechos reservados.</p>
+            <p>&copy; ${new Date().getFullYear()} HYPESTAGE. Todos los derechos reservados.</p>
         </div>
     </div>
 </body>
@@ -110,7 +110,7 @@ Total: ${formatPrice(total)}
 Recibirás otra notificación cuando tu pedido sea enviado.
 
 Gracias por tu compra,
-FashionStore
+HYPESTAGE
     `;
 
     try {
@@ -120,7 +120,7 @@ FashionStore
         console.log('API Key configured:', import.meta.env.RESEND_API_KEY ? 'Yes (starts with ' + import.meta.env.RESEND_API_KEY.substring(0, 10) + '...)' : 'NO - MISSING!');
 
         const { data: emailData, error } = await resend.emails.send({
-            from: 'FashionStore <onboarding@resend.dev>', // Cambiar a tu dominio verificado
+            from: 'HYPESTAGE <onboarding@resend.dev>', // Cambiar a tu dominio verificado
             to: [customerEmail],
             subject: `Confirmación de pedido #${orderId.slice(0, 8)}`,
             html: emailHtml,
@@ -174,13 +174,13 @@ export async function sendWelcomeEmail(email: string, name: string) {
 <body>
     <div class="container">
         <div class="header">
-            <h1>¡Bienvenido a FashionStore!</h1>
+            <h1>¡Bienvenido a HYPESTAGE!</h1>
         </div>
         
         <div class="content">
             <p class="welcome-text">Hola ${name},</p>
             
-            <p>¡Gracias por registrarte en FashionStore! Estamos emocionados de tenerte con nosotros.</p>
+            <p>¡Gracias por registrarte en HYPESTAGE! Estamos emocionados de tenerte con nosotros.</p>
             
             <p>Tu cuenta ha sido creada exitosamente y ahora puedes disfrutar de todos los beneficios de ser parte de nuestra comunidad:</p>
             
@@ -214,13 +214,13 @@ export async function sendWelcomeEmail(email: string, name: string) {
             <p>¡Gracias por elegirnos!</p>
             
             <p style="margin-top: 30px; color: #666; font-size: 14px;">
-                <strong>El equipo de FashionStore</strong>
+                <strong>El equipo de HYPESTAGE</strong>
             </p>
         </div>
         
         <div class="footer">
             <p>Este es un email automático, por favor no respondas a este mensaje.</p>
-            <p>&copy; ${new Date().getFullYear()} FashionStore. Todos los derechos reservados.</p>
+            <p>&copy; ${new Date().getFullYear()} HYPESTAGE. Todos los derechos reservados.</p>
         </div>
     </div>
 </body>
@@ -228,11 +228,11 @@ export async function sendWelcomeEmail(email: string, name: string) {
     `;
 
     const emailText = `
-¡Bienvenido a FashionStore!
+¡Bienvenido a HYPESTAGE!
 
 Hola ${name},
 
-¡Gracias por registrarte en FashionStore! Estamos emocionados de tenerte con nosotros.
+¡Gracias por registrarte en HYPESTAGE! Estamos emocionados de tenerte con nosotros.
 
 Tu cuenta ha sido creada exitosamente y ahora puedes disfrutar de todos los beneficios:
 
@@ -245,14 +245,14 @@ Explora nuestra colección de merch personalizado de tus artistas favoritos.
 
 ¡Gracias por elegirnos!
 
-El equipo de FashionStore
+El equipo de HYPESTAGE
     `;
 
     try {
         const { data, error } = await resend.emails.send({
-            from: 'FashionStore <onboarding@resend.dev>',
+            from: 'HYPESTAGE <onboarding@resend.dev>',
             to: [email],
-            subject: '¡Bienvenido a FashionStore! 🎉',
+            subject: '¡Bienvenido a HYPESTAGE! 🎉',
             html: emailHtml,
             text: emailText,
         });
@@ -366,7 +366,7 @@ export async function sendOrderStatusUpdateEmail(data: OrderStatusEmailData) {
         
         <div class="footer">
             <p>Este es un email automático, por favor no respondas a este mensaje.</p>
-            <p>&copy; ${new Date().getFullYear()} FashionStore. Todos los derechos reservados.</p>
+            <p>&copy; ${new Date().getFullYear()} HYPESTAGE. Todos los derechos reservados.</p>
         </div>
     </div>
 </body>
@@ -387,7 +387,7 @@ Para ver el estado de tu pedido, visita: ${import.meta.env.PUBLIC_SITE_URL || 'h
 
 ¡Gracias por confiar en nosotros!
 
-FashionStore
+HYPESTAGE
     `;
 
     try {
@@ -397,7 +397,7 @@ FashionStore
         console.log('New Status:', newStatus);
 
         const { data: emailData, error } = await resend.emails.send({
-            from: 'FashionStore <onboarding@resend.dev>',
+            from: 'HYPESTAGE <onboarding@resend.dev>',
             to: [customerEmail],
             subject: `${status.emoji} ${status.title} - Pedido #${orderId.slice(0, 8).toUpperCase()}`,
             html: emailHtml,
@@ -429,7 +429,7 @@ interface StockNotificationEmailData {
 export async function sendStockAvailableEmail(data: StockNotificationEmailData) {
     const { customerEmail, productName, productSlug, productImage, productPrice } = data;
 
-    const productUrl = `https://fashionstore.com/productos/${productSlug}`;
+    const productUrl = `https://HYPESTAGE.com/productos/${productSlug}`;
 
     const emailHtml = `
 <!DOCTYPE html>
@@ -456,7 +456,7 @@ export async function sendStockAvailableEmail(data: StockNotificationEmailData) 
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎉 FashionStore</h1>
+            <h1>🎉 HYPESTAGE</h1>
             <p>¡Buenas noticias!</p>
         </div>
         
@@ -478,11 +478,11 @@ export async function sendStockAvailableEmail(data: StockNotificationEmailData) 
             
             <p>Te avisamos porque solicitaste ser notificado cuando este producto estuviera disponible.</p>
             
-            <p style="margin-top: 30px;">¡Gracias por confiar en FashionStore!</p>
+            <p style="margin-top: 30px;">¡Gracias por confiar en HYPESTAGE!</p>
         </div>
         
         <div class="footer">
-            <p>Este es un email automático de FashionStore</p>
+            <p>Este es un email automático de HYPESTAGE</p>
             <p>Si no solicitaste esta notificación, puedes ignorar este mensaje.</p>
         </div>
     </div>
@@ -491,7 +491,7 @@ export async function sendStockAvailableEmail(data: StockNotificationEmailData) 
     `;
 
     const emailText = `
-🎉 ¡Buenas noticias de FashionStore!
+🎉 ¡Buenas noticias de HYPESTAGE!
 
 El producto que esperabas ya está disponible:
 
@@ -502,14 +502,14 @@ Precio: ${formatPrice(productPrice)}
 
 Comprar ahora: ${productUrl}
 
-¡Gracias por confiar en FashionStore!
+¡Gracias por confiar en HYPESTAGE!
     `;
 
     try {
         const { data: emailData, error } = await resend.emails.send({
-            from: 'FashionStore <onboarding@resend.dev>',
+            from: 'HYPESTAGE <onboarding@resend.dev>',
             to: [customerEmail],
-            subject: `🎉 ¡${productName} ya está disponible! - FashionStore`,
+            subject: `🎉 ¡${productName} ya está disponible! - HYPESTAGE`,
             html: emailHtml,
             text: emailText,
         });

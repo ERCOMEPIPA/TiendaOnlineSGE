@@ -1,5 +1,5 @@
 /**
- * Utility functions for FashionStore
+ * Utility functions for HYPESTAGE
  */
 
 // Generate a unique ID for cart items

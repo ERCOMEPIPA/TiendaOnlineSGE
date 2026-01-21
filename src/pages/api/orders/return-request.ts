@@ -141,10 +141,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             </div>
 
             <p>Si tienes alguna pregunta, no dudes en contactarnos.</p>
-            <p>Gracias por confiar en FashionStore.</p>
+            <p>Gracias por confiar en HYPESTAGE.</p>
         </div>
         <div class="footer">
-            <p>© 2024 FashionStore - Todos los derechos reservados</p>
+            <p>© 2024 HYPESTAGE - Todos los derechos reservados</p>
         </div>
     </div>
 </body>
@@ -166,7 +166,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             }
 
             await resend.emails.send({
-                from: 'FashionStore <onboarding@resend.dev>',
+                from: 'HYPESTAGE <onboarding@resend.dev>',
                 to: [userEmail],
                 subject: `📦 Instrucciones de devolución - Pedido #${orderId.slice(0, 8).toUpperCase()}`,
                 html: emailHtml,

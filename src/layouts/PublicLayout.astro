@@ -39,19 +39,21 @@ const currentPath = Astro.url.pathname;
 
     <!-- Header Origin Style - Minimal & Elegant -->
     <header class="sticky top-0 z-30 bg-[#fdfcf9] border-b border-[#e8e4dc]">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16 lg:h-20">
-                <!-- Logo Elegant -->
-                <a href="/" class="flex items-center">
+                <!-- Logo Elegant - Left aligned, bigger -->
+                <a href="/" class="flex items-center flex-shrink-0">
                     <span
-                        class="text-2xl lg:text-3xl font-serif italic text-[#2a2622] tracking-tight"
+                        class="text-2xl lg:text-4xl font-serif italic text-[#2a2622] tracking-tight"
                     >
-                        Fashion<span class="text-[#8B4513]">Store</span>
+                        HYPE<span class="text-[#8B4513]">STAGE</span>
                     </span>
                 </a>
 
-                <!-- Desktop Navigation - Minimal -->
-                <nav class="hidden lg:flex items-center gap-10">
+                <!-- Desktop Navigation - Centered -->
+                <nav
+                    class="hidden lg:flex items-center justify-center gap-8 absolute left-1/2 transform -translate-x-1/2"
+                >
                     {
                         navLinks.map((link) => (
                             <a
@@ -69,8 +71,8 @@ const currentPath = Astro.url.pathname;
                     }
                 </nav>
 
-                <!-- Actions -->
-                <div class="flex items-center gap-4">
+                <!-- Actions - Right aligned -->
+                <div class="flex items-center gap-4 flex-shrink-0">
                     <!-- Search -->
                     <SearchButton client:load />
 
@@ -147,7 +149,7 @@ const currentPath = Astro.url.pathname;
                 <!-- Brand -->
                 <div class="md:col-span-1">
                     <span class="text-2xl font-serif italic text-[#2a2622]">
-                        Fashion<span class="text-[#8B4513]">Store</span>
+                        HYPE<span class="text-[#8B4513]">STAGE</span>
                     </span>
                     <p class="mt-4 text-[#6f6458] text-sm leading-relaxed">
                         Tu tienda de merch personalizado de tus artistas
@@ -327,7 +329,7 @@ const currentPath = Astro.url.pathname;
 
             <div class="mt-6 text-center text-[#6f6458] text-xs tracking-wide">
                 <p>
-                    &copy; {new Date().getFullYear()} FashionStore. Todos los derechos
+                    &copy; {new Date().getFullYear()} HYPESTAGE. Todos los derechos
                     reservados. Hecho con <span class="text-[#8B4513]">♥</span> para
                     los amantes de la música.
                 </p>

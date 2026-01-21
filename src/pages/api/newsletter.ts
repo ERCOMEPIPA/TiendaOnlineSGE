@@ -99,7 +99,7 @@ export const POST: APIRoute = async ({ request }) => {
 <body>
     <div class="container">
         <div class="header">
-            <h1>✨ FashionStore</h1>
+            <h1>✨ HYPESTAGE</h1>
             <p style="margin: 10px 0 0 0; opacity: 0.9;">Moda masculina premium</p>
         </div>
         <div class="content">
@@ -135,11 +135,11 @@ export const POST: APIRoute = async ({ request }) => {
             <p style="color: #666; font-size: 14px;">Como agradecimiento por suscribirte, usa el código <strong style="color: #1a1a2e;">BIENVENIDO10</strong> para obtener un 10% de descuento en tu primera compra.</p>
         </div>
         <div class="footer">
-            <p><strong>FashionStore</strong> - Moda masculina premium</p>
+            <p><strong>HYPESTAGE</strong> - Moda masculina premium</p>
             <div class="social-links">
                 <a href="#">Instagram</a> | <a href="#">Facebook</a> | <a href="#">Twitter</a>
             </div>
-            <p>© 2024 FashionStore. Todos los derechos reservados.</p>
+            <p>© 2024 HYPESTAGE. Todos los derechos reservados.</p>
             <p style="font-size: 11px; color: #999;">
                 Recibes este email porque te suscribiste a nuestro newsletter.<br>
                 <a href="http://localhost:4321/newsletter/unsubscribe?email=${encodeURIComponent(email)}" style="color: #999;">Cancelar suscripción</a>
@@ -151,9 +151,9 @@ export const POST: APIRoute = async ({ request }) => {
             `;
 
             await resend.emails.send({
-                from: 'FashionStore <onboarding@resend.dev>',
+                from: 'HYPESTAGE <onboarding@resend.dev>',
                 to: [email],
-                subject: '✨ ¡Bienvenido a FashionStore! Tu código de descuento dentro',
+                subject: '✨ ¡Bienvenido a HYPESTAGE! Tu código de descuento dentro',
                 html: welcomeHtml,
             });
         } catch (emailError) {

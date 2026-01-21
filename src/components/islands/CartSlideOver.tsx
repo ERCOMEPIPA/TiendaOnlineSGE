@@ -75,6 +75,17 @@ export default function CartSlideOver() {
                         <ul className="space-y-4">
                             {items.map((item) => {
                                 const colorDisplay = item.color ? item.color.split(':')[0] : '';
+                                // Check if product has active discount
+                                const now = new Date();
+                                const discountPriceInCents = item.product.discount_price
+                                    ? item.product.discount_price * 100
+                                    : null;
+                                const hasDiscount =
+                                    discountPriceInCents &&
+                                    discountPriceInCents < item.product.price &&
+                                    (!item.product.discount_end_date || new Date(item.product.discount_end_date) > now);
+                                const displayPrice = hasDiscount ? discountPriceInCents : item.product.price;
+
                                 return (
                                     <li
                                         key={`${item.product.id}-${item.size}-${item.color}`}
@@ -107,9 +118,20 @@ export default function CartSlideOver() {
                                             {colorDisplay && (
                                                 <p className="text-sm text-[#6f6458]">Color: {colorDisplay}</p>
                                             )}
-                                            <p className="font-semibold text-[#8B4513] mt-1">
-                                                {formatPrice(item.product.price)}
-                                            </p>
+                                            {hasDiscount ? (
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <p className="font-semibold text-red-600">
+                                                        {formatPrice(displayPrice)}
+                                                    </p>
+                                                    <p className="text-sm text-[#6f6458] line-through">
+                                                        {formatPrice(item.product.price)}
+                                                    </p>
+                                                </div>
+                                            ) : (
+                                                <p className="font-semibold text-[#8B4513] mt-1">
+                                                    {formatPrice(item.product.price)}
+                                                </p>
+                                            )}
 
                                             {/* Quantity controls */}
                                             <div className="flex items-center gap-2 mt-2">
@@ -162,8 +184,9 @@ export default function CartSlideOver() {
                         </div>
                         <a
                             href="/carrito"
-                            className="block w-full py-4 px-6 bg-[#2a2622] text-[#fdfcf9] text-center 
+                            className="block w-full py-4 px-6 bg-[#2a2622] text-center 
                          font-bold rounded-none hover:bg-[#3d3831] transition-all uppercase tracking-widest text-sm"
+                            style={{ color: '#ffffff' }}
                         >
                             Proceder al pago
                         </a>

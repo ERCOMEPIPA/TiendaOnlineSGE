@@ -35,7 +35,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         const uploadResult = await new Promise<any>((resolve, reject) => {
             const uploadStream = cloudinary.uploader.upload_stream(
                 {
-                    folder: 'fashionstore/products',
+                    folder: 'hypestage/products',
                     resource_type: 'image',
                     transformation: [
                         { quality: 'auto', fetch_format: 'auto' }

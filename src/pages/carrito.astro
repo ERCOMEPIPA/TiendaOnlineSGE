@@ -230,7 +230,7 @@ const userSession = await getUserSession(Astro.cookies);
           </svg>
           <h2 class="text-xl font-semibold text-[#2a2622] mb-2">Tu carrito está vacío</h2>
           <p class="text-[#6f6458] mb-6">¡Explora nuestra tienda y encuentra productos increíbles!</p>
-          <a href="/productos" class="inline-flex items-center gap-2 px-6 py-3 bg-[#2a2622] text-[#fdfcf9] font-semibold rounded-none hover:bg-[#3d3831] transition-colors">
+          <a href="/productos" class="inline-flex items-center gap-2 px-6 py-3 bg-[#2a2622] font-semibold rounded-none hover:bg-[#3d3831] transition-colors" style="color: #ffffff;">
             Ver productos
           </a>
         </div>
@@ -241,6 +241,21 @@ const userSession = await getUserSession(Astro.cookies);
     const itemsHtml = items
       .map((item) => {
         const colorDisplay = item.color ? item.color.split(":")[0] : "";
+        // Check if product has active discount
+        const now = new Date();
+        const discountPriceInCents = item.product.discount_price
+          ? item.product.discount_price * 100
+          : null;
+        const hasDiscount =
+          discountPriceInCents &&
+          discountPriceInCents < item.product.price &&
+          (!item.product.discount_end_date ||
+            new Date(item.product.discount_end_date) > now);
+        const displayPrice = hasDiscount
+          ? discountPriceInCents
+          : item.product.price;
+        const itemTotal = displayPrice * item.quantity;
+
         return `
       <div class="flex gap-4 p-4 border-b border-carbon-100" data-item-key="${item.product.id}-${item.size}-${item.color}">
         <div class="w-24 h-24 bg-carbon-100 rounded-lg overflow-hidden flex-shrink-0">
@@ -258,7 +273,14 @@ const userSession = await getUserSession(Astro.cookies);
         <div class="flex-1">
           <h3 class="font-medium text-[#2a2622]">${item.product.name}</h3>
           <p class="text-sm text-[#6f6458]">Talla: ${item.size}${colorDisplay ? ` | Color: ${colorDisplay}` : ""}</p>
-          <p class="font-semibold text-[#8B4513] mt-1">${formatPrice(item.product.price)}</p>
+          ${
+            hasDiscount
+              ? `<div class="flex items-center gap-2 mt-1">
+                <p class="font-semibold text-red-600">${formatPrice(displayPrice)}</p>
+                <p class="text-sm text-[#6f6458] line-through">${formatPrice(item.product.price)}</p>
+              </div>`
+              : `<p class="font-semibold text-[#8B4513] mt-1">${formatPrice(item.product.price)}</p>`
+          }
           
           <div class="flex items-center gap-4 mt-3">
             <div class="flex items-center gap-2">
@@ -294,7 +316,7 @@ const userSession = await getUserSession(Astro.cookies);
           </div>
         </div>
         <div class="text-right">
-          <p class="font-semibold text-carbon-900">${formatPrice(item.product.price * item.quantity)}</p>
+          <p class="font-semibold text-carbon-900">${formatPrice(itemTotal)}</p>
         </div>
       </div>
     `;

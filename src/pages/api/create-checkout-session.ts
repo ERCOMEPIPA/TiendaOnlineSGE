@@ -74,6 +74,17 @@ export const POST: APIRoute = async ({ request, cookies }) => {
                 throw new Error(`Product ${item.product.id} not found`);
             }
 
+            // Check if product has active discount
+            const now = new Date();
+            const discountPriceInCents = product.discount_price
+                ? product.discount_price * 100
+                : null;
+            const hasDiscount =
+                discountPriceInCents &&
+                discountPriceInCents < product.price &&
+                (!product.discount_end_date || new Date(product.discount_end_date) > now);
+            const priceToUse = hasDiscount ? discountPriceInCents : product.price;
+
             return {
                 price_data: {
                     currency: 'eur',
@@ -86,7 +97,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
                             size: item.size,
                         },
                     },
-                    unit_amount: product.price, // Price in cents
+                    unit_amount: priceToUse, // Price in cents (uses discount if active)
                 },
                 quantity: item.quantity,
             };
