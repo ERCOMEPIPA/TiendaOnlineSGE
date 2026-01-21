@@ -133,8 +133,8 @@ const getStatusConfig = (status: string) => statusConfig[status] || statusConfig
                                             <p class="font-semibold text-[#2a2622]">{formatPrice(order.total)}</p>
                                         </div>
                                     </div>
-                                    <span class={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${config.bgColor} ${config.color}`}>
-                                        {config.label}
+                                    <span class={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${Boolean(order.return_requested) ? 'bg-orange-100 text-orange-700' : `${config.bgColor} ${config.color}`}`}>
+                                        {Boolean(order.return_requested) ? "En devolución" : config.label}
                                     </span>
                                 </div>
                             </div>
@@ -267,8 +267,8 @@ const getStatusConfig = (status: string) => statusConfig[status] || statusConfig
                                             </button>
                                         )}
                                         
-                                        {/* Botón Solicitar Devolución - Solo para delivered */}
-                                        {canRequestReturn && (
+                                        {/* Botón Solicitar Devolución - Solo para delivered y si NO se ha solicitado ya */}
+                                        {canRequestReturn && !returnRequested && (
                                             <button
                                                 type="button"
                                                 class="return-order-btn px-4 py-2 text-sm font-medium text-[#8B4513] bg-[#fdfcf9] border border-[#8B4513] rounded-none hover:bg-[#8B4513] hover:text-[#fdfcf9] transition-colors flex items-center gap-2"
@@ -279,13 +279,6 @@ const getStatusConfig = (status: string) => statusConfig[status] || statusConfig
                                                 </svg>
                                                 Solicitar Devolución
                                             </button>
-                                        )}
-                                        
-                                        {/* Indicador de devolución ya solicitada */}
-                                        {returnRequested && (
-                                            <span class="px-3 py-1 text-sm bg-orange-100 text-orange-700 rounded-full">
-                                                Devolución en proceso
-                                            </span>
                                         )}
                                     </div>
                                 </div>
@@ -330,11 +323,24 @@ const getStatusConfig = (status: string) => statusConfig[status] || statusConfig
                 </div>
                 
                 <!-- Disclaimer financiero -->
-                <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
+                <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
                     <h4 class="font-semibold text-red-800 mb-2">Información importante</h4>
-                    <p class="text-red-700">
+                    <p class="text-red-700 text-sm">
                         <strong>Una vez recibido y validado el paquete, el reembolso se procesará en tu método de pago original en un plazo de 5 a 7 días hábiles.</strong>
                     </p>
+                </div>
+
+                <!-- Motivo de devolución -->
+                <div class="mb-6">
+                    <label for="return-reason" class="block text-sm font-medium text-[#2a2622] mb-2">
+                        Motivo de la devolución
+                    </label>
+                    <textarea 
+                        id="return-reason-input" 
+                        rows="3" 
+                        class="w-full px-4 py-2 border border-[#ccc5b8] rounded-none focus:ring-[#8B4513] focus:border-[#8B4513] text-sm"
+                        placeholder="Ej: La talla es demasiado pequeña, el color no es como en la foto..."
+                    ></textarea>
                 </div>
                 
                 <div class="flex gap-3">
@@ -513,6 +519,14 @@ const getStatusConfig = (status: string) => statusConfig[status] || statusConfig
     confirmReturnBtn?.addEventListener('click', async () => {
         if (!currentOrderId) return;
         
+        const reasonInput = document.getElementById('return-reason-input') as HTMLTextAreaElement;
+        const reason = reasonInput?.value.trim();
+
+        if (!reason) {
+            showToast('Por favor, indica el motivo de la devolución.', 'error');
+            return;
+        }
+        
         const btn = confirmReturnBtn as HTMLButtonElement;
         btn.disabled = true;
         btn.textContent = 'Procesando...';
@@ -521,7 +535,10 @@ const getStatusConfig = (status: string) => statusConfig[status] || statusConfig
             const response = await fetch('/api/orders/return-request', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ orderId: currentOrderId })
+                body: JSON.stringify({ 
+                    orderId: currentOrderId,
+                    reason: reason
+                })
             });
             
             const data = await response.json();

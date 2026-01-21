@@ -29,6 +29,19 @@ export const onRequest = defineMiddleware(async (context, next) => {
             const { data: { user }, error } = await supabase.auth.getUser(accessToken);
 
             if (error || !user) {
+                // ... session refresh logic ...
+            }
+
+            // Check if user is authorized admin
+            const adminEmails = (import.meta.env.ADMIN_EMAILS || "").split(",");
+            if (user && !adminEmails.includes(user.email || "")) {
+                // Not an authorized admin, clear cookies and redirect
+                context.cookies.delete('sb-access-token', { path: '/' });
+                context.cookies.delete('sb-refresh-token', { path: '/' });
+                return context.redirect('/admin/login?error=unauthorized');
+            }
+
+            if (error || !user) {
                 // Invalid session, try to refresh
                 const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession({
                     refresh_token: refreshToken

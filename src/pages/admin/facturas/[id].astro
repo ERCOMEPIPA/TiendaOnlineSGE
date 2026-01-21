@@ -1,0 +1,227 @@
+---
+export const prerender = false;
+
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { supabase, formatPrice } from "../../../lib/supabase";
+import { storeConfig } from "../../../lib/config";
+
+const { id } = Astro.params;
+
+// Fetch order details
+const { data: order, error: orderError } = await supabase
+    .from("orders")
+    .select("*, order_items(*)")
+    .eq("id", id)
+    .single();
+
+if (orderError || !order) {
+    return Astro.redirect("/admin/pedidos?error=order_not_found");
+}
+
+const orderDate = new Date(order.created_at).toLocaleDateString("es-ES", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+});
+
+// Calculate subtotal and tax
+const totalAmount = order.total;
+const taxAmount = Math.round(
+    totalAmount * (storeConfig.taxRate / (1 + storeConfig.taxRate)),
+);
+const subtotalAmount = totalAmount - taxAmount;
+---
+
+<AdminLayout title={`Factura ${order.invoice_number || "Borrador"}`}>
+    <div class="max-w-4xl mx-auto">
+        <!-- Actions -->
+        <div class="flex justify-between items-center mb-8 no-print">
+            <a
+                href="/admin/pedidos"
+                class="text-navy-600 hover:underline flex items-center gap-2"
+            >
+                ← Volver a pedidos
+            </a>
+            <button
+                onclick="window.print()"
+                class="bg-navy-800 text-white px-6 py-2 rounded-lg hover:bg-navy-900 transition-colors flex items-center gap-2"
+            >
+                <svg
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+                    ></path>
+                </svg>
+                Imprimir Factura
+            </button>
+        </div>
+
+        <!-- Invoice Template -->
+        <div
+            class="bg-white p-12 shadow-sm rounded-xl border border-carbon-100 invoice-container"
+        >
+            <!-- Header -->
+            <div class="flex justify-between items-start mb-12">
+                <div>
+                    <h1
+                        class="text-4xl font-serif font-bold text-navy-900 mb-2"
+                    >
+                        FACTURA
+                    </h1>
+                    <p class="text-carbon-500 font-mono">
+                        {order.invoice_number || "PENDIENTE DE GENERAR"}
+                    </p>
+                </div>
+                <div class="text-right">
+                    <h2 class="text-xl font-bold text-carbon-900">
+                        {storeConfig.name}
+                    </h2>
+                    <p class="text-carbon-600">{storeConfig.address}</p>
+                    <p class="text-carbon-600">NIF: {storeConfig.nif}</p>
+                    <p class="text-carbon-600">{storeConfig.email}</p>
+                </div>
+            </div>
+
+            <!-- Info Grid -->
+            <div class="grid grid-cols-2 gap-12 mb-12">
+                <div>
+                    <h3
+                        class="text-xs font-bold text-carbon-400 uppercase tracking-wider mb-3"
+                    >
+                        Facturar a:
+                    </h3>
+                    <p class="text-lg font-bold text-carbon-900">
+                        {order.billing_name || order.customer_name}
+                    </p>
+                    <p class="text-carbon-600">
+                        {order.billing_address || order.shipping_address}
+                    </p>
+                    <p class="text-carbon-600">
+                        {
+                            order.billing_postal_code ||
+                                order.shipping_postal_code
+                        }
+                        {order.billing_city || order.shipping_city}
+                    </p>
+                    <p class="text-carbon-600">{order.customer_email}</p>
+                </div>
+                <div class="text-right">
+                    <div class="mb-4">
+                        <h3
+                            class="text-xs font-bold text-carbon-400 uppercase tracking-wider mb-1"
+                        >
+                            Fecha de Factura:
+                        </h3>
+                        <p class="text-carbon-900">{orderDate}</p>
+                    </div>
+                    <div>
+                        <h3
+                            class="text-xs font-bold text-carbon-400 uppercase tracking-wider mb-1"
+                        >
+                            ID Pedido:
+                        </h3>
+                        <p class="text-carbon-900">
+                            {order.id.slice(0, 8).toUpperCase()}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Items Table -->
+            <table class="w-full mb-12">
+                <thead>
+                    <tr class="border-b-2 border-carbon-100 text-left">
+                        <th class="py-4 font-bold text-carbon-900">Concepto</th>
+                        <th class="py-4 font-bold text-carbon-900 text-center"
+                            >Cant.</th
+                        >
+                        <th class="py-4 font-bold text-carbon-900 text-right"
+                            >Precio Unit.</th
+                        >
+                        <th class="py-4 font-bold text-carbon-900 text-right"
+                            >Total</th
+                        >
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-carbon-50">
+                    {
+                        order.order_items.map((item: any) => (
+                            <tr>
+                                <td class="py-4">
+                                    <p class="font-medium text-carbon-900">
+                                        {item.product_name}
+                                    </p>
+                                    <p class="text-sm text-carbon-500">
+                                        Talla: {item.size}
+                                    </p>
+                                </td>
+                                <td class="py-4 text-center">
+                                    {item.quantity}
+                                </td>
+                                <td class="py-4 text-right">
+                                    {formatPrice(item.product_price)}
+                                </td>
+                                <td class="py-4 text-right font-medium">
+                                    {formatPrice(
+                                        item.product_price * item.quantity,
+                                    )}
+                                </td>
+                            </tr>
+                        ))
+                    }
+                </tbody>
+            </table>
+
+            <!-- Totals -->
+            <div class="flex justify-end">
+                <div class="w-64 space-y-3">
+                    <div class="flex justify-between text-carbon-600">
+                        <span>Base Imponible:</span>
+                        <span>{formatPrice(subtotalAmount)}</span>
+                    </div>
+                    <div class="flex justify-between text-carbon-600">
+                        <span>IVA (21%):</span>
+                        <span>{formatPrice(taxAmount)}</span>
+                    </div>
+                    <div
+                        class="flex justify-between border-t border-carbon-200 pt-3 text-xl font-bold text-navy-900"
+                    >
+                        <span>Total:</span>
+                        <span>{formatPrice(totalAmount)}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div
+                class="mt-24 pt-12 border-t border-carbon-100 text-center text-carbon-400 text-sm"
+            >
+                <p>Gracias por tu compra en {storeConfig.name}</p>
+                <p class="mt-1">{storeConfig.website}</p>
+            </div>
+        </div>
+    </div>
+</AdminLayout>
+
+<style>
+    @media print {
+        .no-print {
+            display: none;
+        }
+        body {
+            background: white !important;
+        }
+        .invoice-container {
+            box-shadow: none !important;
+            border: none !important;
+            padding: 0 !important;
+        }
+    }
+</style>

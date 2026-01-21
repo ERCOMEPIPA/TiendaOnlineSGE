@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { stripe } from '../../lib/stripe';
 import { supabase } from '../../lib/supabase';
 import { sendOrderConfirmationEmail } from '../../lib/email';
+import { generateInvoiceForOrder } from '../../lib/invoices';
 import Stripe from 'stripe';
 
 export const prerender = false;
@@ -172,6 +173,16 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
                 .eq('id', item.product_id);
         }
     }
+
+    // Generate invoice automatically
+    const billingData = {
+        billing_name: customerName,
+        billing_address: session.customer_details?.address?.line1 || 'N/A',
+        billing_postal_code: session.customer_details?.address?.postal_code || 'N/A',
+        billing_city: session.customer_details?.address?.city || 'N/A',
+    };
+
+    await generateInvoiceForOrder(order.id, billingData);
 
     // Send order confirmation email
     const emailItems = orderItems.map((oi: { product_name: string; quantity: number; size: string; product_price: number }) => ({

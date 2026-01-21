@@ -6,6 +6,7 @@ import Button from "../../components/ui/Button.astro";
 import { stripe } from "../../lib/stripe";
 import { supabase } from "../../lib/supabase";
 import { sendOrderConfirmationEmail } from "../../lib/email";
+import { generateInvoiceForOrder } from "../../lib/invoices";
 
 const sessionId = Astro.url.searchParams.get("session_id");
 
@@ -148,6 +149,16 @@ if (sessionId) {
                                     .eq("id", item.product_id);
                             }
                         }
+
+                        // Generate invoice automatically
+                        const billingData = {
+                            billing_name: customerName,
+                            billing_address: shippingAddress || "N/A",
+                            billing_postal_code: shippingPostalCode || "N/A",
+                            billing_city: shippingCity || "N/A",
+                        };
+
+                        await generateInvoiceForOrder(order.id, billingData);
 
                         // Send order confirmation email
                         const emailItems = orderItems.map((oi: any) => ({

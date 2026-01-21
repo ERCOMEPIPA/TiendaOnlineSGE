@@ -132,6 +132,9 @@ const statusLabels: Record<string, string> = {
                                         Fecha
                                     </th>
                                     <th class="px-6 py-3 text-xs font-semibold text-carbon-500 uppercase">
+                                        Factura
+                                    </th>
+                                    <th class="px-6 py-3 text-xs font-semibold text-carbon-500 uppercase">
                                         Acciones
                                     </th>
                                 </tr>
@@ -212,6 +215,17 @@ const statusLabels: Record<string, string> = {
                                                 })}
                                             </td>
                                             <td class="px-6 py-4">
+                                                {order.invoice_number ? (
+                                                    <span class="text-xs font-mono bg-navy-50 text-navy-700 px-2 py-1 rounded border border-navy-100">
+                                                        {order.invoice_number}
+                                                    </span>
+                                                ) : (
+                                                    <span class="text-xs text-carbon-400 italic">
+                                                        Pendiente
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td class="px-6 py-4">
                                                 <form
                                                     method="POST"
                                                     class="flex items-center gap-2"
@@ -284,6 +298,30 @@ const statusLabels: Record<string, string> = {
                                                         Actualizar
                                                     </button>
                                                 </form>
+                                                <div
+                                                    class="mt-2"
+                                                    onclick="event.stopPropagation()"
+                                                >
+                                                    <a
+                                                        href={`/admin/facturas/${order.id}`}
+                                                        class="text-accent-gold hover:text-amber-600 text-xs font-bold uppercase tracking-wider flex items-center gap-1"
+                                                    >
+                                                        <svg
+                                                            class="w-4 h-4"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <path
+                                                                stroke-linecap="round"
+                                                                stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                                            />
+                                                        </svg>
+                                                        Ver Factura
+                                                    </a>
+                                                </div>
                                             </td>
                                         </tr>
                                         {/* Fila de detalles del pedido (oculta por defecto) */}
@@ -293,6 +331,41 @@ const statusLabels: Record<string, string> = {
                                         >
                                             <td colspan="6" class="px-6 py-4">
                                                 <div class="ml-6 p-4 bg-white rounded-lg border border-carbon-100">
+                                                    {order.return_requested && (
+                                                        <div class="mb-4 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                                                            <div class="flex items-center gap-2 text-orange-800 font-bold mb-2">
+                                                                <svg
+                                                                    class="w-5 h-5"
+                                                                    fill="none"
+                                                                    stroke="currentColor"
+                                                                    viewBox="0 0 24 24"
+                                                                >
+                                                                    <path
+                                                                        stroke-linecap="round"
+                                                                        stroke-linejoin="round"
+                                                                        stroke-width="2"
+                                                                        d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
+                                                                    />
+                                                                </svg>
+                                                                SOLICITUD DE
+                                                                DEVOLUCIÓN
+                                                            </div>
+                                                            <p class="text-sm text-orange-900">
+                                                                <span class="font-semibold underline">
+                                                                    Motivo
+                                                                    indicado por
+                                                                    el cliente:
+                                                                </span>
+                                                                <br />
+                                                                <span class="italic">
+                                                                    "
+                                                                    {order.return_reason ||
+                                                                        "No especificado"}
+                                                                    "
+                                                                </span>
+                                                            </p>
+                                                        </div>
+                                                    )}
                                                     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                                                         <h4 class="font-semibold text-carbon-800">
                                                             Productos del pedido

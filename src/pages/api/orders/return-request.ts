@@ -25,7 +25,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             );
         }
 
-        const { orderId } = await request.json();
+        const { orderId, reason } = await request.json();
 
         if (!orderId) {
             return new Response(
@@ -59,18 +59,26 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         }
 
         // Marcar que se ha solicitado devolución
-        await supabase
+        const { error: updateError } = await supabase
             .from('orders')
             .update({
                 return_requested: true,
-                return_requested_at: new Date().toISOString()
+                return_requested_at: new Date().toISOString(),
+                return_reason: reason || 'No especificado'
             })
             .eq('id', orderId);
 
-        // Preparar lista de productos
+        if (updateError) {
+            console.error('Error updating order for return:', updateError);
+            throw new Error(`Error en la base de datos: ${updateError.message}`);
+        }
+
+        // Preparar lista de productos y motivo
         const productsList = order.order_items
             ?.map((item: any) => `• ${item.product_name} (Talla: ${item.size}) x${item.quantity}`)
             .join('\n') || 'No hay productos';
+
+        const returnInfo = `MOTIVO DE LA DEVOLUCIÓN:\n${reason || 'No especificado'}\n\nPRODUCTOS:\n${productsList}`;
 
         // Enviar email con instrucciones de devolución
         const emailHtml = `
@@ -104,8 +112,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             <p>Hemos recibido tu solicitud de devolución. A continuación encontrarás todas las instrucciones necesarias:</p>
             
             <div class="box">
-                <h2>📋 Productos a devolver:</h2>
-                <pre style="font-family: inherit; white-space: pre-wrap;">${productsList}</pre>
+                <h2>📋 Detalles de la devolución:</h2>
+                <pre style="font-family: inherit; white-space: pre-wrap;">${returnInfo}</pre>
             </div>
 
             <div class="address">
