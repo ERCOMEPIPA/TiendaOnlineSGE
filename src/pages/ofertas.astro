@@ -1,0 +1,109 @@
+---
+export const prerender = false;
+
+import PublicLayout from "../layouts/PublicLayout.astro";
+import ProductCard from "../components/product/ProductCard.astro";
+import { supabase } from "../lib/supabase";
+import type { Product } from "../lib/supabase";
+
+// Fetch products with active discounts
+const { data: allProducts } = await supabase
+    .from("products")
+    .select("*")
+    .order("updated_at", { ascending: false });
+
+// Filter products that have an active discount
+const now = new Date();
+const saleProducts = (allProducts || []).filter((product: Product) => {
+    const discountPriceInCents = product.discount_price
+        ? product.discount_price * 100
+        : null;
+    const hasDiscount =
+        discountPriceInCents &&
+        discountPriceInCents < product.price &&
+        (!product.discount_end_date ||
+            new Date(product.discount_end_date) > now);
+    return hasDiscount;
+});
+---
+
+<PublicLayout
+    title="Ofertas"
+    description="Productos en oferta con descuentos especiales"
+>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center gap-3 mb-2">
+                <span
+                    class="bg-red-600 text-white text-xs font-bold px-3 py-1 uppercase tracking-wider"
+                >
+                    Ofertas
+                </span>
+            </div>
+            <h1
+                class="text-3xl lg:text-4xl font-serif font-bold text-[#2a2622]"
+            >
+                Productos en Oferta
+            </h1>
+            <p class="mt-2 text-[#6f6458]">
+                {saleProducts.length} producto{
+                    saleProducts.length !== 1 ? "s" : ""
+                } con descuento
+            </p>
+        </div>
+
+        <!-- Products Grid -->
+        {
+            saleProducts.length > 0 ? (
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {saleProducts.map((product) => (
+                        <ProductCard product={product} />
+                    ))}
+                </div>
+            ) : (
+                <div class="text-center py-16">
+                    <svg
+                        class="w-16 h-16 mx-auto text-carbon-300 mb-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="1.5"
+                            d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                    </svg>
+                    <h2 class="text-xl font-semibold text-[#2a2622] mb-2">
+                        No hay ofertas activas
+                    </h2>
+                    <p class="text-[#6f6458] mb-6">
+                        Vuelve pronto para descubrir nuevas ofertas y
+                        descuentos.
+                    </p>
+                    <a
+                        href="/productos"
+                        class="inline-flex items-center gap-2 bg-[#2a2622] text-white px-6 py-3 hover:bg-[#8B4513] transition-colors"
+                    >
+                        Ver todos los productos
+                        <svg
+                            class="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M9 5l7 7-7 7"
+                            />
+                        </svg>
+                    </a>
+                </div>
+            )
+        }
+    </div>
+</PublicLayout>
