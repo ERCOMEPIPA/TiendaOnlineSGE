@@ -5,10 +5,14 @@ import node from '@astrojs/node';
 
 // https://astro.build/config
 export default defineConfig({
+  site: 'https://fvirlantienda.victoriafp.online',
   output: 'server',
   adapter: node({
     mode: 'standalone'
   }),
+  security: {
+    checkOrigin: false
+  },
   integrations: [
     react(),
     tailwind()
