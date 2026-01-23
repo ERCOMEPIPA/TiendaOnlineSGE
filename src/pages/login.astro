@@ -104,6 +104,9 @@ if (Astro.request.method === "POST") {
                         window.location.origin +
                         window.location.pathname +
                         window.location.search,
+                    queryParams: {
+                        prompt: "select_account",
+                    },
                 },
             });
             if (error) alert(error.message);
