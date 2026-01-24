@@ -1,6 +1,15 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 
-const resend = new Resend(import.meta.env.RESEND_API_KEY);
+// Gmail SMTP transporter
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: import.meta.env.GMAIL_USER,
+        pass: import.meta.env.GMAIL_APP_PASSWORD
+    }
+});
+
+const FROM_EMAIL = `HYPESTAGE <${import.meta.env.GMAIL_USER}>`;
 
 interface OrderEmailData {
     customerEmail: string;
@@ -114,28 +123,21 @@ HYPESTAGE
     `;
 
     try {
-        console.log('=== SENDING ORDER CONFIRMATION EMAIL ===');
+        console.log('=== SENDING ORDER CONFIRMATION EMAIL (Gmail) ===');
         console.log('To:', customerEmail);
         console.log('Order ID:', orderId);
-        console.log('API Key configured:', import.meta.env.RESEND_API_KEY ? 'Yes (starts with ' + import.meta.env.RESEND_API_KEY.substring(0, 10) + '...)' : 'NO - MISSING!');
 
-        const { data: emailData, error } = await resend.emails.send({
-            from: 'HYPESTAGE <onboarding@resend.dev>', // Cambiar a tu dominio verificado
-            to: [customerEmail],
+        const info = await transporter.sendMail({
+            from: FROM_EMAIL,
+            to: customerEmail,
             subject: `Confirmación de pedido #${orderId.slice(0, 8)}`,
             html: emailHtml,
             text: emailText,
         });
 
-        if (error) {
-            console.error('=== EMAIL SEND ERROR ===');
-            console.error('Error details:', JSON.stringify(error, null, 2));
-            return { success: false, error };
-        }
-
         console.log('=== EMAIL SENT SUCCESSFULLY ===');
-        console.log('Response:', JSON.stringify(emailData, null, 2));
-        return { success: true, data: emailData };
+        console.log('Message ID:', info.messageId);
+        return { success: true, data: { messageId: info.messageId } };
     } catch (error) {
         console.error('=== EMAIL EXCEPTION ===');
         console.error('Exception:', error);
@@ -204,7 +206,7 @@ export async function sendWelcomeEmail(email: string, name: string) {
             </div>
             
             <center>
-                <a href="${import.meta.env.PUBLIC_SITE_URL || 'http://localhost:4322'}/productos" class="button">
+                <a href="${import.meta.env.PUBLIC_SITE_URL || 'http://localhost:4321'}/productos" class="button">
                     Explorar Productos
                 </a>
             </center>
@@ -249,21 +251,20 @@ El equipo de HYPESTAGE
     `;
 
     try {
-        const { data, error } = await resend.emails.send({
-            from: 'HYPESTAGE <onboarding@resend.dev>',
-            to: [email],
+        console.log('=== SENDING WELCOME EMAIL (Gmail) ===');
+        console.log('To:', email);
+        console.log('Name:', name);
+
+        const info = await transporter.sendMail({
+            from: FROM_EMAIL,
+            to: email,
             subject: '¡Bienvenido a HYPESTAGE! 🎉',
             html: emailHtml,
             text: emailText,
         });
 
-        if (error) {
-            console.error('Error sending welcome email:', error);
-            return { success: false, error };
-        }
-
-        console.log('Welcome email sent successfully:', data);
-        return { success: true, data };
+        console.log('Welcome email sent successfully:', info.messageId);
+        return { success: true, data: { messageId: info.messageId } };
     } catch (error) {
         console.error('Error sending welcome email:', error);
         return { success: false, error };
@@ -391,26 +392,21 @@ HYPESTAGE
     `;
 
     try {
-        console.log('=== SENDING ORDER STATUS UPDATE EMAIL ===');
+        console.log('=== SENDING ORDER STATUS UPDATE EMAIL (Gmail) ===');
         console.log('To:', customerEmail);
         console.log('Order ID:', orderId);
         console.log('New Status:', newStatus);
 
-        const { data: emailData, error } = await resend.emails.send({
-            from: 'HYPESTAGE <onboarding@resend.dev>',
-            to: [customerEmail],
+        const info = await transporter.sendMail({
+            from: FROM_EMAIL,
+            to: customerEmail,
             subject: `${status.emoji} ${status.title} - Pedido #${orderId.slice(0, 8).toUpperCase()}`,
             html: emailHtml,
             text: emailText,
         });
 
-        if (error) {
-            console.error('Error sending status update email:', error);
-            return { success: false, error };
-        }
-
-        console.log('Status update email sent successfully:', emailData);
-        return { success: true, data: emailData };
+        console.log('Status update email sent successfully:', info.messageId);
+        return { success: true, data: { messageId: info.messageId } };
     } catch (error) {
         console.error('Error sending status update email:', error);
         return { success: false, error };
@@ -429,7 +425,7 @@ interface StockNotificationEmailData {
 export async function sendStockAvailableEmail(data: StockNotificationEmailData) {
     const { customerEmail, productName, productSlug, productImage, productPrice } = data;
 
-    const productUrl = `https://HYPESTAGE.com/productos/${productSlug}`;
+    const productUrl = `${import.meta.env.PUBLIC_SITE_URL || 'http://localhost:4321'}/productos/${productSlug}`;
 
     const emailHtml = `
 <!DOCTYPE html>
@@ -506,21 +502,16 @@ Comprar ahora: ${productUrl}
     `;
 
     try {
-        const { data: emailData, error } = await resend.emails.send({
-            from: 'HYPESTAGE <onboarding@resend.dev>',
-            to: [customerEmail],
+        const info = await transporter.sendMail({
+            from: FROM_EMAIL,
+            to: customerEmail,
             subject: `🎉 ¡${productName} ya está disponible! - HYPESTAGE`,
             html: emailHtml,
             text: emailText,
         });
 
-        if (error) {
-            console.error('Error sending stock notification email:', error);
-            return { success: false, error };
-        }
-
-        console.log('Stock notification email sent successfully:', emailData);
-        return { success: true, data: emailData };
+        console.log('Stock notification email sent successfully:', info.messageId);
+        return { success: true, data: { messageId: info.messageId } };
     } catch (error) {
         console.error('Error sending stock notification email:', error);
         return { success: false, error };

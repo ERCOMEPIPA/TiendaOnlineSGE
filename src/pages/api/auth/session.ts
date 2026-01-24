@@ -2,6 +2,7 @@ export const prerender = false;
 
 import type { APIRoute } from 'astro';
 import { supabase } from '../../../lib/supabase';
+import { sendWelcomeEmail } from '../../../lib/email';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
     try {
@@ -30,6 +31,53 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             sameSite: 'lax',
             maxAge: 60 * 60 * 24 * 30 // 30 days
         });
+
+        // Check if this is a new OAuth user and send welcome email
+        try {
+            const { data: { user } } = await supabase.auth.getUser(session.access_token);
+
+            console.log('=== OAuth Session Debug ===');
+            console.log('User:', user?.email);
+            console.log('Provider:', user?.app_metadata?.provider);
+            console.log('Created at:', user?.created_at);
+            console.log('Last sign in at:', user?.last_sign_in_at);
+
+            if (user) {
+                const createdAt = new Date(user.created_at);
+                const lastSignIn = user.last_sign_in_at ? new Date(user.last_sign_in_at) : null;
+
+                // Check if this is an OAuth user (Google provider)
+                const isOAuthUser = user.app_metadata?.provider === 'google' ||
+                    user.identities?.some(i => i.provider === 'google');
+
+                // A user is new if:
+                // 1. They are an OAuth user AND
+                // 2. Either last_sign_in_at is the same as created_at (first login)
+                //    OR the difference between them is very small (< 5 seconds)
+                let isNewUser = false;
+                if (lastSignIn) {
+                    const diffBetweenCreateAndLastLogin = Math.abs(lastSignIn.getTime() - createdAt.getTime()) / 1000;
+                    isNewUser = diffBetweenCreateAndLastLogin < 5; // Less than 5 seconds difference = first login
+                    console.log('Diff between created_at and last_sign_in:', diffBetweenCreateAndLastLogin, 'seconds');
+                }
+
+                console.log('Is OAuth user:', isOAuthUser);
+                console.log('Is new user:', isNewUser);
+
+                if (isOAuthUser && isNewUser) {
+                    console.log('New OAuth user detected, sending welcome email...');
+                    const userName = user.user_metadata?.full_name ||
+                        user.user_metadata?.name ||
+                        user.email?.split('@')[0] || 'Usuario';
+
+                    const emailResult = await sendWelcomeEmail(user.email!, userName);
+                    console.log('Welcome email result:', emailResult);
+                }
+            }
+        } catch (emailError) {
+            // Don't fail the session sync if email fails
+            console.error('Error sending welcome email:', emailError);
+        }
 
         return new Response(
             JSON.stringify({ success: true }),

@@ -1,0 +1,117 @@
+---
+export const prerender = false;
+
+// Clear cookies on server side immediately
+Astro.cookies.delete("user-access-token", { path: "/" });
+Astro.cookies.delete("user-refresh-token", { path: "/" });
+---
+
+<html>
+    <head>
+        <title>Cerrando sesión | HYPESTAGE</title>
+        <style>
+            @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Playfair+Display:ital,wght@0,400;1,400&display=swap");
+
+            body {
+                margin: 0;
+                padding: 0;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 100vh;
+                background-color: #fdfcf9;
+                font-family: "Inter", sans-serif;
+                color: #2a2622;
+            }
+
+            .container {
+                text-align: center;
+                animation: fadeIn 0.8s ease-out;
+            }
+
+            .logo {
+                font-family: "Playfair Display", serif;
+                font-size: 2.5rem;
+                font-style: italic;
+                margin-bottom: 2rem;
+                letter-spacing: -0.02em;
+            }
+
+            .logo span {
+                color: #8b4513;
+            }
+
+            .loader {
+                width: 40px;
+                height: 40px;
+                border: 3px solid #e8e4dc;
+                border-top: 3px solid #8b4513;
+                border-radius: 50%;
+                margin: 0 auto 1.5rem;
+                animation: spin 1s linear infinite;
+            }
+
+            .message {
+                font-size: 1.1rem;
+                font-weight: 500;
+                color: #6f6458;
+                letter-spacing: 0.05em;
+            }
+
+            @keyframes spin {
+                0% {
+                    transform: rotate(0deg);
+                }
+                100% {
+                    transform: rotate(360deg);
+                }
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(10px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="logo">
+                HYPE<span>STAGE</span>
+            </div>
+            <div class="loader"></div>
+            <p class="message">Cerrando sesión de forma segura...</p>
+        </div>
+
+        <script>
+            import { supabase } from "../../lib/supabase";
+
+            async function logout() {
+                try {
+                    // Sign out from Supabase (clears localStorage)
+                    await supabase.auth.signOut();
+                } catch (e) {
+                    console.error("Error signing out:", e);
+                }
+
+                // Clear any remaining localStorage items
+                localStorage.removeItem(
+                    "sb-" + window.location.hostname + "-auth-token",
+                );
+
+                // Small delay for better UX
+                setTimeout(() => {
+                    window.location.href = "/";
+                }, 1500);
+            }
+
+            logout();
+        </script>
+    </body>
+</html>
