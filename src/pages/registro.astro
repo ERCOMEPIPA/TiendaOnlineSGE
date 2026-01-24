@@ -3,7 +3,15 @@ export const prerender = false;
 
 import PublicLayout from "../layouts/PublicLayout.astro";
 import { supabase } from "../lib/supabase";
-import { sendWelcomeEmail } from "../lib/email";
+
+// Email function - imported dynamically to avoid errors if nodemailer is not configured
+let sendWelcomeEmail: any = null;
+try {
+    const emailModule = await import("../lib/email");
+    sendWelcomeEmail = emailModule.sendWelcomeEmail;
+} catch (e) {
+    console.log("Email module not available:", e);
+}
 
 // Handle redirect first, before any response is sent
 const accessToken = Astro.cookies.get("user-access-token")?.value;
@@ -60,8 +68,14 @@ if (Astro.request.method === "POST") {
                 error = authError.message;
             }
         } else if (data.user) {
-            // Send welcome email
-            await sendWelcomeEmail(email, name);
+            // Send welcome email (only if email module is available)
+            if (sendWelcomeEmail) {
+                try {
+                    await sendWelcomeEmail(email, name);
+                } catch (e) {
+                    console.log("Error sending welcome email:", e);
+                }
+            }
 
             // Check if email confirmation is required
             if (data.session) {

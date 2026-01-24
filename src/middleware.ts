@@ -32,9 +32,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
                 // ... session refresh logic ...
             }
 
-            // Check if user is authorized admin
-            const adminEmails = (import.meta.env.ADMIN_EMAILS || "").split(",");
-            if (user && !adminEmails.includes(user.email || "")) {
+            // Solo el correo de administrador tiene acceso al panel admin
+            const ADMIN_EMAIL = "iscovr3@gmail.com";
+            if (user && user.email !== ADMIN_EMAIL) {
                 // Not an authorized admin, clear cookies and redirect
                 context.cookies.delete('sb-access-token', { path: '/' });
                 context.cookies.delete('sb-refresh-token', { path: '/' });

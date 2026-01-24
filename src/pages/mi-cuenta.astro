@@ -69,9 +69,9 @@ if (Astro.request.method === "POST") {
         }
     }
 }
-const adminEmails = (import.meta.env.ADMIN_EMAILS || "").split(",");
-const isAdmin =
-    userSession?.user && adminEmails.includes(userSession.user.email || "");
+// Solo el correo de administrador tiene acceso al panel admin
+const ADMIN_EMAIL = "iscovr3@gmail.com";
+const isAdmin = userSession?.user?.email === ADMIN_EMAIL;
 ---
 
 <PublicLayout title="Mi Cuenta" description="Gestiona tu cuenta y preferencias">

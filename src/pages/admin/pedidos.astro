@@ -4,7 +4,15 @@ export const prerender = false;
 import AdminLayout from "../../layouts/AdminLayout.astro";
 import Button from "../../components/ui/Button.astro";
 import { supabase, formatPrice } from "../../lib/supabase";
-import { sendOrderStatusUpdateEmail } from "../../lib/email";
+
+// Email function - imported dynamically to avoid errors if nodemailer is not configured
+let sendOrderStatusUpdateEmail: any = null;
+try {
+    const emailModule = await import("../../lib/email");
+    sendOrderStatusUpdateEmail = emailModule.sendOrderStatusUpdateEmail;
+} catch (e) {
+    console.log("Email module not available:", e);
+}
 
 // Handle status update
 let message = "";
@@ -37,8 +45,12 @@ if (Astro.request.method === "POST") {
         } else {
             message = "Estado actualizado correctamente";
 
-            // Send email notification to customer
-            if (orderData && newStatus !== "pending") {
+            // Send email notification to customer (only if email module is available)
+            if (
+                sendOrderStatusUpdateEmail &&
+                orderData &&
+                newStatus !== "pending"
+            ) {
                 try {
                     await sendOrderStatusUpdateEmail({
                         customerEmail: orderData.customer_email,

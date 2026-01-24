@@ -5,9 +5,9 @@ interface Props {
 
 const { user } = Astro.props;
 
-// Check if user is also an authorized admin
-const adminEmails = (import.meta.env.ADMIN_EMAILS || "").split(",");
-const isAdmin = user && adminEmails.includes(user.email || "");
+// Solo el correo de administrador tiene acceso al panel admin
+const ADMIN_EMAIL = "iscovr3@gmail.com";
+const isAdmin = user?.email === ADMIN_EMAIL;
 ---
 
 {

@@ -22,9 +22,9 @@ if (Astro.request.method === "POST") {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
-    // Check if email is authorized
-    const adminEmails = (import.meta.env.ADMIN_EMAILS || "").split(",");
-    if (!adminEmails.includes(email)) {
+    // Solo el correo de administrador tiene acceso al panel admin
+    const ADMIN_EMAIL = "iscovr3@gmail.com";
+    if (email !== ADMIN_EMAIL) {
         error = "No tienes permisos para acceder al panel de administración.";
     } else {
         const { data, error: authError } =
