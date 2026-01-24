@@ -35,6 +35,8 @@ const mockProducts: Product[] = [
 		slug: "camiseta-tour-2024-bad-bunny",
 		description: "Camiseta oficial del World Tour 2024",
 		price: 3500,
+		discount_price: null,
+		discount_end_date: null,
 		stock: 15,
 		sizes: ["S", "M", "L", "XL"],
 		colors: ["Negro:#000000", "Blanco:#FFFFFF"],
@@ -53,6 +55,8 @@ const mockProducts: Product[] = [
 		slug: "sudadera-midnight-taylor-swift",
 		description: "Sudadera Midnights Edition",
 		price: 5900,
+		discount_price: null,
+		discount_end_date: null,
 		stock: 8,
 		sizes: ["S", "M", "L"],
 		colors: ["Negro:#000000", "Gris:#6B7280"],
@@ -71,6 +75,8 @@ const mockProducts: Product[] = [
 		slug: "gorra-logo-drake",
 		description: "Gorra bordada con logo OVO",
 		price: 2900,
+		discount_price: null,
+		discount_end_date: null,
 		stock: 25,
 		sizes: ["Única"],
 		colors: ["Negro:#000000"],
@@ -89,6 +95,8 @@ const mockProducts: Product[] = [
 		slug: "hoodie-astroworld-travis-scott",
 		description: "Hoodie edición limitada Astroworld",
 		price: 7500,
+		discount_price: null,
+		discount_end_date: null,
 		stock: 3,
 		sizes: ["M", "L", "XL"],
 		colors: ["Negro:#000000", "Naranja:#F97316"],
@@ -512,6 +520,7 @@ cats.forEach((cat) => {
 			}
 
 			function goToSlide(index: number) {
+				if (!carousel) return;
 				if (index < 0) index = totalSlides - 1;
 				if (index >= totalSlides) index = 0;
 
