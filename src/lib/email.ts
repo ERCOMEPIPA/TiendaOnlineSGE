@@ -389,3 +389,120 @@ export async function sendStockAvailableEmail(data: StockNotificationEmailData) 
         return { success: false, error };
     }
 }
+
+// Return status update email
+interface ReturnStatusEmailData {
+    customerEmail: string;
+    customerName: string;
+    orderId: string;
+    newStatus: string;
+    adminNotes?: string;
+}
+
+const returnStatusInfo: Record<string, { emoji: string; title: string; message: string; color: string }> = {
+    approved: {
+        emoji: '✅',
+        title: 'Tu devolución ha sido aprobada',
+        message: 'Hemos aprobado tu solicitud de devolución. Por favor, envía el producto a nuestra dirección. Recibirás un email con la etiqueta de envío.',
+        color: '#3b82f6',
+    },
+    rejected: {
+        emoji: '❌',
+        title: 'Tu devolución ha sido rechazada',
+        message: 'Lamentamos informarte que no podemos aceptar tu solicitud de devolución.',
+        color: '#ef4444',
+    },
+    received: {
+        emoji: '📦',
+        title: 'Hemos recibido tu devolución',
+        message: 'Tu paquete ha llegado a nuestro almacén y estamos procesando tu reembolso. Te notificaremos cuando se complete.',
+        color: '#8b5cf6',
+    },
+    refunded: {
+        emoji: '💰',
+        title: '¡Reembolso completado!',
+        message: 'El reembolso ha sido procesado y debería aparecer en tu cuenta bancaria en los próximos 5-7 días hábiles.',
+        color: '#22c55e',
+    },
+};
+
+export async function sendReturnStatusEmail(data: ReturnStatusEmailData) {
+    const { customerEmail, customerName, orderId, newStatus, adminNotes } = data;
+
+    const status = returnStatusInfo[newStatus];
+    if (!status) {
+        return { success: true, skipped: true };
+    }
+
+    const transport = await getTransporter();
+    if (!transport) {
+        console.log('=== RETURN STATUS EMAIL SKIPPED (no transporter) ===');
+        return { success: true, skipped: true };
+    }
+
+    const emailHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: ${status.color}; color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+        .emoji { font-size: 48px; margin-bottom: 15px; }
+        .content { background-color: #ffffff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; }
+        .order-box { background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center; }
+        .notes-box { background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0; }
+        .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; background-color: #f8f9fa; border-radius: 0 0 8px 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="emoji">${status.emoji}</div>
+            <h1>${status.title}</h1>
+        </div>
+        
+        <div class="content">
+            <p>Hola ${customerName},</p>
+            <p>${status.message}</p>
+            
+            <div class="order-box">
+                <p>Número de pedido: <strong>#${orderId.slice(0, 8).toUpperCase()}</strong></p>
+            </div>
+            
+            ${adminNotes ? `
+            <div class="notes-box">
+                <p><strong>Nota del equipo:</strong></p>
+                <p>${adminNotes}</p>
+            </div>
+            ` : ''}
+            
+            <p>Si tienes alguna pregunta, no dudes en contactarnos.</p>
+            <p>Gracias por confiar en HYPESTAGE.</p>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; ${new Date().getFullYear()} HYPESTAGE. Todos los derechos reservados.</p>
+        </div>
+    </div>
+</body>
+</html>
+    `;
+
+    try {
+        const info = await transport.sendMail({
+            from: getFromEmail(),
+            to: customerEmail,
+            subject: `${status.emoji} ${status.title} - Pedido #${orderId.slice(0, 8).toUpperCase()}`,
+            html: emailHtml,
+        });
+
+        console.log('Return status email sent:', info.messageId);
+        return { success: true, data: { messageId: info.messageId } };
+    } catch (error) {
+        console.error('Error sending return status email:', error);
+        return { success: false, error };
+    }
+}
+

@@ -142,7 +142,7 @@ cats.forEach((cat) => {
 >
 	<!-- Hero Section Origin Style -->
 	<section
-		class="relative bg-cream-100 text-navy-900 overflow-hidden min-h-[500px] lg:min-h-[600px]"
+		class="relative bg-cream-100 text-navy-900 overflow-hidden min-h-[600px] md:min-h-[500px] lg:min-h-[600px]"
 	>
 		<!-- Background Carousel -->
 		<div class="absolute inset-0">
@@ -183,24 +183,24 @@ cats.forEach((cat) => {
 
 		<!-- Content -->
 		<div
-			class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32 z-10"
+			class="relative max-w-7xl mx-auto px-12 sm:px-16 lg:px-8 py-16 md:py-20 lg:py-32 z-10"
 		>
-			<div class="max-w-xl">
+			<div class="max-w-lg lg:max-w-xl">
 				<h1
-					class="text-4xl lg:text-6xl font-serif italic leading-tight animate-slide-up text-[#2a2622]"
+					class="text-3xl sm:text-4xl lg:text-6xl font-serif italic leading-tight animate-slide-up text-[#2a2622]"
 				>
 					Merch exclusivo de tus
 					<span class="text-[#8B4513]">artistas favoritos</span>
 				</h1>
 				<p
-					class="mt-6 text-lg text-[#5c544a] animate-slide-up"
+					class="mt-4 sm:mt-6 text-base sm:text-lg text-[#5c544a] animate-slide-up"
 					style="animation-delay: 0.1s;"
 				>
 					Colecciones oficiales, ediciones limitadas y productos
 					únicos. Viste tu pasión por la música con estilo.
 				</p>
 				<div
-					class="mt-8 flex flex-wrap gap-4 animate-slide-up"
+					class="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4 animate-slide-up"
 					style="animation-delay: 0.2s;"
 				>
 					<Button href="/productos" variant="primary" size="lg">
@@ -214,24 +214,25 @@ cats.forEach((cat) => {
 				<!-- Current Product Info -->
 				<div
 					id="hero-product-info"
-					class="mt-10 animate-slide-up"
+					class="mt-6 sm:mt-10 animate-slide-up"
 					style="animation-delay: 0.3s;"
 				>
 					<div
-						class="inline-flex items-center gap-3 bg-white/10 backdrop-blur-xl rounded-full px-5 py-2.5 border border-white/20 shadow-glass"
+						class="inline-flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3 bg-white/10 backdrop-blur-xl rounded-xl sm:rounded-full px-4 sm:px-5 py-3 sm:py-2.5 border border-white/20 shadow-glass"
 					>
 						<span
-							class="text-[#8B4513] font-medium"
+							class="text-[#8B4513] font-medium text-sm sm:text-base"
 							id="hero-product-artist"
 							>{products[0]?.artist || "Exclusivo"}</span
 						>
-						<span class="text-white/60">|</span>
-						<span class="text-[#8B4513]" id="hero-product-name"
-							>{products[0]?.name}</span
-						>
-						<span class="text-white/60">|</span>
+						<span class="text-white/60 hidden sm:inline">|</span>
 						<span
-							class="text-[#8B4513] font-semibold"
+							class="text-[#8B4513] text-sm sm:text-base line-clamp-1"
+							id="hero-product-name">{products[0]?.name}</span
+						>
+						<span class="text-white/60 hidden sm:inline">|</span>
+						<span
+							class="text-[#8B4513] font-semibold text-sm sm:text-base"
 							id="hero-product-price"
 						>
 							{
@@ -288,10 +289,10 @@ cats.forEach((cat) => {
 		<!-- Navigation Arrows -->
 		<button
 			id="hero-carousel-prev"
-			class="absolute left-4 lg:left-8 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-[#2a2622] flex items-center justify-center text-white hover:bg-[#3d3831] transition-all z-20 shadow-lg"
+			class="absolute left-1 sm:left-2 lg:left-8 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-full bg-[#2a2622]/80 sm:bg-[#2a2622] flex items-center justify-center text-white hover:bg-[#3d3831] transition-all z-20 shadow-lg"
 		>
 			<svg
-				class="w-6 h-6"
+				class="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6"
 				fill="none"
 				stroke="currentColor"
 				viewBox="0 0 24 24"
@@ -305,10 +306,10 @@ cats.forEach((cat) => {
 		</button>
 		<button
 			id="hero-carousel-next"
-			class="absolute right-4 lg:right-8 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-[#2a2622] flex items-center justify-center text-white hover:bg-[#3d3831] transition-all z-20 shadow-lg"
+			class="absolute right-1 sm:right-2 lg:right-8 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-full bg-[#2a2622]/80 sm:bg-[#2a2622] flex items-center justify-center text-white hover:bg-[#3d3831] transition-all z-20 shadow-lg"
 		>
 			<svg
-				class="w-6 h-6"
+				class="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6"
 				fill="none"
 				stroke="currentColor"
 				viewBox="0 0 24 24"
