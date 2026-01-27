@@ -157,17 +157,18 @@
         setTimeout(() => {
             popup.classList.add("hidden");
         }, 300);
-        // No guardamos en localStorage para que aparezca siempre
-        // localStorage.setItem(POPUP_STORAGE_KEY, "true");
+        // No guardamos nada aquí - solo guardamos cuando se suscriba exitosamente
     }
 
     function shouldShowPopup(): boolean {
-        // Siempre mostrar el popup en cada visita
-        return true;
+        // No mostrar si ya está suscrito
+        return localStorage.getItem(POPUP_STORAGE_KEY) !== "subscribed";
     }
 
-    // Initialize - Mostrar el popup siempre después del delay
-    setTimeout(showPopup, POPUP_DELAY);
+    // Initialize - Mostrar el popup si no está suscrito
+    if (shouldShowPopup()) {
+        setTimeout(showPopup, POPUP_DELAY);
+    }
 
     // Event listeners
     closeBtn?.addEventListener("click", hidePopup);
@@ -207,8 +208,8 @@
                 form.classList.add("hidden");
                 skipBtn?.classList.add("hidden");
                 successDiv?.classList.remove("hidden");
-                // No guardamos estado para que aparezca siempre
-                // localStorage.setItem(POPUP_STORAGE_KEY, "subscribed");
+                // Guardar que ya se suscribió para no volver a mostrar el popup
+                localStorage.setItem(POPUP_STORAGE_KEY, "subscribed");
             } else {
                 alert(data.error || "Error al procesar la suscripción");
                 button.disabled = false;
