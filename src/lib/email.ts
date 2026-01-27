@@ -46,20 +46,40 @@ async function getTransporter() {
     if (transporter) return transporter;
 
     try {
+        console.log('🔧 [EMAIL] Inicializando transporter de email...');
+        
+        // Verificar variables de entorno
+        const gmailUser = import.meta.env.GMAIL_USER;
+        const gmailPass = import.meta.env.GMAIL_APP_PASSWORD;
+        
+        if (!gmailUser || !gmailPass) {
+            console.error('❌ [EMAIL] Error: Variables de entorno no configuradas');
+            console.error('   GMAIL_USER:', gmailUser ? '✓ Configurado' : '✗ Falta');
+            console.error('   GMAIL_APP_PASSWORD:', gmailPass ? '✓ Configurado' : '✗ Falta');
+            return null;
+        }
+        
+        console.log('✓ [EMAIL] Variables de entorno verificadas');
+        console.log('   Usuario:', gmailUser);
+        
         // Dynamic import of nodemailer
         const nodemailer = await import('nodemailer');
+        console.log('✓ [EMAIL] Nodemailer importado correctamente');
 
         transporter = nodemailer.default.createTransport({
             service: 'gmail',
             auth: {
-                user: import.meta.env.GMAIL_USER,
-                pass: import.meta.env.GMAIL_APP_PASSWORD
+                user: gmailUser,
+                pass: gmailPass
             }
         });
-
+        
+        console.log('✅ [EMAIL] Transporter creado correctamente');
         return transporter;
     } catch (error) {
-        console.error('Failed to initialize nodemailer:', error);
+        console.error('❌ [EMAIL] Error al inicializar nodemailer:', error);
+        console.error('   Mensaje:', error.message);
+        console.error('   Stack:', error.stack);
         return null;
     }
 }
@@ -158,11 +178,18 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
 }
 
 export async function sendWelcomeEmail(email: string, name: string) {
+    console.log('📧 [EMAIL] Intentando enviar email de bienvenida');
+    console.log('   Destinatario:', email);
+    console.log('   Nombre:', name);
+    
     const transport = await getTransporter();
     if (!transport) {
-        console.log('=== WELCOME EMAIL SKIPPED (no transporter) ===');
-        return { success: true, skipped: true };
+        console.error('❌ [EMAIL] No se pudo crear el transporter - email no enviado');
+        return { success: false, skipped: true, error: 'Transporter no disponible' };
     }
+    
+    console.log('✓ [EMAIL] Transporter obtenido, preparando email...');
+
 
     const emailHtml = `
 <!DOCTYPE html>
@@ -209,18 +236,27 @@ export async function sendWelcomeEmail(email: string, name: string) {
     `;
 
     try {
+        const fromEmail = getFromEmail();
+        console.log('   From:', fromEmail);
+        console.log('   Subject: ¡Bienvenido a HYPESTAGE! 🎉');
+        
         const info = await transport.sendMail({
-            from: getFromEmail(),
+            from: fromEmail,
             to: email,
             subject: '¡Bienvenido a HYPESTAGE! 🎉',
             html: emailHtml,
         });
 
-        console.log('Welcome email sent:', info.messageId);
+        console.log('✅ [EMAIL] Email de bienvenida enviado exitosamente');
+        console.log('   Message ID:', info.messageId);
+        console.log('   Response:', info.response);
         return { success: true, data: { messageId: info.messageId } };
     } catch (error) {
-        console.error('Error sending welcome email:', error);
-        return { success: false, error };
+        console.error('❌ [EMAIL] Error al enviar email de bienvenida');
+        console.error('   Error:', error.message);
+        console.error('   Code:', error.code);
+        console.error('   Stack:', error.stack);
+        return { success: false, error: error.message };
     }
 }
 
