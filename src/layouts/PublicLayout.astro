@@ -13,9 +13,10 @@ import { getUserSession } from "../lib/auth";
 interface Props {
     title: string;
     description?: string;
+    showNewsletterPopup?: boolean;
 }
 
-const { title, description } = Astro.props;
+const { title, description, showNewsletterPopup = false } = Astro.props;
 
 // Get user session for the header
 const userSession = await getUserSession(Astro.cookies);
@@ -351,8 +352,8 @@ const currentPath = Astro.url.pathname;
     });
 </script>
 
-<!-- Newsletter Popup -->
-<NewsletterPopup />
+<!-- Newsletter Popup (solo en página de inicio) -->
+{showNewsletterPopup && <NewsletterPopup />}
 
 <!-- Tawk.to Live Chat Widget -->
 <script type="text/javascript" is:inline>
