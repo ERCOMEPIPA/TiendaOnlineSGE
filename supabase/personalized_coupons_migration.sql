@@ -14,8 +14,9 @@ CREATE INDEX IF NOT EXISTS idx_coupons_customer_email ON coupons(customer_email)
 CREATE INDEX IF NOT EXISTS idx_coupons_personalized ON coupons(is_personalized);
 
 -- Update RLS policies to allow personalized coupons
--- Drop old policy if exists
+-- Drop old policies if exists
 DROP POLICY IF EXISTS "Public read active coupons" ON coupons;
+DROP POLICY IF EXISTS "Authenticated users can manage coupons" ON coupons;
 
 -- New policy: Users can see their own personalized coupons or public ones
 CREATE POLICY "Public read active coupons" 
@@ -27,6 +28,21 @@ CREATE POLICY "Public read active coupons"
             OR customer_email = auth.jwt()->>'email'  -- User's personalized coupons
         )
     );
+
+-- Policy for authenticated users (admins) to insert coupons
+CREATE POLICY "Authenticated users can insert coupons" 
+    ON coupons FOR INSERT 
+    WITH CHECK (auth.role() = 'authenticated');
+
+-- Policy for authenticated users (admins) to update coupons
+CREATE POLICY "Authenticated users can update coupons" 
+    ON coupons FOR UPDATE 
+    USING (auth.role() = 'authenticated');
+
+-- Policy for authenticated users (admins) to delete coupons
+CREATE POLICY "Authenticated users can delete coupons" 
+    ON coupons FOR DELETE 
+    USING (auth.role() = 'authenticated');
 
 -- Table for tracking coupon email sends
 CREATE TABLE IF NOT EXISTS coupon_emails (
@@ -46,6 +62,10 @@ CREATE INDEX IF NOT EXISTS idx_coupon_emails_customer ON coupon_emails(customer_
 
 -- Enable RLS
 ALTER TABLE coupon_emails ENABLE ROW LEVEL SECURITY;
+
+-- Drop old policies if exists
+DROP POLICY IF EXISTS "Admin can view all coupon emails" ON coupon_emails;
+DROP POLICY IF EXISTS "Admin can insert coupon emails" ON coupon_emails;
 
 -- Policies for coupon_emails
 CREATE POLICY "Admin can view all coupon emails" 
