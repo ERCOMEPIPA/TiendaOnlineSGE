@@ -17,8 +17,11 @@ CREATE INDEX IF NOT EXISTS idx_coupons_personalized ON coupons(is_personalized);
 -- Drop old policies if exists
 DROP POLICY IF EXISTS "Public read active coupons" ON coupons;
 DROP POLICY IF EXISTS "Authenticated users can manage coupons" ON coupons;
+DROP POLICY IF EXISTS "Authenticated users can insert coupons" ON coupons;
+DROP POLICY IF EXISTS "Authenticated users can update coupons" ON coupons;
+DROP POLICY IF EXISTS "Authenticated users can delete coupons" ON coupons;
 
--- New policy: Users can see their own personalized coupons or public ones
+-- New policy: Users can see all active coupons (public or their personalized ones)
 CREATE POLICY "Public read active coupons" 
     ON coupons FOR SELECT 
     USING (
@@ -29,20 +32,11 @@ CREATE POLICY "Public read active coupons"
         )
     );
 
--- Policy for authenticated users (admins) to insert coupons
-CREATE POLICY "Authenticated users can insert coupons" 
-    ON coupons FOR INSERT 
-    WITH CHECK (auth.role() = 'authenticated');
-
--- Policy for authenticated users (admins) to update coupons
-CREATE POLICY "Authenticated users can update coupons" 
-    ON coupons FOR UPDATE 
-    USING (auth.role() = 'authenticated');
-
--- Policy for authenticated users (admins) to delete coupons
-CREATE POLICY "Authenticated users can delete coupons" 
-    ON coupons FOR DELETE 
-    USING (auth.role() = 'authenticated');
+-- Policy for ALL operations (insert, update, delete) - Service role or authenticated
+CREATE POLICY "Service role can manage all coupons" 
+    ON coupons FOR ALL 
+    USING (true)
+    WITH CHECK (true);
 
 -- Table for tracking coupon email sends
 CREATE TABLE IF NOT EXISTS coupon_emails (

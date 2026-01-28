@@ -24,6 +24,8 @@ if (Astro.request.method === "POST") {
         const customerEmail = (formData.get("customer_email") as string)?.trim();
         const isPersonalized = !!customerEmail;
 
+        console.log("Using supabaseAdmin:", supabaseAdmin !== supabase ? "Yes (service role)" : "No (fallback to anon)");
+        
         const { error } = await supabaseAdmin.from("coupons").insert({
             code,
             description,
