@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { supabase } from '../../lib/supabase';
+import { supabaseAdmin } from '../../lib/supabase';
 import { sendCouponEmail } from '../../lib/email';
 
 export const prerender = false;
@@ -26,7 +26,7 @@ export const POST: APIRoute = async ({ request }) => {
 
         // Get coupon details
         console.log('📧 [API] Buscando cupón en base de datos...');
-        const { data: coupon, error: couponError } = await supabase
+        const { data: coupon, error: couponError } = await supabaseAdmin
             .from('coupons')
             .select('*')
             .eq('id', couponId)
@@ -58,7 +58,7 @@ export const POST: APIRoute = async ({ request }) => {
 
         // Get all unique customer emails from orders
         console.log('📧 [API] Obteniendo emails de clientes...');
-        const { data: orders, error: ordersError } = await supabase
+        const { data: orders, error: ordersError } = await supabaseAdmin
             .from('orders')
             .select('customer_email, customer_name')
             .not('customer_email', 'is', null)
@@ -121,7 +121,7 @@ export const POST: APIRoute = async ({ request }) => {
                 results.success++;
                 
                 // Track in coupon_emails table
-                await supabase
+                await supabaseAdmin
                     .from('coupon_emails')
                     .insert({
                         coupon_id: couponId,
@@ -136,7 +136,7 @@ export const POST: APIRoute = async ({ request }) => {
         }
 
         // Update coupon to mark as sent
-        await supabase
+        await supabaseAdmin
             .from('coupons')
             .update({
                 sent_at: new Date().toISOString()
