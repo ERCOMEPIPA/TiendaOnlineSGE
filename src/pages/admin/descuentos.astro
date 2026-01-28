@@ -404,6 +404,16 @@ const formatDate = (date: string) => {
                                         </td>
                                         <td class="px-3 py-3">
                                             <div class="flex flex-col gap-1">
+                                                {!coupon.customer_email && !coupon.sent_at && (
+                                                    <button
+                                                        type="button"
+                                                        class="send-to-all-btn text-indigo-600 hover:text-indigo-900 text-xs font-medium text-left"
+                                                        data-coupon-id={coupon.id}
+                                                        data-coupon-code={coupon.code}
+                                                    >
+                                                        📢 Enviar a todos
+                                                    </button>
+                                                )}
                                                 {coupon.customer_email && !coupon.sent_at && (
                                                     <button
                                                         type="button"
@@ -501,13 +511,57 @@ const formatDate = (date: string) => {
                     } else {
                         alert("Error al enviar el email: " + (data.error || "Error desconocido"));
                         target.disabled = false;
-                        target.textContent = "Enviar por email";
+                        target.textContent = "📧 Enviar";
                     }
                 } catch (error) {
                     console.error("Error:", error);
                     alert("Error al enviar el email");
                     target.disabled = false;
-                    target.textContent = "Enviar por email";
+                    target.textContent = "📧 Enviar";
+                }
+            });
+        });
+
+        // Send to all customers functionality
+        document.querySelectorAll(".send-to-all-btn").forEach((btn) => {
+            btn.addEventListener("click", async (e) => {
+                const target = e.target as HTMLButtonElement;
+                const couponId = target.dataset.couponId;
+                const couponCode = target.dataset.couponCode;
+
+                if (!confirm(`¿Estás seguro de enviar el código ${couponCode} a TODOS los clientes?\n\nEsto puede tomar varios minutos dependiendo de la cantidad de clientes.`)) {
+                    return;
+                }
+
+                target.disabled = true;
+                target.textContent = "⏳ Enviando...";
+
+                try {
+                    const response = await fetch("/api/send-coupon-to-all", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            couponId,
+                        }),
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        alert(`✅ ${data.message}\n\nEnviados: ${data.details.success}\nFallidos: ${data.details.failed}`);
+                        location.reload();
+                    } else {
+                        alert("❌ Error al enviar emails: " + (data.error || "Error desconocido"));
+                        target.disabled = false;
+                        target.textContent = "📢 Enviar a todos";
+                    }
+                } catch (error) {
+                    console.error("Error:", error);
+                    alert("❌ Error al enviar emails masivos");
+                    target.disabled = false;
+                    target.textContent = "📢 Enviar a todos";
                 }
             });
         });
