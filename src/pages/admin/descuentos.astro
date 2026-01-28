@@ -3,7 +3,7 @@ export const prerender = false;
 
 import AdminLayout from "../../layouts/AdminLayout.astro";
 import Button from "../../components/ui/Button.astro";
-import { supabase } from "../../lib/supabase";
+import { supabase, supabaseAdmin } from "../../lib/supabase";
 
 // Handle form actions
 let message = "";
@@ -24,7 +24,7 @@ if (Astro.request.method === "POST") {
         const customerEmail = (formData.get("customer_email") as string)?.trim();
         const isPersonalized = !!customerEmail;
 
-        const { error } = await supabase.from("coupons").insert({
+        const { error } = await supabaseAdmin.from("coupons").insert({
             code,
             description,
             discount_type: discountType,
@@ -45,7 +45,7 @@ if (Astro.request.method === "POST") {
         }
     } else if (action === "delete") {
         const id = formData.get("id") as string;
-        const { error } = await supabase
+        const { error } = await supabaseAdmin
             .from("coupons")
             .delete()
             .eq("id", id);
@@ -58,7 +58,7 @@ if (Astro.request.method === "POST") {
     } else if (action === "toggle") {
         const id = formData.get("id") as string;
         const isActive = formData.get("is_active") === "true";
-        const { error } = await supabase
+        const { error } = await supabaseAdmin
             .from("coupons")
             .update({ is_active: !isActive })
             .eq("id", id);
