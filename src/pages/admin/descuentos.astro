@@ -9,6 +9,13 @@ import { supabase, supabaseAdmin } from "../../lib/supabase";
 let message = "";
 let messageType: "success" | "error" = "success";
 
+// Check for success parameter from redirect
+const urlParams = new URL(Astro.request.url).searchParams;
+if (urlParams.get("success") === "created") {
+    message = "Descuento creado correctamente";
+    messageType = "success";
+}
+
 if (Astro.request.method === "POST") {
     const formData = await Astro.request.formData();
     const action = formData.get("action") as string;
@@ -26,24 +33,38 @@ if (Astro.request.method === "POST") {
 
         console.log("Using supabaseAdmin:", supabaseAdmin !== supabase ? "Yes (service role)" : "No (fallback to anon)");
         
-        const { error } = await supabaseAdmin.from("coupons").insert({
-            code,
-            description,
-            discount_type: discountType,
-            discount_value: discountValue,
-            min_purchase: minPurchase,
-            max_uses: maxUses ? parseInt(maxUses) : null,
-            valid_until: validUntil ? new Date(validUntil).toISOString() : null,
-            is_personalized: isPersonalized,
-            customer_email: customerEmail || null,
-            is_active: true,
-        });
+        // Check if code already exists
+        const { data: existingCoupon } = await supabaseAdmin
+            .from("coupons")
+            .select("code")
+            .eq("code", code)
+            .single();
 
-        if (error) {
-            message = "Error al crear el descuento: " + error.message;
+        if (existingCoupon) {
+            message = `El código "${code}" ya existe. Por favor usa otro código o genera uno automático.`;
             messageType = "error";
         } else {
-            message = "Descuento creado correctamente";
+            const { error } = await supabaseAdmin.from("coupons").insert({
+                code,
+                description,
+                discount_type: discountType,
+                discount_value: discountValue,
+                min_purchase: minPurchase,
+                max_uses: maxUses ? parseInt(maxUses) : null,
+                valid_until: validUntil ? new Date(validUntil).toISOString() : null,
+                is_personalized: isPersonalized,
+                customer_email: customerEmail || null,
+                is_active: true,
+            });
+
+            if (error) {
+                message = "Error al crear el descuento: " + error.message;
+                messageType = "error";
+            } else {
+                message = "Descuento creado correctamente";
+                // Redirect to clear form (PRG pattern)
+                return Astro.redirect("/admin/descuentos?success=created");
+            }
         }
     } else if (action === "delete") {
         const id = formData.get("id") as string;
@@ -272,31 +293,31 @@ const formatDate = (date: string) => {
             {
                 coupons && coupons.length > 0 ? (
                     <div class="overflow-x-auto">
-                        <table class="w-full">
+                        <table class="w-full table-fixed">
                             <thead class="bg-carbon-50 border-b border-carbon-200">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-carbon-500 uppercase tracking-wider">
+                                    <th class="w-32 px-3 py-3 text-left text-xs font-medium text-carbon-500 uppercase">
                                         Código
                                     </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-carbon-500 uppercase tracking-wider">
+                                    <th class="w-52 px-3 py-3 text-left text-xs font-medium text-carbon-500 uppercase">
                                         Descripción
                                     </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-carbon-500 uppercase tracking-wider">
+                                    <th class="w-40 px-3 py-3 text-left text-xs font-medium text-carbon-500 uppercase">
                                         Cliente
                                     </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-carbon-500 uppercase tracking-wider">
+                                    <th class="w-28 px-3 py-3 text-left text-xs font-medium text-carbon-500 uppercase">
                                         Descuento
                                     </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-carbon-500 uppercase tracking-wider">
+                                    <th class="w-20 px-3 py-3 text-left text-xs font-medium text-carbon-500 uppercase">
                                         Usos
                                     </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-carbon-500 uppercase tracking-wider">
-                                        Válido hasta
+                                    <th class="w-28 px-3 py-3 text-left text-xs font-medium text-carbon-500 uppercase">
+                                        Válido
                                     </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-carbon-500 uppercase tracking-wider">
+                                    <th class="w-24 px-3 py-3 text-left text-xs font-medium text-carbon-500 uppercase">
                                         Estado
                                     </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-carbon-500 uppercase tracking-wider">
+                                    <th class="w-32 px-3 py-3 text-left text-xs font-medium text-carbon-500 uppercase">
                                         Acciones
                                     </th>
                                 </tr>
@@ -304,64 +325,63 @@ const formatDate = (date: string) => {
                             <tbody class="divide-y divide-carbon-200">
                                 {coupons.map((coupon) => (
                                     <tr class="hover:bg-carbon-50 transition">
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="flex items-center gap-2">
-                                                <span class="font-mono font-semibold text-navy-600">
+                                        <td class="px-3 py-3">
+                                            <div class="flex flex-col gap-1">
+                                                <span class="font-mono text-xs font-bold text-navy-600">
                                                     {coupon.code}
                                                 </span>
                                                 {coupon.is_personalized && (
-                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
-                                                        Personalizado
+                                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-purple-100 text-purple-800 w-fit">
+                                                        Personal
                                                     </span>
                                                 )}
                                             </div>
                                         </td>
-                                        <td class="px-6 py-4">
-                                            <div class="text-sm text-carbon-900 max-w-xs truncate">
+                                        <td class="px-3 py-3">
+                                            <div class="text-xs text-carbon-900 truncate" title={coupon.description}>
                                                 {coupon.description}
                                             </div>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
+                                        <td class="px-3 py-3">
                                             {coupon.customer_email ? (
-                                                <div class="text-sm text-carbon-600">
-                                                    {coupon.customer_email}
+                                                <div class="text-xs text-carbon-600 truncate" title={coupon.customer_email}>
+                                                    {coupon.customer_email.split('@')[0]}
                                                 </div>
                                             ) : (
-                                                <span class="text-sm text-carbon-400 italic">
+                                                <span class="text-xs text-carbon-400 italic">
                                                     Público
                                                 </span>
                                             )}
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm font-semibold text-carbon-900">
+                                        <td class="px-3 py-3">
+                                            <div class="text-xs font-bold text-carbon-900">
                                                 {coupon.discount_type === "percentage"
                                                     ? `${coupon.discount_value}%`
                                                     : formatPrice(coupon.discount_value)}
                                             </div>
                                             {coupon.min_purchase > 0 && (
-                                                <div class="text-xs text-carbon-500">
+                                                <div class="text-[10px] text-carbon-500">
                                                     Min: {formatPrice(coupon.min_purchase)}
                                                 </div>
                                             )}
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm text-carbon-900">
-                                                {coupon.used_count}
-                                                {coupon.max_uses ? ` / ${coupon.max_uses}` : " / ∞"}
+                                        <td class="px-3 py-3">
+                                            <div class="text-xs text-carbon-900">
+                                                {coupon.used_count}/{coupon.max_uses || "∞"}
                                             </div>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
+                                        <td class="px-3 py-3">
                                             {coupon.valid_until ? (
-                                                <div class="text-sm text-carbon-600">
+                                                <div class="text-xs text-carbon-600">
                                                     {formatDate(coupon.valid_until)}
                                                 </div>
                                             ) : (
-                                                <span class="text-sm text-carbon-400 italic">
-                                                    Sin límite
+                                                <span class="text-xs text-carbon-400">
+                                                    -
                                                 </span>
                                             )}
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
+                                        <td class="px-3 py-3">
                                             <form method="POST" class="inline">
                                                 <input type="hidden" name="action" value="toggle" />
                                                 <input type="hidden" name="id" value={coupon.id} />
@@ -372,7 +392,7 @@ const formatDate = (date: string) => {
                                                 />
                                                 <button
                                                     type="submit"
-                                                    class={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                                                    class={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${
                                                         coupon.is_active
                                                             ? "bg-green-100 text-green-800 hover:bg-green-200"
                                                             : "bg-red-100 text-red-800 hover:bg-red-200"
@@ -382,21 +402,21 @@ const formatDate = (date: string) => {
                                                 </button>
                                             </form>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="flex items-center gap-2">
+                                        <td class="px-3 py-3">
+                                            <div class="flex flex-col gap-1">
                                                 {coupon.customer_email && !coupon.sent_at && (
                                                     <button
                                                         type="button"
-                                                        class="send-email-btn text-navy-600 hover:text-navy-900 text-sm font-medium"
+                                                        class="send-email-btn text-navy-600 hover:text-navy-900 text-xs font-medium text-left"
                                                         data-coupon-id={coupon.id}
                                                         data-coupon-code={coupon.code}
                                                         data-customer-email={coupon.customer_email}
                                                     >
-                                                        Enviar por email
+                                                        📧 Enviar
                                                     </button>
                                                 )}
                                                 {coupon.sent_at && (
-                                                    <span class="text-xs text-green-600">
+                                                    <span class="text-[10px] text-green-600">
                                                         ✓ Enviado
                                                     </span>
                                                 )}
@@ -405,10 +425,10 @@ const formatDate = (date: string) => {
                                                     <input type="hidden" name="id" value={coupon.id} />
                                                     <button
                                                         type="submit"
-                                                        class="text-red-600 hover:text-red-900 text-sm font-medium"
+                                                        class="text-red-600 hover:text-red-900 text-xs font-medium"
                                                         onclick="return confirm('¿Eliminar este descuento?')"
                                                     >
-                                                        Eliminar
+                                                        🗑️ Eliminar
                                                     </button>
                                                 </form>
                                             </div>
