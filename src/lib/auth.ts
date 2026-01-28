@@ -6,11 +6,23 @@ export interface UserSession {
     accessToken: string;
 }
 
-export async function getUserSession(cookies: AstroCookies): Promise<UserSession | null> {
-    const accessToken = cookies.get('user-access-token')?.value;
-    const refreshToken = cookies.get('user-refresh-token')?.value;
+export async function getUserSession(cookiesOrRequest: AstroCookies | Request): Promise<UserSession | null> {
+    let accessToken: string | undefined;
+    let refreshToken: string | undefined;
 
-    if (!accessToken || !refreshToken) {
+    if ('get' in cookiesOrRequest && typeof cookiesOrRequest.get === 'function') {
+        // Handle AstroCookies
+        accessToken = cookiesOrRequest.get('user-access-token')?.value;
+        refreshToken = cookiesOrRequest.get('user-refresh-token')?.value;
+    } else if (cookiesOrRequest instanceof Request) {
+        // Handle Request (for API calls from Flutter/Mobile)
+        const authHeader = cookiesOrRequest.headers.get('Authorization');
+        if (authHeader?.startsWith('Bearer ')) {
+            accessToken = authHeader.substring(7);
+        }
+    }
+
+    if (!accessToken) {
         return null;
     }
 

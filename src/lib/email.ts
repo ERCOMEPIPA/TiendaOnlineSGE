@@ -542,3 +542,257 @@ export async function sendReturnStatusEmail(data: ReturnStatusEmailData) {
     }
 }
 
+interface CouponEmailData {
+    customerEmail: string;
+    customerName?: string;
+    couponCode: string;
+    description: string;
+    discountType: string;
+    discountValue: number;
+    validUntil?: string;
+    minPurchase?: number;
+}
+
+export async function sendCouponEmail(data: CouponEmailData) {
+    const { 
+        customerEmail, 
+        customerName, 
+        couponCode, 
+        description,
+        discountType,
+        discountValue,
+        validUntil,
+        minPurchase
+    } = data;
+
+    console.log('📧 [EMAIL] Intentando enviar cupón personalizado');
+    console.log('   Destinatario:', customerEmail);
+    console.log('   Código:', couponCode);
+    
+    const transport = await getTransporter();
+    if (!transport) {
+        console.error('❌ [EMAIL] No se pudo crear el transporter - email no enviado');
+        return { success: false, skipped: true, error: 'Transporter no disponible' };
+    }
+    
+    console.log('✓ [EMAIL] Transporter obtenido, preparando email...');
+
+    // Format discount display
+    const discountDisplay = discountType === 'percentage' 
+        ? `${discountValue}%` 
+        : formatPrice(discountValue);
+
+    const emailHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            line-height: 1.6; 
+            color: #333; 
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            background-color: #ffffff;
+        }
+        .header { 
+            background: linear-gradient(135deg, #1a2332 0%, #2c3e50 100%);
+            color: white; 
+            padding: 40px 30px; 
+            text-align: center; 
+        }
+        .header h1 { 
+            margin: 0 0 10px 0; 
+            font-size: 32px;
+            font-weight: bold;
+        }
+        .header p {
+            margin: 0;
+            font-size: 18px;
+            opacity: 0.9;
+        }
+        .content { 
+            background-color: #ffffff; 
+            padding: 40px 30px; 
+        }
+        .greeting {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        .coupon-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 30px 0;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        .coupon-label {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+        .coupon-code {
+            font-size: 36px;
+            font-weight: bold;
+            letter-spacing: 3px;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+        }
+        .discount-value {
+            font-size: 28px;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+        .details-box {
+            background-color: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 25px 0;
+            border-left: 4px solid #667eea;
+        }
+        .detail-item {
+            margin: 12px 0;
+            display: flex;
+            align-items: center;
+        }
+        .detail-icon {
+            display: inline-block;
+            width: 20px;
+            margin-right: 10px;
+            font-size: 18px;
+        }
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 40px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+            font-size: 16px;
+        }
+        .footer { 
+            text-align: center; 
+            padding: 30px; 
+            color: #666; 
+            font-size: 12px;
+            background-color: #f8f9fa;
+            border-top: 1px solid #e0e0e0;
+        }
+        .highlight {
+            color: #667eea;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎁 HYPESTAGE</h1>
+            <p>¡Tenemos un regalo especial para ti!</p>
+        </div>
+        
+        <div class="content">
+            <div class="greeting">
+                ${customerName ? `Hola <strong>${customerName}</strong>,` : 'Hola,'}
+            </div>
+            
+            <p>Nos complace ofrecerte un <strong>descuento exclusivo</strong> que hemos preparado especialmente para ti. ¡Es hora de darte ese capricho que tanto mereces!</p>
+            
+            <div class="coupon-box">
+                <div class="coupon-label">Tu código de descuento</div>
+                <div class="coupon-code">${couponCode}</div>
+                <div class="discount-value">Descuento: ${discountDisplay}</div>
+            </div>
+            
+            <div class="details-box">
+                <h3 style="margin-top: 0; color: #1a2332;">📋 Detalles del descuento</h3>
+                <div class="detail-item">
+                    <span class="detail-icon">✨</span>
+                    <span><strong>Descripción:</strong> ${description}</span>
+                </div>
+                ${minPurchase && minPurchase > 0 ? `
+                <div class="detail-item">
+                    <span class="detail-icon">🛍️</span>
+                    <span><strong>Compra mínima:</strong> ${formatPrice(minPurchase)}</span>
+                </div>
+                ` : ''}
+                ${validUntil ? `
+                <div class="detail-item">
+                    <span class="detail-icon">⏰</span>
+                    <span><strong>Válido hasta:</strong> ${new Date(validUntil).toLocaleDateString('es-ES', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    })}</span>
+                </div>
+                ` : ''}
+                <div class="detail-item">
+                    <span class="detail-icon">🎯</span>
+                    <span><strong>Uso:</strong> Personalizado solo para ti</span>
+                </div>
+            </div>
+            
+            <p style="text-align: center; margin: 30px 0;">
+                <a href="${import.meta.env.PUBLIC_SITE_URL || 'https://hypestage.com'}" class="cta-button">
+                    Comprar ahora
+                </a>
+            </p>
+            
+            <p style="color: #666; font-size: 14px; line-height: 1.8;">
+                <strong>Cómo usar tu código:</strong><br>
+                1. Añade tus productos favoritos al carrito<br>
+                2. Ve al carrito y busca el campo "Código de descuento"<br>
+                3. Introduce el código <strong>${couponCode}</strong><br>
+                4. ¡Disfruta de tu descuento!
+            </p>
+            
+            <p style="margin-top: 30px;">
+                ¡Gracias por ser parte de HYPESTAGE! Esperamos que disfrutes de este descuento exclusivo.
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p><strong>HYPESTAGE</strong></p>
+            <p>&copy; ${new Date().getFullYear()} HYPESTAGE. Todos los derechos reservados.</p>
+            <p style="margin-top: 10px;">
+                Este código es personal e intransferible.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+    `;
+
+    try {
+        const info = await transport.sendMail({
+            from: getFromEmail(),
+            to: customerEmail,
+            subject: `🎁 ¡Tu descuento exclusivo de ${discountDisplay} te está esperando!`,
+            html: emailHtml,
+        });
+
+        console.log('✅ [EMAIL] Cupón enviado correctamente:', info.messageId);
+        return { success: true, data: { messageId: info.messageId } };
+    } catch (error) {
+        console.error('❌ [EMAIL] Error al enviar cupón:', error);
+        return { success: false, error };
+    }
+}
+

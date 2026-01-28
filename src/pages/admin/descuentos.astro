@@ -1,0 +1,504 @@
+---
+export const prerender = false;
+
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import Button from "../../components/ui/Button.astro";
+import { supabase } from "../../lib/supabase";
+
+// Handle form actions
+let message = "";
+let messageType: "success" | "error" = "success";
+
+if (Astro.request.method === "POST") {
+    const formData = await Astro.request.formData();
+    const action = formData.get("action") as string;
+
+    if (action === "create") {
+        const code = (formData.get("code") as string)?.toUpperCase();
+        const description = formData.get("description") as string;
+        const discountType = formData.get("discount_type") as string;
+        const discountValue = parseInt(formData.get("discount_value") as string);
+        const minPurchase = parseInt(formData.get("min_purchase") as string) * 100; // Convert to cents
+        const maxUses = formData.get("max_uses") as string;
+        const validUntil = formData.get("valid_until") as string;
+        const customerEmail = (formData.get("customer_email") as string)?.trim();
+        const isPersonalized = !!customerEmail;
+
+        const { error } = await supabase.from("coupons").insert({
+            code,
+            description,
+            discount_type: discountType,
+            discount_value: discountValue,
+            min_purchase: minPurchase,
+            max_uses: maxUses ? parseInt(maxUses) : null,
+            valid_until: validUntil ? new Date(validUntil).toISOString() : null,
+            is_personalized: isPersonalized,
+            customer_email: customerEmail || null,
+            is_active: true,
+        });
+
+        if (error) {
+            message = "Error al crear el descuento: " + error.message;
+            messageType = "error";
+        } else {
+            message = "Descuento creado correctamente";
+        }
+    } else if (action === "delete") {
+        const id = formData.get("id") as string;
+        const { error } = await supabase
+            .from("coupons")
+            .delete()
+            .eq("id", id);
+        if (error) {
+            message = "Error al eliminar el descuento";
+            messageType = "error";
+        } else {
+            message = "Descuento eliminado";
+        }
+    } else if (action === "toggle") {
+        const id = formData.get("id") as string;
+        const isActive = formData.get("is_active") === "true";
+        const { error } = await supabase
+            .from("coupons")
+            .update({ is_active: !isActive })
+            .eq("id", id);
+        if (error) {
+            message = "Error al actualizar el estado";
+            messageType = "error";
+        } else {
+            message = "Estado actualizado";
+        }
+    }
+}
+
+// Fetch coupons
+const { data: coupons } = await supabase
+    .from("coupons")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+const formatPrice = (cents: number) => {
+    return new Intl.NumberFormat("es-ES", {
+        style: "currency",
+        currency: "EUR",
+    }).format(cents / 100);
+};
+
+const formatDate = (date: string) => {
+    return new Date(date).toLocaleDateString("es-ES", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+    });
+};
+---
+
+<AdminLayout title="Descuentos Personalizados">
+    <div class="max-w-7xl">
+        {/* Message */}
+        {
+            message && (
+                <div
+                    class={`mb-6 p-4 rounded-lg ${
+                        messageType === "success"
+                            ? "bg-green-50 text-green-700 border border-green-200"
+                            : "bg-red-50 text-red-700 border border-red-200"
+                    }`}
+                >
+                    {message}
+                </div>
+            )
+        }
+
+        {/* Create Form */}
+        <div class="bg-white rounded-xl p-6 shadow-sm mb-6">
+            <h2 class="text-lg font-semibold text-carbon-900 mb-4">
+                Crear nuevo descuento
+            </h2>
+            <form method="POST" class="space-y-4">
+                <input type="hidden" name="action" value="create" />
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Código */}
+                    <div>
+                        <label class="block text-sm font-medium text-carbon-700 mb-2">
+                            Código del cupón *
+                        </label>
+                        <input
+                            type="text"
+                            name="code"
+                            required
+                            placeholder="DESCUENTO20"
+                            class="w-full px-4 py-3 border border-carbon-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-500 uppercase"
+                        />
+                        <p class="text-xs text-carbon-500 mt-1">
+                            Se convertirá automáticamente a mayúsculas
+                        </p>
+                    </div>
+
+                    {/* Email del cliente (opcional) */}
+                    <div>
+                        <label class="block text-sm font-medium text-carbon-700 mb-2">
+                            Email del cliente (opcional)
+                        </label>
+                        <input
+                            type="email"
+                            name="customer_email"
+                            placeholder="cliente@ejemplo.com"
+                            class="w-full px-4 py-3 border border-carbon-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-500"
+                        />
+                        <p class="text-xs text-carbon-500 mt-1">
+                            Dejar vacío para cupón público
+                        </p>
+                    </div>
+
+                    {/* Descripción */}
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-carbon-700 mb-2">
+                            Descripción *
+                        </label>
+                        <input
+                            type="text"
+                            name="description"
+                            required
+                            placeholder="Descuento especial de primavera"
+                            class="w-full px-4 py-3 border border-carbon-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-500"
+                        />
+                    </div>
+
+                    {/* Tipo de descuento */}
+                    <div>
+                        <label class="block text-sm font-medium text-carbon-700 mb-2">
+                            Tipo de descuento *
+                        </label>
+                        <select
+                            name="discount_type"
+                            required
+                            class="w-full px-4 py-3 border border-carbon-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-500"
+                        >
+                            <option value="percentage">Porcentaje (%)</option>
+                            <option value="fixed">Cantidad fija (€)</option>
+                        </select>
+                    </div>
+
+                    {/* Valor del descuento */}
+                    <div>
+                        <label class="block text-sm font-medium text-carbon-700 mb-2">
+                            Valor del descuento *
+                        </label>
+                        <input
+                            type="number"
+                            name="discount_value"
+                            required
+                            min="1"
+                            placeholder="10"
+                            class="w-full px-4 py-3 border border-carbon-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-500"
+                        />
+                        <p class="text-xs text-carbon-500 mt-1">
+                            Porcentaje (10 = 10%) o cantidad fija en €
+                        </p>
+                    </div>
+
+                    {/* Compra mínima */}
+                    <div>
+                        <label class="block text-sm font-medium text-carbon-700 mb-2">
+                            Compra mínima (€)
+                        </label>
+                        <input
+                            type="number"
+                            name="min_purchase"
+                            value="0"
+                            min="0"
+                            step="0.01"
+                            class="w-full px-4 py-3 border border-carbon-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-500"
+                        />
+                    </div>
+
+                    {/* Usos máximos */}
+                    <div>
+                        <label class="block text-sm font-medium text-carbon-700 mb-2">
+                            Usos máximos
+                        </label>
+                        <input
+                            type="number"
+                            name="max_uses"
+                            min="1"
+                            placeholder="Ilimitado"
+                            class="w-full px-4 py-3 border border-carbon-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-500"
+                        />
+                        <p class="text-xs text-carbon-500 mt-1">
+                            Dejar vacío para ilimitado
+                        </p>
+                    </div>
+
+                    {/* Fecha de expiración */}
+                    <div>
+                        <label class="block text-sm font-medium text-carbon-700 mb-2">
+                            Válido hasta
+                        </label>
+                        <input
+                            type="date"
+                            name="valid_until"
+                            class="w-full px-4 py-3 border border-carbon-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-500"
+                        />
+                    </div>
+                </div>
+
+                <div class="flex gap-4 pt-2">
+                    <Button type="submit" variant="primary">
+                        Crear descuento
+                    </Button>
+                    <button
+                        type="button"
+                        id="generateCodeBtn"
+                        class="px-6 py-3 border border-carbon-200 rounded-lg text-carbon-700 hover:bg-carbon-50 transition"
+                    >
+                        Generar código automático
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        {/* Coupons List */}
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-carbon-200">
+                <h2 class="text-lg font-semibold text-carbon-900">
+                    Descuentos actuales ({coupons?.length || 0})
+                </h2>
+            </div>
+
+            {
+                coupons && coupons.length > 0 ? (
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-carbon-50 border-b border-carbon-200">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-carbon-500 uppercase tracking-wider">
+                                        Código
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-carbon-500 uppercase tracking-wider">
+                                        Descripción
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-carbon-500 uppercase tracking-wider">
+                                        Cliente
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-carbon-500 uppercase tracking-wider">
+                                        Descuento
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-carbon-500 uppercase tracking-wider">
+                                        Usos
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-carbon-500 uppercase tracking-wider">
+                                        Válido hasta
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-carbon-500 uppercase tracking-wider">
+                                        Estado
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-carbon-500 uppercase tracking-wider">
+                                        Acciones
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-carbon-200">
+                                {coupons.map((coupon) => (
+                                    <tr class="hover:bg-carbon-50 transition">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center gap-2">
+                                                <span class="font-mono font-semibold text-navy-600">
+                                                    {coupon.code}
+                                                </span>
+                                                {coupon.is_personalized && (
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
+                                                        Personalizado
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="text-sm text-carbon-900 max-w-xs truncate">
+                                                {coupon.description}
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            {coupon.customer_email ? (
+                                                <div class="text-sm text-carbon-600">
+                                                    {coupon.customer_email}
+                                                </div>
+                                            ) : (
+                                                <span class="text-sm text-carbon-400 italic">
+                                                    Público
+                                                </span>
+                                            )}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-semibold text-carbon-900">
+                                                {coupon.discount_type === "percentage"
+                                                    ? `${coupon.discount_value}%`
+                                                    : formatPrice(coupon.discount_value)}
+                                            </div>
+                                            {coupon.min_purchase > 0 && (
+                                                <div class="text-xs text-carbon-500">
+                                                    Min: {formatPrice(coupon.min_purchase)}
+                                                </div>
+                                            )}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-carbon-900">
+                                                {coupon.used_count}
+                                                {coupon.max_uses ? ` / ${coupon.max_uses}` : " / ∞"}
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            {coupon.valid_until ? (
+                                                <div class="text-sm text-carbon-600">
+                                                    {formatDate(coupon.valid_until)}
+                                                </div>
+                                            ) : (
+                                                <span class="text-sm text-carbon-400 italic">
+                                                    Sin límite
+                                                </span>
+                                            )}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <form method="POST" class="inline">
+                                                <input type="hidden" name="action" value="toggle" />
+                                                <input type="hidden" name="id" value={coupon.id} />
+                                                <input
+                                                    type="hidden"
+                                                    name="is_active"
+                                                    value={coupon.is_active ? "true" : "false"}
+                                                />
+                                                <button
+                                                    type="submit"
+                                                    class={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                                                        coupon.is_active
+                                                            ? "bg-green-100 text-green-800 hover:bg-green-200"
+                                                            : "bg-red-100 text-red-800 hover:bg-red-200"
+                                                    }`}
+                                                >
+                                                    {coupon.is_active ? "Activo" : "Inactivo"}
+                                                </button>
+                                            </form>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center gap-2">
+                                                {coupon.customer_email && !coupon.sent_at && (
+                                                    <button
+                                                        type="button"
+                                                        class="send-email-btn text-navy-600 hover:text-navy-900 text-sm font-medium"
+                                                        data-coupon-id={coupon.id}
+                                                        data-coupon-code={coupon.code}
+                                                        data-customer-email={coupon.customer_email}
+                                                    >
+                                                        Enviar por email
+                                                    </button>
+                                                )}
+                                                {coupon.sent_at && (
+                                                    <span class="text-xs text-green-600">
+                                                        ✓ Enviado
+                                                    </span>
+                                                )}
+                                                <form method="POST" class="inline">
+                                                    <input type="hidden" name="action" value="delete" />
+                                                    <input type="hidden" name="id" value={coupon.id} />
+                                                    <button
+                                                        type="submit"
+                                                        class="text-red-600 hover:text-red-900 text-sm font-medium"
+                                                        onclick="return confirm('¿Eliminar este descuento?')"
+                                                    >
+                                                        Eliminar
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : (
+                    <div class="px-6 py-12 text-center text-carbon-500">
+                        No hay descuentos creados aún
+                    </div>
+                )
+            }
+        </div>
+    </div>
+
+    <script>
+        // Generate random coupon code
+        document.getElementById("generateCodeBtn")?.addEventListener("click", async () => {
+            try {
+                const response = await fetch("/api/generate-coupon-code", {
+                    method: "POST",
+                });
+                const data = await response.json();
+                if (data.code) {
+                    const codeInput = document.querySelector('input[name="code"]') as HTMLInputElement;
+                    if (codeInput) {
+                        codeInput.value = data.code;
+                    }
+                }
+            } catch (error) {
+                console.error("Error generating code:", error);
+                alert("Error al generar código");
+            }
+        });
+
+        // Send email functionality
+        document.querySelectorAll(".send-email-btn").forEach((btn) => {
+            btn.addEventListener("click", async (e) => {
+                const target = e.target as HTMLButtonElement;
+                const couponId = target.dataset.couponId;
+                const couponCode = target.dataset.couponCode;
+                const customerEmail = target.dataset.customerEmail;
+
+                if (!confirm(`¿Enviar el código ${couponCode} a ${customerEmail}?`)) {
+                    return;
+                }
+
+                target.disabled = true;
+                target.textContent = "Enviando...";
+
+                try {
+                    const response = await fetch("/api/send-coupon-email", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            couponId,
+                        }),
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        alert("Email enviado correctamente");
+                        location.reload();
+                    } else {
+                        alert("Error al enviar el email: " + (data.error || "Error desconocido"));
+                        target.disabled = false;
+                        target.textContent = "Enviar por email";
+                    }
+                } catch (error) {
+                    console.error("Error:", error);
+                    alert("Error al enviar el email");
+                    target.disabled = false;
+                    target.textContent = "Enviar por email";
+                }
+            });
+        });
+    </script>
+</AdminLayout>
+
+<style>
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    input[type="number"] {
+        -moz-appearance: textfield;
+    }
+</style>
