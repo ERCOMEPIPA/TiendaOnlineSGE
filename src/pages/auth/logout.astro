@@ -91,9 +91,13 @@ Astro.cookies.delete("user-refresh-token", { path: "/" });
 
         <script>
             import { supabase } from "../../lib/supabase";
+            import { clearCartOnLogout } from "../../stores/cart";
 
             async function logout() {
                 try {
+                    // Clear cart before signing out
+                    await clearCartOnLogout();
+                    
                     // Sign out from Supabase (clears localStorage)
                     await supabase.auth.signOut();
                 } catch (e) {

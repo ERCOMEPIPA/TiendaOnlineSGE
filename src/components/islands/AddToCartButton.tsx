@@ -25,19 +25,21 @@ export default function AddToCartButton({ product, sizes, colors = [] }: AddToCa
     };
 
     useEffect(() => {
-        loadCart();
-        // Get user email from session
-        fetch('/api/auth/session')
-            .then(res => res.json())
-            .then(data => {
-                if (data?.email) {
-                    setUserEmail(data.email);
-                }
-            })
-            .catch(() => { });
+        (async () => {
+            await loadCart();
+            // Get user email from session
+            fetch('/api/auth/session')
+                .then(res => res.json())
+                .then(data => {
+                    if (data?.email) {
+                        setUserEmail(data.email);
+                    }
+                })
+                .catch(() => { });
+        })();
     }, []);
 
-    const handleAddToCart = () => {
+    const handleAddToCart = async () => {
         if (!selectedSize) return;
         // Only require color if product has colors
         if (colors.length > 0 && !selectedColor) return;
@@ -45,8 +47,8 @@ export default function AddToCartButton({ product, sizes, colors = [] }: AddToCa
         setIsAdding(true);
 
         // Simulate a small delay for UX feedback
-        setTimeout(() => {
-            addItem(product, quantity, selectedSize, selectedColor);
+        setTimeout(async () => {
+            await addItem(product, quantity, selectedSize, selectedColor);
             setIsAdding(false);
             setShowSuccess(true);
 

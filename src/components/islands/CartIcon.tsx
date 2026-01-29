@@ -7,7 +7,9 @@ export default function CartIcon() {
     const isOpen = useStore($isCartOpen);
 
     useEffect(() => {
-        loadCart();
+        (async () => {
+            await loadCart();
+        })();
     }, []);
 
     return (

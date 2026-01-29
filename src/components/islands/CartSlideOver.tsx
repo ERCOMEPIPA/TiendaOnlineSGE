@@ -17,7 +17,9 @@ export default function CartSlideOver() {
     const total = useStore($cartTotal);
 
     useEffect(() => {
-        loadCart();
+        (async () => {
+            await loadCart();
+        })();
     }, []);
 
     // Prevent body scroll when cart is open
@@ -136,7 +138,7 @@ export default function CartSlideOver() {
                                             {/* Quantity controls */}
                                             <div className="flex items-center gap-2 mt-2">
                                                 <button
-                                                    onClick={() => updateQuantity(item.product.id, item.size, item.color || '', item.quantity - 1)}
+                                                    onClick={async () => await updateQuantity(item.product.id, item.size, item.color || '', item.quantity - 1)}
                                                     className="w-6 h-6 rounded-none border border-[#ccc5b8] 
                                    flex items-center justify-center text-[#2a2622]
                                    hover:border-[#2a2622] transition-colors"
@@ -147,7 +149,7 @@ export default function CartSlideOver() {
                                                     {item.quantity}
                                                 </span>
                                                 <button
-                                                    onClick={() => updateQuantity(item.product.id, item.size, item.color || '', item.quantity + 1)}
+                                                    onClick={async () => await updateQuantity(item.product.id, item.size, item.color || '', item.quantity + 1)}
                                                     className="w-6 h-6 rounded-none border border-[#ccc5b8] 
                                    flex items-center justify-center text-[#2a2622]
                                    hover:border-[#2a2622] transition-colors"
@@ -155,7 +157,7 @@ export default function CartSlideOver() {
                                                     +
                                                 </button>
                                                 <button
-                                                    onClick={() => removeItem(item.product.id, item.size, item.color || '')}
+                                                    onClick={async () => await removeItem(item.product.id, item.size, item.color || '')}
                                                     className="ml-auto text-[#6f6458] hover:text-[#8B4513] transition-colors"
                                                     aria-label="Eliminar"
                                                 >

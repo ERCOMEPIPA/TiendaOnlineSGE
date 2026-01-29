@@ -350,6 +350,40 @@ const currentPath = Astro.url.pathname;
     menuBtn?.addEventListener("click", () => {
         mobileMenu?.classList.toggle("hidden");
     });
+
+    // Cart initialization - Load user cart from database
+    import { loadCart } from '../stores/cart';
+    import { supabase } from '../lib/supabase';
+
+    // Check if user is logged in and load their cart
+    (async () => {
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.user) {
+                // User is logged in, load cart from database
+                await loadCart(session.user.id);
+            } else {
+                // Guest user, load from localStorage
+                await loadCart();
+            }
+        } catch (error) {
+            console.error('Error loading cart:', error);
+            // Fallback to localStorage on error
+            await loadCart();
+        }
+    })();
+
+    // Listen for auth state changes
+    supabase.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'SIGNED_IN' && session?.user) {
+            // User logged in, load their cart
+            await loadCart(session.user.id);
+        } else if (event === 'SIGNED_OUT') {
+            // User logged out, clear cart
+            const { clearCartOnLogout } = await import('../stores/cart');
+            await clearCartOnLogout();
+        }
+    });
 </script>
 
 <!-- Newsletter Popup (solo en página de inicio) -->
