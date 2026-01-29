@@ -3,6 +3,7 @@ export const prerender = false;
 
 import AdminLayout from "../../layouts/AdminLayout.astro";
 import Button from "../../components/ui/Button.astro";
+import ConfirmModal from "../../components/ui/ConfirmModal.astro";
 import { supabase } from "../../lib/supabase";
 import { slugify } from "../../lib/utils";
 
@@ -122,37 +123,26 @@ const { data: categories } = await supabase
                                 <span class="text-sm text-carbon-500 bg-carbon-100 px-2 py-1 rounded">
                                     {cat.products?.[0]?.count || 0} productos
                                 </span>
-                                <form method="POST" class="flex gap-2">
-                                    <input
-                                        type="hidden"
-                                        name="action"
-                                        value="delete"
-                                    />
-                                    <input
-                                        type="hidden"
-                                        name="id"
-                                        value={cat.id}
-                                    />
-                                    <button
-                                        type="submit"
-                                        class="text-red-500 hover:text-red-700 p-2"
-                                        onclick="return confirm('¿Eliminar esta categoría?')"
+                                <button
+                                    type="button"
+                                    class="delete-category-btn text-red-500 hover:text-red-700 p-2"
+                                    data-category-id={cat.id}
+                                    data-category-name={cat.name}
+                                >
+                                    <svg
+                                        class="w-5 h-5"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
                                     >
-                                        <svg
-                                            class="w-5 h-5"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                            />
-                                        </svg>
-                                    </button>
-                                </form>
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                        />
+                                    </svg>
+                                </button>
                             </div>
                         ))}
                     </div>
@@ -180,4 +170,33 @@ const { data: categories } = await supabase
             }
         </div>
     </div>
+
+    <ConfirmModal />
+
+    <script>
+        // Delete category functionality
+        document.querySelectorAll(".delete-category-btn").forEach((btn) => {
+            btn.addEventListener("click", async (e) => {
+                const target = e.currentTarget as HTMLButtonElement;
+                const categoryId = target.dataset.categoryId;
+                const categoryName = target.dataset.categoryName;
+
+                const confirmed = await window.showConfirm(
+                    `La categoría "${categoryName}" se eliminará permanentemente. Los productos de esta categoría no se eliminarán.`,
+                    "¿Eliminar categoría?"
+                );
+                
+                if (confirmed) {
+                    const form = document.createElement("form");
+                    form.method = "POST";
+                    form.innerHTML = `
+                        <input type="hidden" name="action" value="delete" />
+                        <input type="hidden" name="id" value="${categoryId}" />
+                    `;
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        });
+    </script>
 </AdminLayout>

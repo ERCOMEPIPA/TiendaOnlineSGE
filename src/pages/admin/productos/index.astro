@@ -3,6 +3,7 @@ export const prerender = false;
 
 import AdminLayout from "../../../layouts/AdminLayout.astro";
 import Button from "../../../components/ui/Button.astro";
+import ConfirmModal from "../../../components/ui/ConfirmModal.astro";
 import { supabase, formatPrice } from "../../../lib/supabase";
 import type { Product } from "../../../lib/supabase";
 
@@ -307,41 +308,27 @@ const created = Astro.url.searchParams.get("created");
                                             />
                                         </svg>
                                     </a>
-                                    <form
-                                        method="POST"
-                                        class="inline"
-                                        onsubmit="return confirm('¿Estás seguro de eliminar este producto?')"
+                                    <button
+                                        type="button"
+                                        class="delete-product-btn p-2 text-carbon-500 hover:text-red-600 transition-colors"
+                                        data-product-id={product.id}
+                                        data-product-name={product.name}
+                                        title="Eliminar"
                                     >
-                                        <input
-                                            type="hidden"
-                                            name="action"
-                                            value="delete"
-                                        />
-                                        <input
-                                            type="hidden"
-                                            name="productId"
-                                            value={product.id}
-                                        />
-                                        <button
-                                            type="submit"
-                                            class="p-2 text-carbon-500 hover:text-red-600 transition-colors"
-                                            title="Eliminar"
+                                        <svg
+                                            class="w-5 h-5"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
                                         >
-                                            <svg
-                                                class="w-5 h-5"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <path
-                                                    stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                    stroke-width="2"
-                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                                />
-                                            </svg>
-                                        </button>
-                                    </form>
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                            />
+                                        </svg>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -374,4 +361,33 @@ const created = Astro.url.searchParams.get("created");
             )
         }
     </div>
+
+    <ConfirmModal />
+
+    <script>
+        // Delete product functionality
+        document.querySelectorAll(".delete-product-btn").forEach((btn) => {
+            btn.addEventListener("click", async (e) => {
+                const target = e.currentTarget as HTMLButtonElement;
+                const productId = target.dataset.productId;
+                const productName = target.dataset.productName;
+
+                const confirmed = await window.showConfirm(
+                    `El producto "${productName}" se eliminará permanentemente y no podrá ser recuperado.`,
+                    "¿Eliminar producto?"
+                );
+                
+                if (confirmed) {
+                    const form = document.createElement("form");
+                    form.method = "POST";
+                    form.innerHTML = `
+                        <input type="hidden" name="action" value="delete" />
+                        <input type="hidden" name="productId" value="${productId}" />
+                    `;
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        });
+    </script>
 </AdminLayout>

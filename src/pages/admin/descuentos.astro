@@ -3,6 +3,8 @@ export const prerender = false;
 
 import AdminLayout from "../../layouts/AdminLayout.astro";
 import Button from "../../components/ui/Button.astro";
+import ConfirmModal from "../../components/ui/ConfirmModal.astro";
+import Toast from "../../components/ui/Toast.astro";
 import { supabase, supabaseAdmin } from "../../lib/supabase";
 
 // Handle form actions
@@ -434,9 +436,9 @@ const formatDate = (date: string) => {
                                                     <input type="hidden" name="action" value="delete" />
                                                     <input type="hidden" name="id" value={coupon.id} />
                                                     <button
-                                                        type="submit"
-                                                        class="text-red-600 hover:text-red-900 text-xs font-medium"
-                                                        onclick="return confirm('¿Eliminar este descuento?')"
+                                                        type="button"
+                                                        class="delete-coupon-btn text-red-600 hover:text-red-900 text-xs font-medium"
+                                                        data-coupon-id={coupon.id}
                                                     >
                                                         🗑️ Eliminar
                                                     </button>
@@ -457,6 +459,9 @@ const formatDate = (date: string) => {
         </div>
     </div>
 
+    <ConfirmModal />
+    <Toast />
+
     <script>
         // Generate random coupon code
         document.getElementById("generateCodeBtn")?.addEventListener("click", async () => {
@@ -473,7 +478,12 @@ const formatDate = (date: string) => {
                 }
             } catch (error) {
                 console.error("Error generating code:", error);
-                alert("Error al generar código");
+                window.showToast({
+                    type: 'error',
+                    title: 'Error',
+                    message: 'No se pudo generar el código automático',
+                    duration: 4000
+                });
             }
         });
 
@@ -485,7 +495,11 @@ const formatDate = (date: string) => {
                 const couponCode = target.dataset.couponCode;
                 const customerEmail = target.dataset.customerEmail;
 
-                if (!confirm(`¿Enviar el código ${couponCode} a ${customerEmail}?`)) {
+                const confirmed = await window.showConfirm(
+                    `Se enviará el código ${couponCode} por email a ${customerEmail}.`,
+                    "Enviar cupón personalizado"
+                );
+                if (!confirmed) {
                     return;
                 }
 
@@ -506,16 +520,31 @@ const formatDate = (date: string) => {
                     const data = await response.json();
 
                     if (data.success) {
-                        alert("Email enviado correctamente");
-                        location.reload();
+                        window.showToast({
+                            type: 'success',
+                            title: 'Éxito',
+                            message: 'Email enviado correctamente a ' + customerEmail,
+                            duration: 5000
+                        });
+                        setTimeout(() => location.reload(), 1500);
                     } else {
-                        alert("Error al enviar el email: " + (data.error || "Error desconocido"));
+                        window.showToast({
+                            type: 'error',
+                            title: 'Error al enviar',
+                            message: data.error || 'Error desconocido al enviar el email',
+                            duration: 5000
+                        });
                         target.disabled = false;
                         target.textContent = "📧 Enviar";
                     }
                 } catch (error) {
                     console.error("Error:", error);
-                    alert("Error al enviar el email");
+                    window.showToast({
+                        type: 'error',
+                        title: 'Error',
+                        message: 'No se pudo enviar el email',
+                        duration: 4000
+                    });
                     target.disabled = false;
                     target.textContent = "📧 Enviar";
                 }
@@ -529,7 +558,11 @@ const formatDate = (date: string) => {
                 const couponId = target.dataset.couponId;
                 const couponCode = target.dataset.couponCode;
 
-                if (!confirm(`¿Estás seguro de enviar el código ${couponCode} a TODOS los clientes?\n\nEsto puede tomar varios minutos dependiendo de la cantidad de clientes.`)) {
+                const confirmed = await window.showConfirm(
+                    `¿Estás seguro de enviar el código PROMO${couponCode} a TODOS los clientes? Esto puede tomar varios minutos dependiendo de la cantidad de clientes.`,
+                    "Enviar cupón a todos los clientes"
+                );
+                if (!confirmed) {
                     return;
                 }
 
@@ -550,18 +583,57 @@ const formatDate = (date: string) => {
                     const data = await response.json();
 
                     if (data.success) {
-                        alert(`✅ ${data.message}\n\nEnviados: ${data.details.success}\nFallidos: ${data.details.failed}`);
-                        location.reload();
+                        window.showToast({
+                            type: 'success',
+                            title: '🎉 Emails enviados',
+                            message: `Enviados: ${data.details.success} | Fallidos: ${data.details.failed}`,
+                            duration: 6000
+                        });
+                        setTimeout(() => location.reload(), 2000);
                     } else {
-                        alert("❌ Error al enviar emails: " + (data.error || "Error desconocido"));
+                        window.showToast({
+                            type: 'error',
+                            title: 'Error al enviar emails',
+                            message: data.error || 'Error desconocido',
+                            duration: 5000
+                        });
                         target.disabled = false;
                         target.textContent = "📢 Enviar a todos";
                     }
                 } catch (error) {
                     console.error("Error:", error);
-                    alert("❌ Error al enviar emails masivos");
+                    window.showToast({
+                        type: 'error',
+                        title: 'Error',
+                        message: 'No se pudieron enviar los emails masivos',
+                        duration: 5000
+                    });
                     target.disabled = false;
                     target.textContent = "📢 Enviar a todos";
+                }
+            });
+        });
+
+        // Delete coupon functionality
+        document.querySelectorAll(".delete-coupon-btn").forEach((btn) => {
+            btn.addEventListener("click", async (e) => {
+                const target = e.target as HTMLButtonElement;
+                const couponId = target.dataset.couponId;
+
+                const confirmed = await window.showConfirm(
+                    "Este descuento se eliminará permanentemente y no podrá ser recuperado.",
+                    "¿Eliminar descuento?"
+                );
+                
+                if (confirmed) {
+                    const form = document.createElement("form");
+                    form.method = "POST";
+                    form.innerHTML = `
+                        <input type="hidden" name="action" value="delete" />
+                        <input type="hidden" name="id" value="${couponId}" />
+                    `;
+                    document.body.appendChild(form);
+                    form.submit();
                 }
             });
         });
