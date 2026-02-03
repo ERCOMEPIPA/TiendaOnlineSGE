@@ -39,9 +39,11 @@ const currentPath = Astro.url.pathname;
     <AnnouncementBanner />
 
     <!-- Header Origin Style - Minimal & Elegant -->
-    <header class="sticky top-0 z-30 bg-[#fdfcf9] border-b border-[#e8e4dc]">
-        <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16 lg:h-20">
+    <header
+        class="sticky top-0 z-30 bg-[#fdfcf9] border-b border-[#e8e4dc] overflow-hidden"
+    >
+        <div class="max-w-[1400px] mx-auto px-3 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 lg:h-20 gap-2">
                 <!-- Logo Elegant - Left aligned, bigger -->
                 <a href="/" class="flex items-center flex-shrink-0">
                     <span
@@ -73,7 +75,7 @@ const currentPath = Astro.url.pathname;
                 </nav>
 
                 <!-- Actions - Right aligned -->
-                <div class="flex items-center gap-4 flex-shrink-0">
+                <div class="flex items-center gap-2 sm:gap-4 flex-shrink-0">
                     <!-- Search -->
                     <SearchButton client:load />
 
@@ -352,13 +354,15 @@ const currentPath = Astro.url.pathname;
     });
 
     // Cart initialization - Load user cart from database
-    import { loadCart } from '../stores/cart';
-    import { supabase } from '../lib/supabase';
+    import { loadCart } from "../stores/cart";
+    import { supabase } from "../lib/supabase";
 
     // Check if user is logged in and load their cart
     (async () => {
         try {
-            const { data: { session } } = await supabase.auth.getSession();
+            const {
+                data: { session },
+            } = await supabase.auth.getSession();
             if (session?.user) {
                 // User is logged in, load cart from database
                 await loadCart(session.user.id);
@@ -367,7 +371,7 @@ const currentPath = Astro.url.pathname;
                 await loadCart();
             }
         } catch (error) {
-            console.error('Error loading cart:', error);
+            console.error("Error loading cart:", error);
             // Fallback to localStorage on error
             await loadCart();
         }
@@ -375,12 +379,12 @@ const currentPath = Astro.url.pathname;
 
     // Listen for auth state changes
     supabase.auth.onAuthStateChange(async (event, session) => {
-        if (event === 'SIGNED_IN' && session?.user) {
+        if (event === "SIGNED_IN" && session?.user) {
             // User logged in, load their cart
             await loadCart(session.user.id);
-        } else if (event === 'SIGNED_OUT') {
+        } else if (event === "SIGNED_OUT") {
             // User logged out, clear cart
-            const { clearCartOnLogout } = await import('../stores/cart');
+            const { clearCartOnLogout } = await import("../stores/cart");
             await clearCartOnLogout();
         }
     });
