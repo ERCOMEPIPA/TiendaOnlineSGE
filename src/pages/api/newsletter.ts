@@ -7,7 +7,7 @@ export const prerender = false;
 async function sendNewsletterWelcomeEmail(email: string, name: string | null) {
     try {
         const nodemailer = await import('nodemailer');
-        
+
         const transporter = nodemailer.default.createTransport({
             service: 'gmail',
             auth: {
@@ -90,7 +90,6 @@ async function sendNewsletterWelcomeEmail(email: string, name: string | null) {
             html: welcomeHtml,
         });
 
-        console.log('Newsletter welcome email sent to:', email);
         return { success: true };
     } catch (error) {
         console.error('Error sending newsletter welcome email:', error);

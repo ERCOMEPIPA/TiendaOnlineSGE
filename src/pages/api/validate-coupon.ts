@@ -10,10 +10,6 @@ export const POST: APIRoute = async ({ request }) => {
         const code = body.code?.trim().toUpperCase() || '';
         const cartTotal = body.cartTotal || 0;
 
-        console.log('=== COUPON VALIDATION REQUEST ===');
-        console.log('Code:', code);
-        console.log('Cart Total:', cartTotal);
-
         if (!code) {
             return new Response(JSON.stringify({
                 valid: false,
@@ -32,11 +28,7 @@ export const POST: APIRoute = async ({ request }) => {
             .eq('is_active', true)
             .single();
 
-        console.log('Query result - coupon:', coupon);
-        console.log('Query result - error:', error);
-
         if (error || !coupon) {
-            console.log('Coupon not found or error:', error?.message);
             return new Response(JSON.stringify({
                 valid: false,
                 error: 'Cupón no válido o expirado'
@@ -119,14 +111,10 @@ export const POST: APIRoute = async ({ request }) => {
         });
 
     } catch (error: any) {
-        console.error('=== COUPON VALIDATION ERROR ===');
-        console.error('Error type:', typeof error);
-        console.error('Error message:', error?.message);
-        console.error('Error stack:', error?.stack);
-        console.error('Full error:', JSON.stringify(error, null, 2));
+        console.error('Coupon validation error:', error?.message);
         return new Response(JSON.stringify({
             valid: false,
-            error: 'Error al validar el cupón: ' + (error?.message || 'Error desconocido')
+            error: 'Error al validar el cupón'
         }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' }
