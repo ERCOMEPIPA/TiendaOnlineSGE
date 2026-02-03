@@ -4,9 +4,12 @@ export const prerender = false;
 import PublicLayout from "../../layouts/PublicLayout.astro";
 import Button from "../../components/ui/Button.astro";
 import { stripe } from "../../lib/stripe";
-import { supabase } from "../../lib/supabase";
+import { supabaseAdmin } from "../../lib/supabase";
 import { sendOrderConfirmationEmail } from "../../lib/email";
 import { generateInvoiceForOrder } from "../../lib/invoices";
+
+// Use admin client for server-side operations to bypass RLS restrictions
+const supabase = supabaseAdmin;
 
 const sessionId = Astro.url.searchParams.get("session_id");
 
