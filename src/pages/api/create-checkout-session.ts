@@ -8,7 +8,8 @@ export const prerender = false;
 export const POST: APIRoute = async ({ request, cookies }) => {
     try {
         // Check if user is authenticated (optional now)
-        const userSession = await getUserSession(request);
+        // Use cookies to detect browser sessions properly
+        const userSession = await getUserSession(cookies);
 
         // Parse request body first
         let body;
