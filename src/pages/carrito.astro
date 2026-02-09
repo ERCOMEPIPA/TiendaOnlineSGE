@@ -2,13 +2,7 @@
 export const prerender = false; // SSR page
 
 import PublicLayout from "../layouts/PublicLayout.astro";
-import Button from "../components/ui/Button.astro";
-import { getUserSession } from "../lib/auth";
 import CheckoutTimer from "../components/islands/CheckoutTimer";
-
-// Check if user is logged in
-const userSession = await getUserSession(Astro.cookies);
-// No redirect for guest checkout support
 ---
 
 <PublicLayout title="Carrito" description="Tu carrito de compras">
@@ -20,12 +14,257 @@ const userSession = await getUserSession(Astro.cookies);
       Tu Carrito
     </h1>
 
-    <!-- Cart content will be hydrated by React -->
-    <div id="cart-page-content">
-      <div
-        class="bg-white rounded-none shadow-sm p-8 text-center border border-[#ccc5b8]"
-      >
-        <p class="text-[#6f6458]">Cargando carrito...</p>
+    <!-- Main grid layout -->
+    <div id="cart-page-wrapper" class="lg:grid lg:grid-cols-3 lg:gap-8">
+      <!-- Left column: cart items (dynamically rendered) -->
+      <div class="lg:col-span-2">
+        <div id="cart-page-content">
+          <div
+            class="bg-white rounded-none shadow-sm p-8 text-center border border-[#ccc5b8]"
+          >
+            <p class="text-[#6f6458]">Cargando carrito...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right column: Summary (static HTML, never re-rendered) -->
+      <div class="mt-8 lg:mt-0" id="cart-summary-column">
+        <div class="bg-white rounded-xl shadow-sm p-6 sticky top-24">
+          <h2 class="font-semibold text-lg text-carbon-900 mb-4">Resumen</h2>
+
+          <!-- Coupon Section -->
+          <div class="mb-4 pb-4 border-b border-carbon-100">
+            <div id="coupon-container">
+              <label class="block text-sm font-medium text-carbon-700 mb-2">
+                ¿Tienes un cupón?
+              </label>
+              <div class="flex gap-2">
+                <input
+                  type="text"
+                  id="coupon-input"
+                  placeholder="Código de cupón"
+                  class="flex-1 px-3 py-2 border border-carbon-200 rounded-lg text-sm uppercase focus:ring-2 focus:ring-navy-500 focus:border-transparent"
+                />
+                <button
+                  id="apply-coupon-btn"
+                  class="px-4 py-2 bg-carbon-800 text-white text-sm rounded-lg font-medium hover:bg-carbon-700 transition-colors"
+                >
+                  Aplicar
+                </button>
+              </div>
+              <p id="coupon-message" class="text-sm mt-2 hidden"></p>
+            </div>
+            <div id="coupon-applied" class="hidden">
+              <div
+                class="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200"
+              >
+                <div class="flex items-center gap-2">
+                  <svg
+                    class="w-5 h-5 text-green-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <div>
+                    <p
+                      id="coupon-code-display"
+                      class="font-medium text-green-800"
+                    >
+                    </p>
+                    <p id="coupon-desc-display" class="text-sm text-green-600">
+                    </p>
+                  </div>
+                </div>
+                <button
+                  id="remove-coupon-btn"
+                  class="text-green-600 hover:text-green-800"
+                >
+                  <svg
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Inline Shipping Address Section -->
+          <div class="mb-4 pb-4 border-b border-carbon-100">
+            <h3
+              class="text-sm font-semibold text-[#2a2622] mb-3 flex items-center gap-2"
+            >
+              <svg
+                class="w-4 h-4 text-[#6f6458]"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                ></path>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              </svg>
+              Dirección de Envío
+            </h3>
+
+            <!-- Guest info fields (only shown for non-logged-in users) -->
+            <div id="guest-info-inline" class="space-y-3 mb-3 hidden">
+              <div>
+                <label class="block text-xs font-medium text-[#6f6458] mb-1"
+                  >Nombre Completo *</label
+                >
+                <input
+                  type="text"
+                  id="inline-guest-name"
+                  class="w-full px-3 py-2 border border-[#ccc5b8] rounded-lg text-sm focus:ring-2 focus:ring-[#8B4513] focus:border-transparent"
+                  placeholder="Juan Pérez"
+                />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-[#6f6458] mb-1"
+                  >Email *</label
+                >
+                <input
+                  type="email"
+                  id="inline-guest-email"
+                  class="w-full px-3 py-2 border border-[#ccc5b8] rounded-lg text-sm focus:ring-2 focus:ring-[#8B4513] focus:border-transparent"
+                  placeholder="juan@ejemplo.com"
+                />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-[#6f6458] mb-1"
+                  >Teléfono *</label
+                >
+                <input
+                  type="tel"
+                  id="inline-guest-phone"
+                  class="w-full px-3 py-2 border border-[#ccc5b8] rounded-lg text-sm focus:ring-2 focus:ring-[#8B4513] focus:border-transparent"
+                  placeholder="+34 600 000 000"
+                />
+              </div>
+              <div class="border-t border-[#ccc5b8] pt-3"></div>
+            </div>
+
+            <div class="space-y-3">
+              <div>
+                <label class="block text-xs font-medium text-[#6f6458] mb-1"
+                  >Dirección *</label
+                >
+                <input
+                  type="text"
+                  id="inline-shipping-address"
+                  class="w-full px-3 py-2 border border-[#ccc5b8] rounded-lg text-sm focus:ring-2 focus:ring-[#8B4513] focus:border-transparent"
+                  placeholder="Calle Mayor, 123"
+                />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-[#6f6458] mb-1"
+                  >Piso / Puerta (opcional)</label
+                >
+                <input
+                  type="text"
+                  id="inline-shipping-address2"
+                  class="w-full px-3 py-2 border border-[#ccc5b8] rounded-lg text-sm focus:ring-2 focus:ring-[#8B4513] focus:border-transparent"
+                  placeholder="2º B"
+                />
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-xs font-medium text-[#6f6458] mb-1"
+                    >Código Postal *</label
+                  >
+                  <input
+                    type="text"
+                    id="inline-shipping-postal"
+                    class="w-full px-3 py-2 border border-[#ccc5b8] rounded-lg text-sm focus:ring-2 focus:ring-[#8B4513] focus:border-transparent"
+                    placeholder="28001"
+                  />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-[#6f6458] mb-1"
+                    >Ciudad *</label
+                  >
+                  <input
+                    type="text"
+                    id="inline-shipping-city"
+                    class="w-full px-3 py-2 border border-[#ccc5b8] rounded-lg text-sm focus:ring-2 focus:ring-[#8B4513] focus:border-transparent"
+                    placeholder="Madrid"
+                  />
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-[#6f6458] mb-1"
+                  >Provincia *</label
+                >
+                <input
+                  type="text"
+                  id="inline-shipping-province"
+                  class="w-full px-3 py-2 border border-[#ccc5b8] rounded-lg text-sm focus:ring-2 focus:ring-[#8B4513] focus:border-transparent"
+                  placeholder="Madrid"
+                />
+              </div>
+            </div>
+            <p id="shipping-error" class="text-xs text-red-600 mt-2 hidden"></p>
+          </div>
+
+          <!-- Totals -->
+          <div class="space-y-3 text-sm">
+            <div class="flex justify-between text-carbon-600">
+              <span>Subtotal</span>
+              <span id="cart-subtotal">0,00 €</span>
+            </div>
+            <div
+              id="discount-row"
+              class="flex justify-between text-green-600 hidden"
+            >
+              <span>Descuento</span>
+              <span id="discount-amount">-0,00 €</span>
+            </div>
+            <div class="flex justify-between text-carbon-600">
+              <span>Envío</span>
+              <span id="cart-shipping">0,00 €</span>
+            </div>
+          </div>
+
+          <div class="border-t border-carbon-100 mt-4 pt-4">
+            <div class="flex justify-between font-semibold text-lg">
+              <span>Total</span>
+              <span id="final-total" class="text-navy-900">0,00 €</span>
+            </div>
+          </div>
+
+          <button
+            id="checkout-btn"
+            class="w-full mt-6 py-3 px-6 bg-[#2a2622] text-[#fdfcf9] font-semibold rounded-none hover:bg-[#3d3831] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Proceder al pago
+          </button>
+
+          <p class="text-xs text-carbon-400 text-center mt-4">
+            Envío gratis en pedidos superiores a 50€
+          </p>
+        </div>
       </div>
     </div>
   </div>
@@ -67,177 +306,6 @@ const userSession = await getUserSession(Astro.cookies);
       </div>
     </div>
   </div>
-
-  <!-- Guest Checkout Modal -->
-  <div id="guest-checkout-modal" class="fixed inset-0 z-50 hidden">
-    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
-    <div class="flex items-center justify-center min-h-screen p-4">
-      <div class="relative bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8">
-        <button
-          id="close-guest-modal"
-          class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
-        >
-          <svg
-            class="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
-        </button>
-
-        <h3 class="text-2xl font-serif font-bold text-gray-900 mb-2">
-          Finalizar Compra
-        </h3>
-        <p class="text-gray-500 mb-6">
-          Puedes continuar como invitado o iniciar sesión para guardar tu
-          pedido.
-        </p>
-
-        <div class="space-y-4">
-          <a
-            href="/login?redirect=/carrito"
-            class="block w-full text-center px-4 py-3 border-2 border-navy-800 text-navy-800 font-bold rounded-xl hover:bg-navy-50 transition-colors"
-          >
-            Iniciar Sesión
-          </a>
-
-          <div class="relative flex py-2 items-center">
-            <div class="flex-grow border-t border-gray-200"></div>
-            <span class="flex-shrink-0 mx-4 text-gray-400 text-sm"
-              >O continúa como invitado</span
-            >
-            <div class="flex-grow border-t border-gray-200"></div>
-          </div>
-
-          <form id="guest-form" class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1"
-                >Nombre Completo</label
-              >
-              <input
-                type="text"
-                name="guestName"
-                required
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-navy-500 focus:border-transparent"
-                placeholder="Juan Pérez"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1"
-                >Email</label
-              >
-              <input
-                type="email"
-                name="guestEmail"
-                required
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-navy-500 focus:border-transparent"
-                placeholder="juan@ejemplo.com"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1"
-                >Teléfono</label
-              >
-              <input
-                type="tel"
-                name="guestPhone"
-                required
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-navy-500 focus:border-transparent"
-                placeholder="+34 600 000 000"
-              />
-            </div>
-
-            <!-- Dirección de envío -->
-            <div class="border-t border-gray-200 pt-4 mt-2">
-              <h4 class="text-sm font-semibold text-gray-800 mb-3">
-                Dirección de Envío
-              </h4>
-
-              <div class="space-y-3">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1"
-                    >Dirección</label
-                  >
-                  <input
-                    type="text"
-                    name="guestAddress"
-                    required
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-navy-500 focus:border-transparent"
-                    placeholder="Calle Mayor, 123"
-                  />
-                </div>
-
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1"
-                    >Piso / Puerta (opcional)</label
-                  >
-                  <input
-                    type="text"
-                    name="guestAddress2"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-navy-500 focus:border-transparent"
-                    placeholder="2º B"
-                  />
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1"
-                      >Código Postal</label
-                    >
-                    <input
-                      type="text"
-                      name="guestPostalCode"
-                      required
-                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-navy-500 focus:border-transparent"
-                      placeholder="28001"
-                    />
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1"
-                      >Ciudad</label
-                    >
-                    <input
-                      type="text"
-                      name="guestCity"
-                      required
-                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-navy-500 focus:border-transparent"
-                      placeholder="Madrid"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1"
-                    >Provincia</label
-                  >
-                  <input
-                    type="text"
-                    name="guestProvince"
-                    required
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-navy-500 focus:border-transparent"
-                    placeholder="Madrid"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              class="w-full px-4 py-3 bg-[#2a2622] text-[#fdfcf9] font-bold rounded-none hover:bg-[#3d3831] transition-colors"
-            >
-              Continuar al Pago →
-            </button>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
 </PublicLayout>
 
 <script>
@@ -249,7 +317,7 @@ const userSession = await getUserSession(Astro.cookies);
     clearCart,
     loadCart,
   } from "../stores/cart";
-  import { formatPrice, supabase } from "../lib/supabase";
+  import { formatPrice } from "../lib/supabase";
   import {
     startReservation,
     getReservation,
@@ -263,7 +331,10 @@ const userSession = await getUserSession(Astro.cookies);
   // Coupon state
   let appliedCoupon: any = null;
   let currentDiscount = 0;
-  let cartTotalValue = 0; // Store cart total for coupon validation
+  let cartTotalValue = 0;
+
+  // Auth state
+  let isUserLoggedIn = false;
 
   // Handle reservation expiry modal
   const expiredModal = document.getElementById("reservation-expired-modal");
@@ -287,13 +358,52 @@ const userSession = await getUserSession(Astro.cookies);
     expiredModal?.classList.remove("hidden");
   });
 
+  // Check auth state on load and show/hide guest fields
+  (async () => {
+    try {
+      const sessionResp = await fetch("/api/auth/session");
+      const sessionData = await sessionResp.json();
+      isUserLoggedIn = !!sessionData.user;
+    } catch (e) {
+      isUserLoggedIn = false;
+    }
+
+    const guestInfoSection = document.getElementById("guest-info-inline");
+    if (!isUserLoggedIn && guestInfoSection) {
+      guestInfoSection.classList.remove("hidden");
+    }
+  })();
+
+  // Helper to update totals in the static summary panel
+  function updateTotals(total: number) {
+    const subtotalEl = document.getElementById("cart-subtotal");
+    const shippingEl = document.getElementById("cart-shipping");
+    const finalTotalEl = document.getElementById("final-total");
+
+    const shipping = total >= 5000 ? 0 : 495;
+
+    if (subtotalEl) subtotalEl.textContent = formatPrice(total);
+    if (shippingEl)
+      shippingEl.textContent = total >= 5000 ? "Gratis" : formatPrice(495);
+
+    const finalTotal = total - currentDiscount + shipping;
+    if (finalTotalEl) finalTotalEl.textContent = formatPrice(finalTotal);
+
+    // Also show/hide the summary column based on cart state
+    const summaryCol = document.getElementById("cart-summary-column");
+    const items = $cartItemsArray.get();
+    if (summaryCol) {
+      summaryCol.style.display = items.length === 0 ? "none" : "";
+    }
+  }
+
   function renderCart() {
     const container = document.getElementById("cart-page-content");
     if (!container) return;
 
     const items = $cartItemsArray.get();
     const total = $cartTotal.get();
-    cartTotalValue = total; // Update global variable for coupon validation
+    cartTotalValue = total;
 
     if (items.length === 0) {
       container.innerHTML = `
@@ -309,13 +419,13 @@ const userSession = await getUserSession(Astro.cookies);
           </a>
         </div>
       `;
+      updateTotals(0);
       return;
     }
 
     const itemsHtml = items
       .map((item) => {
         const colorDisplay = item.color ? item.color.split(":")[0] : "";
-        // Check if product has active discount
         const now = new Date();
         const discountPriceInCents = item.product.discount_price
           ? item.product.discount_price * 100
@@ -398,97 +508,18 @@ const userSession = await getUserSession(Astro.cookies);
       .join("");
 
     container.innerHTML = `
-      <div class="lg:grid lg:grid-cols-3 lg:gap-8">
-        <div class="lg:col-span-2">
-          <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-            ${itemsHtml}
-          </div>
-          <button id="clear-cart" class="mt-4 text-sm text-[#6f6458] hover:text-[#8B4513] transition-colors">
-            Vaciar carrito
-          </button>
-        </div>
-        
-        <div class="mt-8 lg:mt-0">
-          <div class="bg-white rounded-xl shadow-sm p-6 sticky top-24">
-            <h2 class="font-semibold text-lg text-carbon-900 mb-4">Resumen</h2>
-            
-            <!-- Coupon Section -->
-            <div class="mb-4 pb-4 border-b border-carbon-100">
-              <div id="coupon-container">
-                <label class="block text-sm font-medium text-carbon-700 mb-2">
-                  ¿Tienes un cupón?
-                </label>
-                <div class="flex gap-2">
-                  <input
-                    type="text"
-                    id="coupon-input"
-                    placeholder="Código de cupón"
-                    class="flex-1 px-3 py-2 border border-carbon-200 rounded-lg text-sm uppercase focus:ring-2 focus:ring-navy-500 focus:border-transparent"
-                  />
-                  <button
-                    id="apply-coupon-btn"
-                    class="px-4 py-2 bg-carbon-800 text-white text-sm rounded-lg font-medium hover:bg-carbon-700 transition-colors"
-                  >
-                    Aplicar
-                  </button>
-                </div>
-                <p id="coupon-message" class="text-sm mt-2 hidden"></p>
-              </div>
-              <div id="coupon-applied" class="hidden">
-                <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
-                  <div class="flex items-center gap-2">
-                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <div>
-                      <p id="coupon-code-display" class="font-medium text-green-800"></p>
-                      <p id="coupon-desc-display" class="text-sm text-green-600"></p>
-                    </div>
-                  </div>
-                  <button id="remove-coupon-btn" class="text-green-600 hover:text-green-800">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div class="space-y-3 text-sm">
-              <div class="flex justify-between text-carbon-600">
-                <span>Subtotal</span>
-                <span>${formatPrice(total)}</span>
-              </div>
-              <div id="discount-row" class="flex justify-between text-green-600 hidden">
-                <span>Descuento</span>
-                <span id="discount-amount">-${formatPrice(0)}</span>
-              </div>
-              <div class="flex justify-between text-carbon-600">
-                <span>Envío</span>
-                <span>${total >= 5000 ? "Gratis" : formatPrice(495)}</span>
-              </div>
-            </div>
-            
-            <div class="border-t border-carbon-100 mt-4 pt-4">
-              <div class="flex justify-between font-semibold text-lg">
-                <span>Total</span>
-                <span id="final-total" class="text-navy-900">${formatPrice(total + (total >= 5000 ? 0 : 495))}</span>
-              </div>
-            </div>
-
-            <button id="checkout-btn" data-logged-in={userSession ? "true" : "false"} class="w-full mt-6 py-3 px-6 bg-[#2a2622] text-[#fdfcf9] font-semibold rounded-none hover:bg-[#3d3831] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-              Proceder al pago
-            </button>
-            
-            <p class="text-xs text-carbon-400 text-center mt-4">
-              Envío gratis en pedidos superiores a 50€
-            </p>
-          </div>
-        </div>
+      <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+        ${itemsHtml}
       </div>
+      <button id="clear-cart" class="mt-4 text-sm text-[#6f6458] hover:text-[#8B4513] transition-colors">
+        Vaciar carrito
+      </button>
     `;
 
-    // Add event listeners
+    // Update totals in static summary panel
+    updateTotals(total);
+
+    // Add event listeners for qty and remove buttons
     document.querySelectorAll(".qty-btn").forEach((btn) => {
       btn.addEventListener("click", (e) => {
         const target = e.currentTarget as HTMLElement;
@@ -522,199 +553,61 @@ const userSession = await getUserSession(Astro.cookies);
       clearCart();
       renderCart();
     });
+  }
 
-    // Checkout button handler
+  // processCheckout function (outside renderCart)
+  async function processCheckout(
+    guestInfo: any = null,
+    shippingInfo: any = null,
+  ) {
     const checkoutBtn = document.getElementById("checkout-btn");
-    const guestModal = document.getElementById("guest-checkout-modal");
-    const closeGuestModal = document.getElementById("close-guest-modal");
-    const guestForm = document.getElementById("guest-form");
+    if (!checkoutBtn) return;
+    const items = $cartItemsArray.get();
 
-    // Close modal
-    closeGuestModal?.addEventListener("click", () => {
-      guestModal?.classList.add("hidden");
-    });
+    checkoutBtn.textContent = "Procesando...";
+    checkoutBtn.setAttribute("disabled", "true");
 
-    // Handle Guest Checkout Form Submit
-    guestForm?.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const formData = new FormData(guestForm as HTMLFormElement);
-      const guestInfo = {
-        name: formData.get("guestName"),
-        email: formData.get("guestEmail"),
-        phone: formData.get("guestPhone"),
-        address: formData.get("guestAddress"),
-        address2: formData.get("guestAddress2") || "",
-        postalCode: formData.get("guestPostalCode"),
-        city: formData.get("guestCity"),
-        province: formData.get("guestProvince"),
-      };
+    // Start cart reservation timer
+    startReservation(items);
 
-      guestModal?.classList.add("hidden");
-      await processCheckout(guestInfo);
-    });
+    // Dispatch event to show timer
+    window.dispatchEvent(new CustomEvent("reservationStarted"));
 
-    if (checkoutBtn) {
-      checkoutBtn.addEventListener("click", async () => {
-        // Check auth state via API endpoint
-        try {
-          const response = await fetch("/api/auth/session");
-          const data = await response.json();
-
-          if (!data.user) {
-            guestModal?.classList.remove("hidden");
-            return;
-          }
-
-          await processCheckout();
-        } catch (error) {
-          console.error("Error checking session:", error);
-          guestModal?.classList.remove("hidden");
-        }
+    try {
+      const response = await fetch("/api/create-checkout-session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          items: items,
+          couponCode: appliedCoupon?.code,
+          discountAmount: currentDiscount,
+          guestInfo: guestInfo,
+          shippingInfo: shippingInfo,
+        }),
       });
-    }
 
-    async function processCheckout(guestInfo: any = null) {
-      if (!checkoutBtn) return;
-      const items = $cartItemsArray.get();
+      const data = await response.json();
 
-      checkoutBtn.textContent = "Procesando...";
-      checkoutBtn.setAttribute("disabled", "true");
-
-      // Start cart reservation timer
-      startReservation(items);
-
-      // Dispatch event to show timer
-      window.dispatchEvent(new CustomEvent("reservationStarted"));
-
-      try {
-        const response = await fetch("/api/create-checkout-session", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            items: items,
-            couponCode: appliedCoupon?.code,
-            discountAmount: currentDiscount,
-            guestInfo: guestInfo,
-          }),
-        });
-
-        const data = await response.json();
-
-        if (data.error) {
-          alert("Error: " + data.error);
-          checkoutBtn.textContent = "Proceder al pago";
-          checkoutBtn.removeAttribute("disabled");
-          clearReservation(); // Clear reservation on error
-          return;
-        }
-
-        // Redirect to Stripe Checkout
-        if (data.url) {
-          window.location.href = data.url;
-        }
-      } catch (error) {
-        console.error("Error:", error);
-        alert("Error al procesar el pago. Por favor, intenta de nuevo.");
+      if (data.error) {
+        alert("Error: " + data.error);
         checkoutBtn.textContent = "Proceder al pago";
         checkoutBtn.removeAttribute("disabled");
-        clearReservation(); // Clear reservation on error
+        clearReservation();
+        return;
       }
-    }
 
-    // Coupon handlers
-    const applyCouponBtn = document.getElementById("apply-coupon-btn");
-    const couponInput = document.getElementById(
-      "coupon-input",
-    ) as HTMLInputElement;
-    const couponMessage = document.getElementById("coupon-message");
-    const couponContainer = document.getElementById("coupon-container");
-    const couponApplied = document.getElementById("coupon-applied");
-    const couponCodeDisplay = document.getElementById("coupon-code-display");
-    const couponDescDisplay = document.getElementById("coupon-desc-display");
-    const removeCouponBtn = document.getElementById("remove-coupon-btn");
-    const discountRow = document.getElementById("discount-row");
-    const discountAmountEl = document.getElementById("discount-amount");
-    const finalTotalEl = document.getElementById("final-total");
-
-    if (applyCouponBtn && couponInput) {
-      applyCouponBtn.addEventListener("click", async () => {
-        const code = couponInput.value.trim().toUpperCase();
-        if (!code) {
-          if (couponMessage) {
-            couponMessage.textContent = "Introduce un código";
-            couponMessage.className = "text-sm mt-2 text-red-600";
-          }
-          return;
-        }
-
-        applyCouponBtn.textContent = "...";
-
-        try {
-          const response = await fetch("/api/validate-coupon", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ code, cartTotal: cartTotalValue }),
-          });
-
-          const data = await response.json();
-
-          if (data.valid) {
-            appliedCoupon = data.coupon;
-            currentDiscount = data.discountAmount;
-
-            // Show applied coupon
-            if (couponContainer) couponContainer.classList.add("hidden");
-            if (couponApplied) couponApplied.classList.remove("hidden");
-            if (couponCodeDisplay)
-              couponCodeDisplay.textContent = data.coupon.code;
-            if (couponDescDisplay) couponDescDisplay.textContent = data.message;
-
-            // Show discount
-            if (discountRow) discountRow.classList.remove("hidden");
-            if (discountAmountEl)
-              discountAmountEl.textContent = "-" + formatPrice(currentDiscount);
-
-            // Update total
-            const shipping = total >= 5000 ? 0 : 495;
-            const newTotal = total - currentDiscount + shipping;
-            if (finalTotalEl) finalTotalEl.textContent = formatPrice(newTotal);
-          } else {
-            if (couponMessage) {
-              couponMessage.textContent = data.error || "Cupón no válido";
-              couponMessage.className = "text-sm mt-2 text-red-600";
-            }
-          }
-        } catch (error) {
-          if (couponMessage) {
-            couponMessage.textContent = "Error al validar el cupón";
-            couponMessage.className = "text-sm mt-2 text-red-600";
-          }
-        } finally {
-          applyCouponBtn.textContent = "Aplicar";
-        }
-      });
-    }
-
-    if (removeCouponBtn) {
-      removeCouponBtn.addEventListener("click", () => {
-        appliedCoupon = null;
-        currentDiscount = 0;
-
-        // Hide applied coupon
-        if (couponContainer) couponContainer.classList.remove("hidden");
-        if (couponApplied) couponApplied.classList.add("hidden");
-        if (couponInput) couponInput.value = "";
-
-        // Hide discount
-        if (discountRow) discountRow.classList.add("hidden");
-
-        // Reset total
-        const shipping = total >= 5000 ? 0 : 495;
-        if (finalTotalEl)
-          finalTotalEl.textContent = formatPrice(total + shipping);
-      });
+      // Redirect to Stripe Checkout
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Error al procesar el pago. Por favor, intenta de nuevo.");
+      checkoutBtn.textContent = "Proceder al pago";
+      checkoutBtn.removeAttribute("disabled");
+      clearReservation();
     }
   }
 
@@ -726,7 +619,87 @@ const userSession = await getUserSession(Astro.cookies);
     renderCart();
   });
 
-  // Global event delegation for coupon handlers (outside renderCart to avoid duplicates)
+  // Checkout button handler (event delegation, outside renderCart)
+  document
+    .getElementById("checkout-btn")
+    ?.addEventListener("click", async () => {
+      const shippingError = document.getElementById("shipping-error");
+
+      // Collect inline shipping address fields
+      const address = (
+        document.getElementById("inline-shipping-address") as HTMLInputElement
+      )?.value?.trim();
+      const address2 =
+        (
+          document.getElementById(
+            "inline-shipping-address2",
+          ) as HTMLInputElement
+        )?.value?.trim() || "";
+      const postalCode = (
+        document.getElementById("inline-shipping-postal") as HTMLInputElement
+      )?.value?.trim();
+      const city = (
+        document.getElementById("inline-shipping-city") as HTMLInputElement
+      )?.value?.trim();
+      const province = (
+        document.getElementById("inline-shipping-province") as HTMLInputElement
+      )?.value?.trim();
+
+      // Validate shipping address
+      if (!address || !postalCode || !city || !province) {
+        if (shippingError) {
+          shippingError.textContent =
+            "Por favor, completa todos los campos obligatorios de la dirección de envío.";
+          shippingError.classList.remove("hidden");
+        }
+        return;
+      }
+
+      // Hide error if shown
+      if (shippingError) shippingError.classList.add("hidden");
+
+      const shippingInfo = { address, address2, postalCode, city, province };
+
+      if (!isUserLoggedIn) {
+        // Collect guest info from inline fields
+        const guestName = (
+          document.getElementById("inline-guest-name") as HTMLInputElement
+        )?.value?.trim();
+        const guestEmail = (
+          document.getElementById("inline-guest-email") as HTMLInputElement
+        )?.value?.trim();
+        const guestPhone = (
+          document.getElementById("inline-guest-phone") as HTMLInputElement
+        )?.value?.trim();
+
+        if (!guestName || !guestEmail || !guestPhone) {
+          if (shippingError) {
+            shippingError.textContent =
+              "Por favor, completa tu nombre, email y teléfono.";
+            shippingError.classList.remove("hidden");
+          }
+          return;
+        }
+
+        const guestInfo = {
+          name: guestName,
+          email: guestEmail,
+          phone: guestPhone,
+          address: shippingInfo.address,
+          address2: shippingInfo.address2,
+          postalCode: shippingInfo.postalCode,
+          city: shippingInfo.city,
+          province: shippingInfo.province,
+        };
+
+        await processCheckout(guestInfo);
+      } else {
+        // Logged-in user: send shipping info
+        await processCheckout(null, shippingInfo);
+      }
+    });
+
+  // Global event delegation for coupon handlers
   document.addEventListener("click", async (e) => {
     const target = e.target as HTMLElement;
 

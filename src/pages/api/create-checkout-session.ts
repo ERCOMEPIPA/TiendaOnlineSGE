@@ -22,7 +22,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             );
         }
 
-        const { items, guestInfo } = body;
+        const { items, guestInfo, shippingInfo } = body;
 
         // Determine customer info
         let customerEmail: string;
@@ -38,7 +38,14 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         if (userSession?.user) {
             customerEmail = userSession.user.email!;
             userId = userSession.user.id;
-            // We could fetch name/phone from profile if needed, but email is primary here
+            // Get shipping info from the shipping form (logged-in users)
+            if (shippingInfo) {
+                shippingAddress = shippingInfo.address;
+                shippingAddress2 = shippingInfo.address2 || null;
+                shippingPostalCode = shippingInfo.postalCode;
+                shippingCity = shippingInfo.city;
+                shippingProvince = shippingInfo.province;
+            }
         } else {
             // Guest mode
             if (!guestInfo || !guestInfo.email || !guestInfo.name) {
