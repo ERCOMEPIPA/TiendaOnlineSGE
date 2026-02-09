@@ -743,7 +743,6 @@ const userSession = await getUserSession(Astro.cookies);
       if (!couponInput) return;
 
       const code = couponInput.value.trim().toUpperCase();
-      console.log("Applying coupon:", code, "Cart total:", cartTotalValue);
 
       if (!code) {
         if (couponMessage) {
@@ -765,7 +764,6 @@ const userSession = await getUserSession(Astro.cookies);
         });
 
         const data = await response.json();
-        console.log("Coupon response:", data);
 
         if (data.valid) {
           appliedCoupon = data.coupon;

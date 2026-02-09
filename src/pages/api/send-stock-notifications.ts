@@ -8,25 +8,17 @@ export const prerender = false;
 // This endpoint should be called when stock is updated (e.g., from admin panel)
 export const POST: APIRoute = async ({ request, cookies }) => {
     try {
-        console.log('=== SEND STOCK NOTIFICATIONS CALLED ===');
-
         // Only authenticated users can trigger stock notifications
         const userSession = await getUserSession(cookies);
-        console.log('User session:', userSession ? 'Found' : 'NOT FOUND');
 
         if (!userSession) {
-            console.log('ERROR: No user session');
             return new Response(
                 JSON.stringify({ error: 'Unauthorized' }),
                 { status: 401, headers: { 'Content-Type': 'application/json' } }
             );
         }
 
-        // User is authenticated - proceed (simplified, no user_profiles check)
-        console.log('User authenticated, proceeding...');
-
         const { productId } = await request.json();
-        console.log('Product ID:', productId);
 
         if (!productId) {
             return new Response(
@@ -49,11 +41,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             );
         }
 
-        console.log('Product found:', product.name, 'Stock:', product.stock);
-
         // Only send notifications if product is NOW in stock
         if (product.stock <= 0) {
-            console.log('Product still out of stock, not sending notifications');
             return new Response(
                 JSON.stringify({ error: 'Product is still out of stock' }),
                 { status: 400, headers: { 'Content-Type': 'application/json' } }
@@ -74,10 +63,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             );
         }
 
-        console.log('Found notifications:', notifications?.length || 0);
-
         if (!notifications || notifications.length === 0) {
-            console.log('No pending notifications found');
             return new Response(
                 JSON.stringify({ message: 'No pending notifications', sent: 0 }),
                 { status: 200, headers: { 'Content-Type': 'application/json' } }
@@ -100,8 +86,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
                 if (result.success) {
                     sentCount++;
-
-                    // Mark as notified
                     await supabase
                         .from('stock_notifications')
                         .update({ notified: true, notified_at: new Date().toISOString() })
@@ -126,7 +110,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         );
 
     } catch (error: any) {
-        console.error('Error sending stock notifications:', error);
+        console.error('Error sending stock notifications:', error.message);
         return new Response(
             JSON.stringify({ error: error.message || 'Internal server error' }),
             { status: 500, headers: { 'Content-Type': 'application/json' } }

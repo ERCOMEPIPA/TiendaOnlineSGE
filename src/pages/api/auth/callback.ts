@@ -5,8 +5,6 @@ export const GET: APIRoute = async ({ url, cookies, redirect }) => {
     const code = url.searchParams.get('code');
     const next = url.searchParams.get('next') || '/';
 
-    console.log('OAuth Callback triggered. Code present:', !!code);
-
     if (code) {
         const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
@@ -16,8 +14,6 @@ export const GET: APIRoute = async ({ url, cookies, redirect }) => {
         }
 
         if (data.session) {
-            console.log('OAuth Session established for:', data.session.user?.email);
-
             // Set cookies for user session
             cookies.set('user-access-token', data.session.access_token, {
                 path: '/',

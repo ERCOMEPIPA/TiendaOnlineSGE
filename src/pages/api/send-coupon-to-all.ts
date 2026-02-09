@@ -6,15 +6,10 @@ export const prerender = false;
 
 export const POST: APIRoute = async ({ request }) => {
     try {
-        console.log('📧 [API] Iniciando envío masivo de cupón...');
-        
         const body = await request.json();
         const { couponId } = body;
 
-        console.log('📧 [API] Coupon ID recibido:', couponId);
-
         if (!couponId) {
-            console.error('❌ [API] Error: ID de cupón no proporcionado');
             return new Response(JSON.stringify({
                 success: false,
                 error: 'ID de cupón requerido'
@@ -25,17 +20,13 @@ export const POST: APIRoute = async ({ request }) => {
         }
 
         // Get coupon details
-        console.log('📧 [API] Buscando cupón en base de datos...');
         const { data: coupon, error: couponError } = await supabaseAdmin
             .from('coupons')
             .select('*')
             .eq('id', couponId)
             .single();
 
-        console.log('📧 [API] Resultado de búsqueda:', { coupon, error: couponError });
-
         if (couponError || !coupon) {
-            console.error('❌ [API] Error: Cupón no encontrado');
             return new Response(JSON.stringify({
                 success: false,
                 error: 'Cupón no encontrado'
@@ -46,7 +37,6 @@ export const POST: APIRoute = async ({ request }) => {
         }
 
         if (coupon.customer_email) {
-            console.error('❌ [API] Error: Este cupón es personalizado, no se puede enviar a todos');
             return new Response(JSON.stringify({
                 success: false,
                 error: 'Este cupón es personalizado. Use la opción de envío individual.'
@@ -57,7 +47,6 @@ export const POST: APIRoute = async ({ request }) => {
         }
 
         // Get all unique customer emails from orders
-        console.log('📧 [API] Obteniendo emails de clientes...');
         const { data: orders, error: ordersError } = await supabaseAdmin
             .from('orders')
             .select('customer_email, customer_name')
@@ -65,7 +54,7 @@ export const POST: APIRoute = async ({ request }) => {
             .order('created_at', { ascending: false });
 
         if (ordersError) {
-            console.error('❌ [API] Error al obtener clientes:', ordersError);
+            console.error('Error fetching customers:', ordersError.message);
             return new Response(JSON.stringify({
                 success: false,
                 error: 'Error al obtener lista de clientes'
@@ -84,7 +73,6 @@ export const POST: APIRoute = async ({ request }) => {
         });
 
         const customerList = Array.from(uniqueCustomers.entries());
-        console.log('📧 [API] Clientes únicos encontrados:', customerList.length);
 
         if (customerList.length === 0) {
             return new Response(JSON.stringify({
@@ -104,8 +92,6 @@ export const POST: APIRoute = async ({ request }) => {
         };
 
         for (const [email, name] of customerList) {
-            console.log(`📧 [API] Enviando a: ${email}`);
-            
             const emailResult = await sendCouponEmail({
                 customerEmail: email,
                 customerName: name,
@@ -119,8 +105,6 @@ export const POST: APIRoute = async ({ request }) => {
 
             if (emailResult.success) {
                 results.success++;
-                
-                // Track in coupon_emails table
                 await supabaseAdmin
                     .from('coupon_emails')
                     .insert({
@@ -131,20 +115,15 @@ export const POST: APIRoute = async ({ request }) => {
             } else {
                 results.failed++;
                 results.errors.push(`${email}: ${emailResult.error || 'Error desconocido'}`);
-                console.error(`❌ [API] Error enviando a ${email}:`, emailResult.error);
             }
         }
 
         // Update coupon to mark as sent
         await supabaseAdmin
             .from('coupons')
-            .update({
-                sent_at: new Date().toISOString()
-            })
+            .update({ sent_at: new Date().toISOString() })
             .eq('id', couponId);
 
-        console.log('✅ [API] Proceso completado:', results);
-        
         return new Response(JSON.stringify({
             success: true,
             message: `Cupón enviado a ${results.success} de ${customerList.length} clientes`,
@@ -160,7 +139,7 @@ export const POST: APIRoute = async ({ request }) => {
         });
 
     } catch (error) {
-        console.error('❌ [API] Error en send-coupon-to-all:', error);
+        console.error('Error in send-coupon-to-all:', error);
         return new Response(JSON.stringify({
             success: false,
             error: 'Error interno del servidor',

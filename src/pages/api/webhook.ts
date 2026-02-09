@@ -14,7 +14,6 @@ export const POST: APIRoute = async ({ request }) => {
 
     // If no webhook secret configured, just acknowledge (for development without webhooks)
     if (!endpointSecret) {
-        console.log('No webhook secret configured, skipping verification');
         return new Response(JSON.stringify({ received: true, note: 'No webhook secret configured' }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' },
@@ -44,18 +43,13 @@ export const POST: APIRoute = async ({ request }) => {
                 await handleCheckoutCompleted(session);
                 break;
             }
-            case 'payment_intent.succeeded': {
-                const paymentIntent = event.data.object as Stripe.PaymentIntent;
-                console.log('PaymentIntent succeeded:', paymentIntent.id);
+            case 'payment_intent.succeeded':
+            case 'payment_intent.payment_failed':
+                // Payment events handled silently
                 break;
-            }
-            case 'payment_intent.payment_failed': {
-                const paymentIntent = event.data.object as Stripe.PaymentIntent;
-                console.log('PaymentIntent failed:', paymentIntent.id);
-                break;
-            }
             default:
-                console.log(`Unhandled event type: ${event.type}`);
+                // Unhandled events ignored silently
+                break;
         }
 
         return new Response(JSON.stringify({ received: true }), {
@@ -64,7 +58,7 @@ export const POST: APIRoute = async ({ request }) => {
         });
     } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        console.error('Error handling webhook:', error);
+        console.error('Error handling webhook:', errorMessage);
         return new Response(JSON.stringify({ error: errorMessage }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' },
@@ -73,8 +67,6 @@ export const POST: APIRoute = async ({ request }) => {
 };
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
-    console.log('Checkout completed via webhook:', session.id);
-
     // Check if order already exists (created by success page)
     const { data: existingOrder } = await supabase
         .from('orders')
@@ -83,8 +75,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         .single();
 
     if (existingOrder) {
-        console.log('Order already exists, skipping webhook processing:', existingOrder.id);
-        return;
+        return; // Order already processed
     }
 
     // Parse items from metadata
@@ -124,7 +115,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         .single();
 
     if (orderDbError || !order) {
-        console.error('Error creating order:', orderDbError);
+        console.error('Error creating order:', orderDbError?.message);
         return;
     }
 
@@ -136,7 +127,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         .in('id', productIds);
 
     if (!products) {
-        console.error('Error fetching products');
+        console.error('Error fetching products for order');
         return;
     }
 
@@ -159,11 +150,9 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         .insert(orderItems);
 
     if (itemsError) {
-        console.error('Error creating order items:', itemsError);
+        console.error('Error creating order items:', itemsError.message);
         return;
     }
-
-    console.log('Order created successfully via webhook:', order.id);
 
     // Update product stock
     for (const item of items) {
