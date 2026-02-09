@@ -101,6 +101,13 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     const customerName = session.customer_details?.name || session.metadata?.customer_name || 'Cliente';
     const customerPhone = session.customer_details?.phone || session.metadata?.customer_phone || null;
 
+    // Get shipping address from metadata
+    const shippingAddress = session.metadata?.shipping_address || 'N/A';
+    const shippingAddress2 = session.metadata?.shipping_address2 || '';
+    const shippingPostalCode = session.metadata?.shipping_postal_code || 'N/A';
+    const shippingCity = session.metadata?.shipping_city || 'N/A';
+    const shippingProvince = session.metadata?.shipping_province || 'N/A';
+
     // Create order in database
     const { data: order, error: orderDbError } = await supabase
         .from('orders')
@@ -175,11 +182,15 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     }
 
     // Generate invoice automatically
+    const fullAddress = shippingAddress2
+        ? `${shippingAddress}, ${shippingAddress2}`
+        : shippingAddress;
+
     const billingData = {
         billing_name: customerName,
-        billing_address: session.customer_details?.address?.line1 || 'N/A',
-        billing_postal_code: session.customer_details?.address?.postal_code || 'N/A',
-        billing_city: session.customer_details?.address?.city || 'N/A',
+        billing_address: fullAddress,
+        billing_postal_code: shippingPostalCode,
+        billing_city: `${shippingCity}, ${shippingProvince}`,
     };
 
     await generateInvoiceForOrder(order.id, billingData);
