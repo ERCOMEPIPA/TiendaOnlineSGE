@@ -22,18 +22,30 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             );
         }
 
-        const { items, guestInfo } = body;
+        const { items, guestInfo, shippingInfo } = body;
 
         // Determine customer info
         let customerEmail: string;
         let userId: string | null = null;
         let customerName: string | null = null;
         let customerPhone: string | null = null;
+        let shippingAddress: string | null = null;
+        let shippingAddress2: string | null = null;
+        let shippingPostalCode: string | null = null;
+        let shippingCity: string | null = null;
+        let shippingProvince: string | null = null;
 
         if (userSession?.user) {
             customerEmail = userSession.user.email!;
             userId = userSession.user.id;
-            // We could fetch name/phone from profile if needed, but email is primary here
+            // Get shipping info from the shipping form (logged-in users)
+            if (shippingInfo) {
+                shippingAddress = shippingInfo.address;
+                shippingAddress2 = shippingInfo.address2 || null;
+                shippingPostalCode = shippingInfo.postalCode;
+                shippingCity = shippingInfo.city;
+                shippingProvince = shippingInfo.province;
+            }
         } else {
             // Guest mode
             if (!guestInfo || !guestInfo.email || !guestInfo.name) {
@@ -45,6 +57,11 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             customerEmail = guestInfo.email;
             customerName = guestInfo.name;
             customerPhone = guestInfo.phone;
+            shippingAddress = guestInfo.address;
+            shippingAddress2 = guestInfo.address2 || null;
+            shippingPostalCode = guestInfo.postalCode;
+            shippingCity = guestInfo.city;
+            shippingProvince = guestInfo.province;
         }
 
         if (!items || !Array.isArray(items) || items.length === 0) {
@@ -129,6 +146,11 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         if (userId) metadata.user_id = userId;
         if (customerName) metadata.customer_name = customerName;
         if (customerPhone) metadata.customer_phone = customerPhone;
+        if (shippingAddress) metadata.shipping_address = shippingAddress;
+        if (shippingAddress2) metadata.shipping_address2 = shippingAddress2;
+        if (shippingPostalCode) metadata.shipping_postal_code = shippingPostalCode;
+        if (shippingCity) metadata.shipping_city = shippingCity;
+        if (shippingProvince) metadata.shipping_province = shippingProvince;
         metadata.is_guest = userId ? 'false' : 'true';
 
         // Create Checkout Session
