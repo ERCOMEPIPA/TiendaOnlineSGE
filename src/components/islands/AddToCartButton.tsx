@@ -64,11 +64,16 @@ export default function AddToCartButton({ product, sizes, colors = [] }: AddToCa
 
         // Simulate a small delay for UX feedback
         setTimeout(async () => {
-            await addItem(product, quantity, selectedSize, selectedColor);
-            setIsAdding(false);
-            setShowSuccess(true);
+            const success = await addItem(product, quantity, selectedSize, selectedColor);
 
-            setTimeout(() => setShowSuccess(false), 2000);
+            if (success) {
+                setIsAdding(false);
+                setShowSuccess(true);
+                setTimeout(() => setShowSuccess(false), 2000);
+            } else {
+                setIsAdding(false);
+                alert('No hay suficiente stock disponible para la cantidad seleccionada.');
+            }
         }, 300);
     };
 

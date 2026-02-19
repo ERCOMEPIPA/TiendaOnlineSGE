@@ -52,9 +52,24 @@ function getCartKey(productId: string, size: string, color: string = ''): string
     return `${productId}-${size}-${color}`;
 }
 
+// Helper: Get total quantity of a specific product in cart across all sizes and colors
+function getProductTotalInCart(productId: string): number {
+    const items = Object.values($cartItems.get());
+    return items
+        .filter(item => item.product.id === productId)
+        .reduce((total, item) => total + item.quantity, 0);
+}
+
 // Add item to cart
-export async function addItem(product: Product, quantity: number = 1, size: string, color: string = ''): Promise<void> {
+export async function addItem(product: Product, quantity: number = 1, size: string, color: string = ''): Promise<boolean> {
     const key = getCartKey(product.id, size, color);
+
+    // Check stock limit across all variants
+    const currentTotal = getProductTotalInCart(product.id);
+    if (currentTotal + quantity > product.stock) {
+        return false;
+    }
+
     const currentItems = $cartItems.get();
     const existingItem = currentItems[key];
 
@@ -72,6 +87,7 @@ export async function addItem(product: Product, quantity: number = 1, size: stri
 
     // Open cart when adding item
     $isCartOpen.set(true);
+    return true;
 }
 
 // Remove item from cart
@@ -92,7 +108,7 @@ export async function removeItem(productId: string, size: string, color: string 
 }
 
 // Update item quantity
-export async function updateQuantity(productId: string, size: string, color: string = '', quantity: number): Promise<void> {
+export async function updateQuantity(productId: string, size: string, color: string = '', quantity: number): Promise<boolean> {
     const key = getCartKey(productId, size, color);
     const currentItems = $cartItems.get();
     const item = currentItems[key];
@@ -100,11 +116,22 @@ export async function updateQuantity(productId: string, size: string, color: str
     if (item) {
         if (quantity <= 0) {
             await removeItem(productId, size, color);
+            return true;
         } else {
+            // Check stock limit logic
+            const totalOtherSizes = getProductTotalInCart(productId) - item.quantity;
+            const product = item.product;
+
+            if (totalOtherSizes + quantity > product.stock) {
+                return false;
+            }
+
             $cartItems.setKey(key, { ...item, quantity });
             await saveCart();
+            return true;
         }
     }
+    return false;
 }
 
 // Clear entire cart
@@ -141,7 +168,7 @@ async function saveCart(): Promise<void> {
     if (typeof window === 'undefined') return;
 
     const items = $cartItems.get();
-    
+
     if (currentUserId) {
         // Save to database for logged-in users
         try {
@@ -199,7 +226,7 @@ export async function loadCart(userId?: string): Promise<void> {
 
             if (cartItems && cartItems.length > 0) {
                 const items: Record<string, CartItem> = {};
-                
+
                 cartItems.forEach((item: any) => {
                     if (item.product) {
                         const key = getCartKey(item.product.id, item.size, item.color);
@@ -213,7 +240,7 @@ export async function loadCart(userId?: string): Promise<void> {
                 });
 
                 $cartItems.set(items);
-                
+
                 // Merge with any items in localStorage (from guest cart)
                 const localItems = localStorage.getItem('hypestage-cart');
                 if (localItems) {
