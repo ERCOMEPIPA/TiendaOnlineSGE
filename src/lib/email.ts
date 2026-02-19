@@ -47,21 +47,21 @@ async function getTransporter() {
 
     try {
         console.log('🔧 [EMAIL] Inicializando transporter de email...');
-        
+
         // Verificar variables de entorno
         const gmailUser = import.meta.env.GMAIL_USER;
         const gmailPass = import.meta.env.GMAIL_APP_PASSWORD;
-        
+
         if (!gmailUser || !gmailPass) {
             console.error('❌ [EMAIL] Error: Variables de entorno no configuradas');
             console.error('   GMAIL_USER:', gmailUser ? '✓ Configurado' : '✗ Falta');
             console.error('   GMAIL_APP_PASSWORD:', gmailPass ? '✓ Configurado' : '✗ Falta');
             return null;
         }
-        
+
         console.log('✓ [EMAIL] Variables de entorno verificadas');
         console.log('   Usuario:', gmailUser);
-        
+
         // Dynamic import of nodemailer
         const nodemailer = await import('nodemailer');
         console.log('✓ [EMAIL] Nodemailer importado correctamente');
@@ -73,7 +73,7 @@ async function getTransporter() {
                 pass: gmailPass
             }
         });
-        
+
         console.log('✅ [EMAIL] Transporter creado correctamente');
         return transporter;
     } catch (error) {
@@ -181,56 +181,102 @@ export async function sendWelcomeEmail(email: string, name: string) {
     console.log('📧 [EMAIL] Intentando enviar email de bienvenida');
     console.log('   Destinatario:', email);
     console.log('   Nombre:', name);
-    
+
     const transport = await getTransporter();
     if (!transport) {
         console.error('❌ [EMAIL] No se pudo crear el transporter - email no enviado');
         return { success: false, skipped: true, error: 'Transporter no disponible' };
     }
-    
+
     console.log('✓ [EMAIL] Transporter obtenido, preparando email...');
 
+    const siteUrl = import.meta.env.PUBLIC_SITE_URL || 'https://hypestage.com';
 
     const emailHtml = `
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background-color: #1a2332; color: white; padding: 40px 30px; text-align: center; }
-        .header h1 { margin: 0; font-size: 32px; }
-        .content { background-color: #ffffff; padding: 40px 30px; }
-        .features { margin: 30px 0; }
-        .feature { padding: 15px 0; border-bottom: 1px solid #e0e0e0; }
-        .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background-color: #1a2332; color: white; padding: 40px 0; text-align: center; }
+        .header h1 { margin: 0; font-size: 28px; letter-spacing: 2px; }
+        .content { padding: 40px 30px; }
+        .welcome-text { font-size: 18px; color: #1a2332; margin-bottom: 20px; }
+        .features { margin: 30px 0; background-color: #f8f9fa; padding: 20px; border-radius: 8px; }
+        .feature { padding: 10px 0; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; }
+        .feature:last-child { border-bottom: none; }
+        .feature-icon { margin-right: 15px; color: #22c55e; font-size: 20px; }
+        /* Mobile styles */
+        @media only screen and (max-width: 600px) {
+            .container { width: 100% !important; }
+            .content { padding: 20px !important; }
+        }
     </style>
 </head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>¡Bienvenido a HYPESTAGE!</h1>
-        </div>
-        
-        <div class="content">
-            <p>Hola ${name},</p>
-            <p>¡Gracias por registrarte en HYPESTAGE! Tu cuenta ha sido creada exitosamente.</p>
-            
-            <div class="features">
-                <div class="feature">✓ Compras rápidas y seguras</div>
-                <div class="feature">✓ Historial de pedidos</div>
-                <div class="feature">✓ Ofertas exclusivas</div>
-                <div class="feature">✓ Envíos gratuitos en pedidos superiores a 50€</div>
-            </div>
-            
-            <p>¡Gracias por elegirnos!</p>
-        </div>
-        
-        <div class="footer">
-            <p>&copy; ${new Date().getFullYear()} HYPESTAGE. Todos los derechos reservados.</p>
-        </div>
-    </div>
+<body style="margin: 0; padding: 0;">
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+            <td style="padding: 20px 0; background-color: #f4f4f4;">
+                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="600" class="container" style="margin: 0 auto; background-color: #ffffff;">
+                    <!-- Header -->
+                    <tr>
+                        <td class="header" style="background-color: #1a2332; color: white; padding: 40px 0; text-align: center;">
+                            <h1 style="margin: 0; font-size: 28px; letter-spacing: 2px; color: #ffffff;">HYPESTAGE</h1>
+                        </td>
+                    </tr>
+                    
+                    <!-- Content -->
+                    <tr>
+                        <td class="content" style="padding: 40px 30px;">
+                            <h2 class="welcome-text" style="font-size: 18px; color: #1a2332; margin-bottom: 20px;">¡Hola ${name}! 👋</h2>
+                            <p style="margin-bottom: 15px;">Gracias por unirte a la comunidad de <strong>HYPESTAGE</strong>. Tu cuenta ha sido creada exitosamente y ya eres parte de nuestra familia.</p>
+                            
+                            <p style="margin-bottom: 15px;">Estamos emocionados de tenerte con nosotros. Aquí comienza tu experiencia con la mejor moda urbana.</p>
+                            
+                            <div class="features" style="margin: 30px 0; background-color: #f8f9fa; padding: 20px; border-radius: 8px;">
+                                <div class="feature" style="padding: 10px 0; border-bottom: 1px solid #e0e0e0;">✓ Compras rápidas y 100% seguras</div>
+                                <div class="feature" style="padding: 10px 0; border-bottom: 1px solid #e0e0e0;">✓ Acceso a historial de pedidos</div>
+                                <div class="feature" style="padding: 10px 0; border-bottom: 1px solid #e0e0e0;">✓ Ofertas exclusivas para miembros</div>
+                                <div class="feature" style="padding: 10px 0; border-bottom: none;">✓ Soporte prioritario</div>
+                            </div>
+                            
+                            <!-- Button -->
+                            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin: 30px 0;">
+                                <tr>
+                                    <td align="center">
+                                        <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                <td align="center" bgcolor="#1a2332" style="border-radius: 4px;">
+                                                    <a href="${siteUrl}" target="_blank" style="font-size: 16px; font-family: Helvetica, Arial, sans-serif; color: #ffffff; text-decoration: none; padding: 15px 40px; border-radius: 4px; border: 1px solid #1a2332; display: inline-block; font-weight: bold; letter-spacing: 1px;">
+                                                        IR A LA TIENDA
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <p style="text-align: center; margin-top: 30px; color: #666; font-size: 14px;">
+                                Si tienes alguna pregunta, simplemente responde a este correo. ¡Estamos aquí para ayudarte!
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td class="footer" style="text-align: center; padding: 30px; color: #666; font-size: 12px; background-color: #f4f4f4;">
+                            <p style="margin: 5px 0;">&copy; ${new Date().getFullYear()} HYPESTAGE. Todos los derechos reservados.</p>
+                            <p style="margin: 5px 0;">Has recibido este correo porque te registraste en HYPESTAGE.</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>
     `;
@@ -238,8 +284,7 @@ export async function sendWelcomeEmail(email: string, name: string) {
     try {
         const fromEmail = getFromEmail();
         console.log('   From:', fromEmail);
-        console.log('   Subject: ¡Bienvenido a HYPESTAGE! 🎉');
-        
+
         const info = await transport.sendMail({
             from: fromEmail,
             to: email,
@@ -249,13 +294,10 @@ export async function sendWelcomeEmail(email: string, name: string) {
 
         console.log('✅ [EMAIL] Email de bienvenida enviado exitosamente');
         console.log('   Message ID:', info.messageId);
-        console.log('   Response:', info.response);
         return { success: true, data: { messageId: info.messageId } };
     } catch (error) {
         console.error('❌ [EMAIL] Error al enviar email de bienvenida');
         console.error('   Error:', error.message);
-        console.error('   Code:', error.code);
-        console.error('   Stack:', error.stack);
         return { success: false, error: error.message };
     }
 }
@@ -554,10 +596,10 @@ interface CouponEmailData {
 }
 
 export async function sendCouponEmail(data: CouponEmailData) {
-    const { 
-        customerEmail, 
-        customerName, 
-        couponCode, 
+    const {
+        customerEmail,
+        customerName,
+        couponCode,
         description,
         discountType,
         discountValue,
@@ -568,18 +610,18 @@ export async function sendCouponEmail(data: CouponEmailData) {
     console.log('📧 [EMAIL] Intentando enviar cupón personalizado');
     console.log('   Destinatario:', customerEmail);
     console.log('   Código:', couponCode);
-    
+
     const transport = await getTransporter();
     if (!transport) {
         console.error('❌ [EMAIL] No se pudo crear el transporter - email no enviado');
         return { success: false, skipped: true, error: 'Transporter no disponible' };
     }
-    
+
     console.log('✓ [EMAIL] Transporter obtenido, preparando email...');
 
     // Format discount display
-    const discountDisplay = discountType === 'percentage' 
-        ? `${discountValue}%` 
+    const discountDisplay = discountType === 'percentage'
+        ? `${discountValue}%`
         : formatPrice(discountValue);
 
     const emailHtml = `
@@ -737,10 +779,10 @@ export async function sendCouponEmail(data: CouponEmailData) {
                 <div class="detail-item">
                     <span class="detail-icon">⏰</span>
                     <span><strong>Válido hasta:</strong> ${new Date(validUntil).toLocaleDateString('es-ES', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                    })}</span>
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    })}</span>
                 </div>
                 ` : ''}
                 <div class="detail-item">

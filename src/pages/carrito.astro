@@ -306,6 +306,66 @@ import CheckoutTimer from "../components/islands/CheckoutTimer";
       </div>
     </div>
   </div>
+
+  <!-- Stock Alert Modal -->
+  <div id="stock-alert-modal" class="fixed inset-0 z-50 hidden">
+    <div
+      class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+      id="stock-alert-backdrop"
+    >
+    </div>
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div
+        class="relative bg-[#1a2332] text-white rounded-xl shadow-2xl max-w-md w-full p-6 border border-gray-700"
+      >
+        <!-- Icon -->
+        <div class="flex justify-center mb-6">
+          <div
+            class="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center"
+          >
+            <svg
+              class="w-8 h-8 text-red-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              ></path>
+            </svg>
+          </div>
+        </div>
+
+        <div class="text-center">
+          <h3 class="text-xl font-bold mb-2 font-serif tracking-wide">
+            Stock Insuficiente
+          </h3>
+          <p class="text-gray-300 mb-6 leading-relaxed">
+            Lo sentimos, no hay suficiente stock disponible de <span
+              id="stock-alert-product-name"
+              class="text-white font-semibold"></span>.
+            <br /><br />
+            <span
+              class="text-sm bg-gray-800 px-3 py-1 rounded-full border border-gray-600"
+            >
+              Solo quedan <span
+                id="stock-alert-count"
+                class="text-red-400 font-bold"></span> unidades
+            </span>
+          </p>
+          <button
+            id="stock-alert-close-btn"
+            class="w-full py-3 px-6 bg-white text-[#1a2332] font-bold rounded-lg hover:bg-gray-200 transition-colors"
+          >
+            Entendido
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </PublicLayout>
 
 <script>
@@ -345,6 +405,30 @@ import CheckoutTimer from "../components/islands/CheckoutTimer";
     clearReservation();
     window.location.reload();
   });
+
+  // Handle stock alert modal
+  const stockAlertModal = document.getElementById("stock-alert-modal");
+  const stockAlertCloseBtn = document.getElementById("stock-alert-close-btn");
+  const stockAlertBackdrop = document.getElementById("stock-alert-backdrop");
+
+  function showStockAlert(productName: string, stock: number) {
+    const nameEl = document.getElementById("stock-alert-product-name");
+    const countEl = document.getElementById("stock-alert-count");
+
+    if (nameEl) nameEl.textContent = `"${productName}"`;
+    if (countEl) countEl.textContent = stock.toString();
+
+    stockAlertModal?.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+  }
+
+  function hideStockAlert() {
+    stockAlertModal?.classList.add("hidden");
+    document.body.style.overflow = "";
+  }
+
+  stockAlertCloseBtn?.addEventListener("click", hideStockAlert);
+  stockAlertBackdrop?.addEventListener("click", hideStockAlert);
 
   // Check for expired reservation on load
   const existingReservation = getReservation();
@@ -532,6 +616,19 @@ import CheckoutTimer from "../components/islands/CheckoutTimer";
         if (action === "decrease") {
           updateQuantity(productId, size, color, qty - 1);
         } else {
+          // Check stock before increasing
+          const currentItems = $cartItemsArray.get();
+          const item = currentItems.find(
+            (i) =>
+              i.product.id === productId &&
+              i.size === size &&
+              (i.color || "") === color,
+          );
+
+          if (item && qty + 1 > item.product.stock) {
+            showStockAlert(item.product.name, item.product.stock);
+            return;
+          }
           updateQuantity(productId, size, color, qty + 1);
         }
         renderCart();

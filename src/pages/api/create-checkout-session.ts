@@ -46,6 +46,22 @@ export const POST: APIRoute = async ({ request, cookies }) => {
                 shippingCity = shippingInfo.city;
                 shippingProvince = shippingInfo.province;
             }
+
+            // Fetch user name from profiles table
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('full_name')
+                .eq('id', userId)
+                .single();
+
+            if (profile?.full_name) {
+                customerName = profile.full_name;
+            } else {
+                // Fallback to metadata name or email part
+                customerName = userSession.user.user_metadata?.full_name ||
+                    userSession.user.email?.split('@')[0] ||
+                    'Cliente';
+            }
         } else {
             // Guest mode
             if (!guestInfo || !guestInfo.email || !guestInfo.name) {

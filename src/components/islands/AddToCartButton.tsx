@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
-import { addItem, loadCart } from '../../stores/cart';
+import { useStore } from '@nanostores/react';
+import { addItem, loadCart, $cartItems } from '../../stores/cart';
 import type { Product } from '../../lib/supabase';
 import SizeRecommender from './SizeRecommender';
+import StockAlertModal from '../ui/StockAlertModal';
 
 interface AddToCartButtonProps {
     product: Product;
@@ -17,6 +19,10 @@ export default function AddToCartButton({ product, sizes, colors = [] }: AddToCa
     const [showSuccess, setShowSuccess] = useState(false);
     const [notifyState, setNotifyState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [userEmail, setUserEmail] = useState<string>('');
+
+    // Stock Alert State
+    const [showStockAlert, setShowStockAlert] = useState(false);
+    const cartItems = useStore($cartItems);
 
     // Helper to parse color format "Name:#HexCode"
     const parseColor = (colorStr: string) => {
@@ -43,6 +49,16 @@ export default function AddToCartButton({ product, sizes, colors = [] }: AddToCa
         if (!selectedSize) return;
         // Only require color if product has colors
         if (colors.length > 0 && !selectedColor) return;
+
+        // Calculate current quantity in cart for this specific item
+        const cartKey = `${product.id}-${selectedSize}-${selectedColor}`;
+        const currentInCart = cartItems[cartKey]?.quantity || 0;
+
+        // Check if adding the requested quantity exceeds stock
+        if (currentInCart + quantity > product.stock) {
+            setShowStockAlert(true);
+            return;
+        }
 
         setIsAdding(true);
 
@@ -172,6 +188,14 @@ export default function AddToCartButton({ product, sizes, colors = [] }: AddToCa
 
     return (
         <div className="space-y-4">
+            <StockAlertModal
+                isOpen={showStockAlert}
+                onClose={() => setShowStockAlert(false)}
+                productName={product.name}
+                availableStock={product.stock}
+                requestedQuantity={quantity}
+            />
+
             {/* Size Selection */}
             {sizes.length > 0 && (
                 <div>

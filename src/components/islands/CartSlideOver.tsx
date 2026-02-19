@@ -1,5 +1,5 @@
 import { useStore } from '@nanostores/react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
     $isCartOpen,
     $cartItemsArray,
@@ -7,14 +7,29 @@ import {
     closeCart,
     removeItem,
     updateQuantity,
-    loadCart
+    loadCart,
+    type CartItem
 } from '../../stores/cart';
 import { formatPrice } from '../../lib/supabase';
+import StockAlertModal from '../ui/StockAlertModal';
 
 export default function CartSlideOver() {
     const isOpen = useStore($isCartOpen);
     const items = useStore($cartItemsArray);
     const total = useStore($cartTotal);
+
+    // Alert State
+    const [alertState, setAlertState] = useState<{
+        isOpen: boolean;
+        productName: string;
+        stock: number;
+        qty: number;
+    }>({
+        isOpen: false,
+        productName: '',
+        stock: 0,
+        qty: 0
+    });
 
     useEffect(() => {
         (async () => {
@@ -34,10 +49,31 @@ export default function CartSlideOver() {
         };
     }, [isOpen]);
 
+    const handleIncreaseQuantity = async (item: CartItem) => {
+        if (item.quantity + 1 > item.product.stock) {
+            setAlertState({
+                isOpen: true,
+                productName: item.product.name,
+                stock: item.product.stock,
+                qty: item.quantity + 1
+            });
+            return;
+        }
+        await updateQuantity(item.product.id, item.size, item.color || '', item.quantity + 1);
+    };
+
     if (!isOpen) return null;
 
     return (
         <>
+            <StockAlertModal
+                isOpen={alertState.isOpen}
+                onClose={() => setAlertState(prev => ({ ...prev, isOpen: false }))}
+                productName={alertState.productName}
+                availableStock={alertState.stock}
+                requestedQuantity={alertState.qty}
+            />
+
             {/* Backdrop */}
             <div
                 className="fixed inset-0 bg-[#2a2622]/50 z-40 animate-fade-in backdrop-blur-sm"
@@ -149,7 +185,7 @@ export default function CartSlideOver() {
                                                     {item.quantity}
                                                 </span>
                                                 <button
-                                                    onClick={async () => await updateQuantity(item.product.id, item.size, item.color || '', item.quantity + 1)}
+                                                    onClick={async () => await handleIncreaseQuantity(item)}
                                                     className="w-6 h-6 rounded-none border border-[#ccc5b8] 
                                    flex items-center justify-center text-[#2a2622]
                                    hover:border-[#2a2622] transition-colors"
