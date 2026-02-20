@@ -1,0 +1,270 @@
+---
+import PublicLayout from "../layouts/PublicLayout.astro";
+---
+
+<PublicLayout
+    title="Preguntas Frecuentes"
+    description="Resolvemos tus dudas sobre pedidos, envíos, devoluciones y más en HYPESTAGE."
+>
+    <section class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-serif italic text-[#2a2622] mb-4">
+                Preguntas Frecuentes
+            </h1>
+            <p class="text-[#6f6458]">
+                Encuentra respuestas a las preguntas más comunes
+            </p>
+        </div>
+
+        <div class="space-y-4" id="faq-list">
+            <!-- FAQ 1 -->
+            <details
+                class="group bg-white border border-[#e8e4dc] cursor-pointer"
+            >
+                <summary
+                    class="flex items-center justify-between p-6 text-sm font-medium text-[#2a2622] hover:text-[#8B4513] transition-colors list-none"
+                >
+                    <span>¿Cuánto tarda mi pedido en llegar?</span>
+                    <svg
+                        class="w-5 h-5 text-[#6f6458] group-open:rotate-180 transition-transform"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </summary>
+                <div class="px-6 pb-6 text-sm text-[#6f6458] leading-relaxed">
+                    Los envíos a España peninsular tardan entre 2 y 4 días
+                    laborables. Para Baleares y Canarias, entre 4 y 7 días.
+                    Puedes consultar todos los plazos en nuestra <a
+                        href="/envios"
+                        class="text-[#8B4513] underline">política de envíos</a
+                    >.
+                </div>
+            </details>
+
+            <!-- FAQ 2 -->
+            <details
+                class="group bg-white border border-[#e8e4dc] cursor-pointer"
+            >
+                <summary
+                    class="flex items-center justify-between p-6 text-sm font-medium text-[#2a2622] hover:text-[#8B4513] transition-colors list-none"
+                >
+                    <span>¿Puedo devolver un producto?</span>
+                    <svg
+                        class="w-5 h-5 text-[#6f6458] group-open:rotate-180 transition-transform"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </summary>
+                <div class="px-6 pb-6 text-sm text-[#6f6458] leading-relaxed">
+                    Sí, tienes 30 días naturales para devolver cualquier
+                    producto sin usar y con sus etiquetas originales. Consulta
+                    el proceso completo en <a
+                        href="/devoluciones-info"
+                        class="text-[#8B4513] underline">devoluciones</a
+                    >.
+                </div>
+            </details>
+
+            <!-- FAQ 3 -->
+            <details
+                class="group bg-white border border-[#e8e4dc] cursor-pointer"
+            >
+                <summary
+                    class="flex items-center justify-between p-6 text-sm font-medium text-[#2a2622] hover:text-[#8B4513] transition-colors list-none"
+                >
+                    <span>¿Cómo puedo cancelar mi pedido?</span>
+                    <svg
+                        class="w-5 h-5 text-[#6f6458] group-open:rotate-180 transition-transform"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </summary>
+                <div class="px-6 pb-6 text-sm text-[#6f6458] leading-relaxed">
+                    Puedes cancelar tu pedido desde <a
+                        href="/mis-pedidos"
+                        class="text-[#8B4513] underline">Mis Pedidos</a
+                    > siempre que esté en estado "Pendiente" o "Confirmado". Una vez
+                    enviado, no se puede cancelar pero sí devolver.
+                </div>
+            </details>
+
+            <!-- FAQ 4 -->
+            <details
+                class="group bg-white border border-[#e8e4dc] cursor-pointer"
+            >
+                <summary
+                    class="flex items-center justify-between p-6 text-sm font-medium text-[#2a2622] hover:text-[#8B4513] transition-colors list-none"
+                >
+                    <span>¿Qué métodos de pago aceptáis?</span>
+                    <svg
+                        class="w-5 h-5 text-[#6f6458] group-open:rotate-180 transition-transform"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </summary>
+                <div class="px-6 pb-6 text-sm text-[#6f6458] leading-relaxed">
+                    Aceptamos tarjetas de crédito y débito (Visa, Mastercard,
+                    American Express) a través de nuestra pasarela de pago
+                    segura Stripe. Tus datos de pago están protegidos y nunca se
+                    almacenan en nuestros servidores.
+                </div>
+            </details>
+
+            <!-- FAQ 5 -->
+            <details
+                class="group bg-white border border-[#e8e4dc] cursor-pointer"
+            >
+                <summary
+                    class="flex items-center justify-between p-6 text-sm font-medium text-[#2a2622] hover:text-[#8B4513] transition-colors list-none"
+                >
+                    <span>¿Cómo sé qué talla elegir?</span>
+                    <svg
+                        class="w-5 h-5 text-[#6f6458] group-open:rotate-180 transition-transform"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </summary>
+                <div class="px-6 pb-6 text-sm text-[#6f6458] leading-relaxed">
+                    Cada producto tiene un <strong
+                        >recomendador de tallas</strong
+                    > integrado que te ayuda a elegir la talla perfecta según tus
+                    medidas. Lo encontrarás en la página de detalle de cada producto.
+                </div>
+            </details>
+
+            <!-- FAQ 6 -->
+            <details
+                class="group bg-white border border-[#e8e4dc] cursor-pointer"
+            >
+                <summary
+                    class="flex items-center justify-between p-6 text-sm font-medium text-[#2a2622] hover:text-[#8B4513] transition-colors list-none"
+                >
+                    <span>¿Los productos son oficiales?</span>
+                    <svg
+                        class="w-5 h-5 text-[#6f6458] group-open:rotate-180 transition-transform"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </summary>
+                <div class="px-6 pb-6 text-sm text-[#6f6458] leading-relaxed">
+                    Sí, todo nuestro merchandising es oficial y con licencia.
+                    Trabajamos directamente con artistas y sus equipos para
+                    ofrecer productos de la máxima calidad y autenticidad.
+                </div>
+            </details>
+
+            <!-- FAQ 7 -->
+            <details
+                class="group bg-white border border-[#e8e4dc] cursor-pointer"
+            >
+                <summary
+                    class="flex items-center justify-between p-6 text-sm font-medium text-[#2a2622] hover:text-[#8B4513] transition-colors list-none"
+                >
+                    <span>¿Tenéis cupones de descuento?</span>
+                    <svg
+                        class="w-5 h-5 text-[#6f6458] group-open:rotate-180 transition-transform"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </summary>
+                <div class="px-6 pb-6 text-sm text-[#6f6458] leading-relaxed">
+                    ¡Sí! Suscríbete a nuestra <strong>newsletter</strong> y recibirás
+                    automáticamente un código de descuento del 10 % para tu primera
+                    compra. Además, periódicamente enviamos cupones exclusivos a nuestros
+                    suscriptores.
+                </div>
+            </details>
+
+            <!-- FAQ 8 -->
+            <details
+                class="group bg-white border border-[#e8e4dc] cursor-pointer"
+            >
+                <summary
+                    class="flex items-center justify-between p-6 text-sm font-medium text-[#2a2622] hover:text-[#8B4513] transition-colors list-none"
+                >
+                    <span>¿Puedo comprar sin crear una cuenta?</span>
+                    <svg
+                        class="w-5 h-5 text-[#6f6458] group-open:rotate-180 transition-transform"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </summary>
+                <div class="px-6 pb-6 text-sm text-[#6f6458] leading-relaxed">
+                    Sí, ofrecemos la opción de <strong
+                        >checkout como invitado</strong
+                    >. Sin embargo, te recomendamos crear una cuenta para
+                    acceder a tu historial de pedidos, lista de deseos y cupones
+                    personalizados.
+                </div>
+            </details>
+        </div>
+
+        <div class="mt-12 text-center p-8 bg-white border border-[#e8e4dc]">
+            <p class="text-[#6f6458] text-sm mb-4">
+                ¿No encuentras la respuesta que buscas?
+            </p>
+            <a
+                href="/contacto"
+                class="inline-block px-8 py-3 bg-[#2a2622] text-[#fdfcf9] text-sm font-medium tracking-wide hover:bg-[#8B4513] transition-colors duration-300"
+            >
+                CONTACTAR CON NOSOTROS
+            </a>
+        </div>
+    </section>
+</PublicLayout>
