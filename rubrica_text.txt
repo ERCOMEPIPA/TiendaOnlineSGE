@@ -1,0 +1,101 @@
+Rúbrica de Evaluación: FashionStore (10 Puntos)
+1. Arquitectura y Stack Tecnológico (2.0 Puntos)
+Evalúa el uso correcto de Astro 5.0, la estructura del proyecto y la gestión del estado.
+Criterio Puntuación Descripción del Requisito
+Astro Híbrido 0.75 Implementación correcta de output: 'hybrid'. El
+(SSG/SSR) catálogo público y fichas de producto deben ser
+estáticos (SSG) para SEO. El Admin, Carrito y
+Checkout deben ser dinámicos (SSR).
+Islas y Estado 0.75 Uso correcto de "Islands Architecture"
+(Nano Stores) (hidratación parcial solo donde es necesario). El
+carrito de compras debe persistir usando Nano
+Stores, funcionando fluidamente entre
+navegaciones.
+Calidad de 0.50 Estructura de carpetas limpia y modular (según lo
+Código y TS solicitado). Uso estricto de TypeScript (interfaces
+para Productos, Pedidos, Usuarios). Sin errores
+de linter en consola.
+2. Base de Datos y Lógica Crítica (Supabase) (2.5 Puntos)
+Evalúa el diseño del esquema, la seguridad y la integridad transaccional (la parte más difícil).
+Criterio Puntuación Descripción del Requisito
+Esquema y 0.50 Tablas normalizadas (products, categories, orders,
+Relaciones invoices, order_items). Uso correcto de claves
+foráneas y tipos de datos (ej: enteros para
+precios).
+Atomicidad y 1.00 CRÍTICO: Implementación de Transacciones o
+Stock Stored Procedures para el stock. Al cancelar un
+pedido ("No enviado"), el stock debe volver
+automáticamente. No se permite "race condition"
+(vender sin stock).
+Seguridad 0.50 Políticas Row Level Security (RLS) activas: El
+(RLS y Auth) público solo lee productos; solo el Admin edita. El
+Admin está protegido por Middleware de
+autenticación.
+Storage y 0.50 Buckets configurados correctamente. Subida de
+Multimedia múltiples imágenes (Drag & Drop) en el admin y
+optimización de carga en el front.
+3. Funcionalidad Tienda Pública (UX/UI) (2.0 Puntos)
+Evalúa la experiencia de compra, diseño y las "features" extra solicitadas.
+Criterio Puntuación Descripción del Requisito
+Diseño y UX 0.50 Estética minimalista con Tailwind CSS.
+"Premium" Tipografías y paleta de colores acorde al
+briefing. Responsividad perfecta
+(Móvil/Desktop). Slide-over del carrito
+funcional.
+Buscador y Filtros 0.50 Buscador "Live Search" con Debounce
+(no satura la API) y filtrado por
+categorías funcional.
+Marketing 0.50 Pop-up de captación de leads funcional.
+(Newsletter/Ofertas) Sección "Ofertas Flash" controlada por
+interruptor desde el admin. Aplicación
+correcta de códigos de descuento en el
+carrito.
+Recomendador de Talla 0.50 Lógica algorítmica implementada en un
+modal (Isla) que sugiere talla basándose
+en inputs de altura/peso.
+4. Backoffice y Gestión Administrativa (2.5 Puntos)
+Evalúa la capacidad del sistema para gestionar el negocio real (Pedidos, Devoluciones y
+Facturas).
+Criterio Puntuación Descripción del Requisito
+Dashboard y 0.50 Gráficos visuales (Chart.js/Recharts) reales
+KPIs conectados a la BD. Tarjetas de métricas (Ventas
+totales, Pedidos pendientes) calculadas con SQL
+(Count/Sum).
+Gestión de 0.75 Flujo completo de estados: Pendiente -> Pagado
+Pedidos -> Enviado -> Entregado. Posibilidad de cancelar
+antes del envío (disparando la restauración de
+stock).
+Facturación y 1.25 CRÍTICO: Generación de factura al comprar. Al
+Abonos procesar una devolución, el sistema debe
+generar una Factura de Abono (rectificativa) con
+importe negativo para cuadrar caja.
+5. Despliegue y Entrega (1.0 Punto)
+Evalúa la puesta en producción y la profesionalidad de la entrega.
+Criterio Puntuación Descripción del Requisito
+Despliegue VPS 0.50 La aplicación es accesible vía URL pública.
+(Coolify) Funciona en entorno de producción
+(Docker/Node). Las variables de entorno
+están seguras.
+Documentación 0.50 Informe PDF entregado con diagrama ER
+Técnica (Entidad-Relación), justificación de
+tecnologías y explicación del flujo de
+facturación.
+Penalizaciones y Bonus
+● Penalización Grave (-2.0 Puntos): Claves de API secretas (Service Role) expuestas
+en el repositorio público o en el cliente (navegador).
+● Penalización Media (-1.0 Punto): La aplicación rompe (crash) al intentar comprar sin
+stock o al subir una imagen muy pesada.
+● Bonus (+1.0 Punto): Implementación de envío de correos reales (con Resend o similar)
+al confirmar pedido, enviar factura o confirmar devolución.
+Resumen de Calificación
+Nivel Puntuación Descripción
+Junior 0 - 4.9 No compila, faltan funcionalidades críticas
+(Facturación/Stock) o usa tecnologías prohibidas.
+Mid-Level 5.0 - 6.9 Funciona lo básico. El diseño es pobre o falta la lógica
+compleja (Abonos/Atomicidad).
+Avanzado 7.0 - 8.9 Cumple todos los requisitos funcionales. Buena
+arquitectura. Falla en detalles menores de UX o
+documentación.
+Senior 9.0 - 10 Arquitectura impecable, código limpio, gestión de
+errores robusta. El sistema de facturación y stock es a
+prueba de balas. UX excelente.
