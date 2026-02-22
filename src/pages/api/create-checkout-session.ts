@@ -124,7 +124,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
                     currency: 'eur',
                     product_data: {
                         name: product.name,
-                        description: `Talla: ${item.size}`,
+                        description: item.size ? `Talla: ${item.size}` : undefined,
                         images: product.images.length > 0 ? [product.images[0]] : [],
                         metadata: {
                             product_id: product.id,

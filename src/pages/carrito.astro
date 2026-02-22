@@ -540,7 +540,11 @@ import CheckoutTimer from "../components/islands/CheckoutTimer";
         </div>
         <div class="flex-1">
           <h3 class="font-medium text-[#2a2622]">${item.product.name}</h3>
-          <p class="text-sm text-[#6f6458]">Talla: ${item.size}${colorDisplay ? ` | Color: ${colorDisplay}` : ""}</p>
+          <p class="text-sm text-[#6f6458]">
+            ${item.size ? `Talla: ${item.size}` : ""}
+            ${item.size && colorDisplay ? " | " : ""}
+            ${colorDisplay ? `Color: ${colorDisplay}` : ""}
+          </p>
           ${
             hasDiscount
               ? `<div class="flex items-center gap-2 mt-1">

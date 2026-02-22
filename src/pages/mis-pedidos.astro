@@ -221,7 +221,7 @@ const getStatusConfig = (status: string) => statusConfig[status] || statusConfig
                                             <div class="flex-1">
                                                 <p class="font-medium text-[#2a2622]">{item.product_name}</p>
                                                 <p class="text-sm text-[#6f6458]">
-                                                    Talla: {item.size} · Cantidad: {item.quantity}
+                                                    {item.size ? `Talla: ${item.size} · ` : ""}Cantidad: {item.quantity}
                                                 </p>
                                             </div>
                                             <p class="font-medium text-gray-900">

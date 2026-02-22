@@ -152,7 +152,9 @@ export default function CartSlideOver() {
                                             <h3 className="font-medium text-[#2a2622] truncate">
                                                 {item.product.name}
                                             </h3>
-                                            <p className="text-sm text-[#6f6458]">Talla: {item.size}</p>
+                                            {item.size && (
+                                                <p className="text-sm text-[#6f6458]">Talla: {item.size}</p>
+                                            )}
                                             {colorDisplay && (
                                                 <p className="text-sm text-[#6f6458]">Color: {colorDisplay}</p>
                                             )}

@@ -46,7 +46,7 @@ export default function AddToCartButton({ product, sizes, colors = [] }: AddToCa
     }, []);
 
     const handleAddToCart = async () => {
-        if (!selectedSize) return;
+        if (sizes.length > 0 && !selectedSize) return;
         // Only require color if product has colors
         if (colors.length > 0 && !selectedColor) return;
 
@@ -321,11 +321,11 @@ export default function AddToCartButton({ product, sizes, colors = [] }: AddToCa
             {/* Add to Cart Button */}
             <button
                 onClick={handleAddToCart}
-                disabled={!selectedSize || isAdding}
+                disabled={(sizes.length > 0 && !selectedSize) || isAdding}
                 className={`
           w-full py-4 px-6 rounded-lg font-semibold text-lg
           transition-all duration-300 transform
-          ${!selectedSize
+          ${sizes.length > 0 && !selectedSize
                         ? 'bg-carbon-200 text-carbon-500 cursor-not-allowed'
                         : showSuccess
                             ? 'bg-green-600 text-white scale-[1.02]'
@@ -349,7 +349,7 @@ export default function AddToCartButton({ product, sizes, colors = [] }: AddToCa
                         </svg>
                         ¡Añadido al carrito!
                     </span>
-                ) : !selectedSize ? (
+                ) : sizes.length > 0 && !selectedSize ? (
                     'Selecciona una talla'
                 ) : (
                     <span className="flex items-center justify-center gap-2">
